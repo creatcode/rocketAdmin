@@ -85,4 +85,7 @@ return [
     'Createtime'                                 => '创建日期',
     'Uploadtime'                                 => '上传时间',
     'Storage'                                    => '存储引擎',
+    'Oldpassword'                                => '旧密码',
+    'Newpassword'                                => '新密码',
+    'Renewpassword'                              => '重复新密码',
 ];

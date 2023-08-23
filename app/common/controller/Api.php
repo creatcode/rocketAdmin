@@ -266,8 +266,7 @@ class Api extends BaseController
     protected function validate($data, $validate, $message = [], $batch = false, $callback = null)
     {
         if (is_array($validate)) {
-            $v = validate();
-            $v->rule($validate);
+            $v = validate($validate);
         } else {
             // 支持场景
             if (strpos($validate, '.')) {
@@ -292,11 +291,7 @@ class Api extends BaseController
             call_user_func_array($callback, [$v, &$data]);
         }
 
-        if (!$v->check($data)) {
-            if ($this->failException) {
-                throw new ValidateException($v->getError());
-            }
-
+        if (!$v->failException($this->failException)->check($data)) {
             return $v->getError();
         }
 

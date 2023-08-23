@@ -6,6 +6,7 @@ use app\common\controller\Frontend;
 use app\common\library\Ems;
 use app\common\library\Sms;
 use app\common\model\Attachment;
+use app\index\validate\User as ValidateUser;
 use think\facade\Config;
 use think\facade\Cookie;
 use think\facade\Event;
@@ -73,29 +74,6 @@ class User extends Frontend
             $mobile = $this->request->post('mobile', '');
             $captcha = $this->request->post('captcha');
             $token = $this->request->post('__token__');
-            $rule = [
-                'username'  => 'require|length:3,30',
-                'password'  => 'require|length:6,30',
-                'email'     => 'require|email',
-                'mobile'    => 'regex:/^1\d{10}$/',
-                '__token__' => 'require|token',
-            ];
-
-            $msg = [
-                'username.require' => 'Username can not be empty',
-                'username.length'  => 'Username must be 3 to 30 characters',
-                'password.require' => 'Password can not be empty',
-                'password.length'  => 'Password must be 6 to 30 characters',
-                'email'            => 'Email is incorrect',
-                'mobile'           => 'Mobile is incorrect',
-            ];
-            $data = [
-                'username'  => $username,
-                'password'  => $password,
-                'email'     => $email,
-                'mobile'    => $mobile,
-                '__token__' => $token,
-            ];
             //验证码
             $captchaResult = true;
             $captchaType = config("fastadmin.user_register_captcha");
@@ -113,11 +91,20 @@ class User extends Frontend
             if (!$captchaResult) {
                 $this->error(__('Captcha is incorrect'));
             }
-            $validate = validate($rule, $msg, false, false);
-            $result = $validate->check($data);
+            // 数据验证
+            $validate = validate(ValidateUser::class, [], false, false);
+            $result = $validate->scene('register')->check([
+                'username'  => $username,
+                'password'  => $password,
+                'email'     => $email,
+                'mobile'    => $mobile,
+                '__token__' => $token,
+            ]);
             if (!$result) {
                 $this->error(__($validate->getError()), null, ['token' => $this->request->buildToken()]);
+                return false;
             }
+
             if ($this->auth->register($username, $password, $email, $mobile)) {
                 $this->success(__('Sign up successful'), $url ? $url : (string)url('user/index'));
             } else {
@@ -149,29 +136,19 @@ class User extends Frontend
             $password = $this->request->post('password', '', null);
             $keeplogin = (int)$this->request->post('keeplogin');
             $token = $this->request->post('__token__');
-            $rule = [
-                'account'   => 'require|length:3,50',
-                'password'  => 'require|length:6,30',
-                '__token__' => 'require|token',
-            ];
 
-            $msg = [
-                'account.require'  => 'Account can not be empty',
-                'account.length'   => 'Account must be 3 to 50 characters',
-                'password.require' => 'Password can not be empty',
-                'password.length'  => 'Password must be 6 to 30 characters',
-            ];
-            $data = [
+            // 数据验证
+            $validate = validate(ValidateUser::class, [], false, false);
+            $result = $validate->scene('login')->check([
                 'account'   => $account,
                 'password'  => $password,
                 '__token__' => $token,
-            ];
-            $validate = validate($rule, $msg, false, false);
-            $result = $validate->check($data);
+            ]);
             if (!$result) {
                 $this->error(__($validate->getError()), null, ['token' => $this->request->buildToken()]);
                 return false;
             }
+
             if ($this->auth->login($account, $password)) {
                 $this->success(__('Logged in successful'), $url ? $url : (string)url('user/index'));
             } else {
@@ -227,24 +204,14 @@ class User extends Frontend
             $newpassword = $this->request->post("newpassword", '', null);
             $renewpassword = $this->request->post("renewpassword", '', null);
             $token = $this->request->post('__token__');
-            $rule = [
-                'oldpassword'   => 'require|regex:\S{6,30}',
-                'newpassword'   => 'require|regex:\S{6,30}',
-                'renewpassword' => 'require|regex:\S{6,30}|confirm:newpassword',
-                '__token__'     => 'token',
-            ];
-
-            $msg = [
-                'renewpassword.confirm' => __('Password and confirm password don\'t match')
-            ];
-            $data = [
-                'oldpassword|' . __('Old password')   => $oldpassword,
-                'newpassword|' . __('New password')   => $newpassword,
-                'renewpassword|' . __('Renew password') => $renewpassword,
+            // 数据验证
+            $validate = validate(ValidateUser::class, [], false, false);
+            $result = $validate->scene('changepwd')->check([
+                'oldpassword'   => $oldpassword,
+                'newpassword'   => $newpassword,
+                'renewpassword' => $renewpassword,
                 '__token__'     => $token,
-            ];
-            $validate = validate($rule, $msg, false, false);
-            $result = $validate->check($data);
+            ]);
             if (!$result) {
                 $this->error(__($validate->getError()), null, ['token' => $this->request->buildToken()]);
                 return false;

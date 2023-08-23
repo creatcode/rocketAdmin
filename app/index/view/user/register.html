@@ -6,7 +6,7 @@
                 <!--@IndexRegisterFormBegin-->
                 <input type="hidden" name="invite_user_id" value="0"/>
                 <input type="hidden" name="url" value="{$url|htmlentities}"/>
-                {:token()}
+                {:token_field()}
                 <div class="form-group">
                     <label class="control-label required">{:__('Email')}<span class="text-success"></span></label>
                     <div class="controls">

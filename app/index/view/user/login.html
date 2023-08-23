@@ -5,7 +5,7 @@
             <form name="form" id="login-form" class="form-vertical" method="POST" action="">
                 <!--@IndexLoginFormBegin-->
                 <input type="hidden" name="url" value="{$url|htmlentities}"/>
-                {:token()}
+                {:token_field()}
                 <div class="form-group">
                     <label class="control-label" for="account">{:__('Account')}</label>
                     <div class="controls">

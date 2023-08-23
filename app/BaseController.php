@@ -85,7 +85,7 @@ abstract class BaseController
         } else {
             if (strpos($validate, '.')) {
                 // 支持场景
-                [$validate, $scene] = explode('.', $validate);
+                list($validate, $scene) = explode('.', $validate);
             }
             $class = false !== strpos($validate, '\\') ? $validate : $this->app->parseClass('validate', $validate);
             $v     = new $class();

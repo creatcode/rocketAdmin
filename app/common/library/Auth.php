@@ -98,7 +98,7 @@ class Auth
         }
         $user_id = intval($data['user_id']);
         if ($user_id > 0) {
-            $user = User::get($user_id);
+            $user = User::find($user_id);
             if (!$user) {
                 $this->setError('Account not exist');
                 return false;
@@ -182,7 +182,7 @@ class Auth
         try {
             $user = User::create($params);
 
-            $this->_user = User::get($user->id);
+            $this->_user = User::find($user->id);
 
             //设置Token
             $this->_token = Random::uuid();
@@ -212,7 +212,7 @@ class Auth
     public function login($account, $password)
     {
         $field = Validate::is($account, 'email') ? 'email' : (Validate::regex($account, '/^1\d{10}$/') ? 'mobile' : 'username');
-        $user = User::get([$field => $account]);
+        $user = User::where([$field => $account])->find();
         if (!$user) {
             $this->setError('Account is incorrect');
             return false;
@@ -295,7 +295,7 @@ class Auth
      */
     public function direct($user_id)
     {
-        $user = User::get($user_id);
+        $user = User::find($user_id);
         if ($user) {
             Db::startTrans();
             try {
@@ -454,7 +454,7 @@ class Auth
      */
     public function delete($user_id)
     {
-        $user = User::get($user_id);
+        $user = User::find($user_id);
         if (!$user) {
             return false;
         }
