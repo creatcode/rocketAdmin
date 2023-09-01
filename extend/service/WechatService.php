@@ -59,7 +59,7 @@ class WechatService
     /**
      * 创建实例
      *
-     * @return self
+     * @return \EasyWeChat\OfficialAccount\Application
      */
     public static function instance()
     {
@@ -153,6 +153,9 @@ class WechatService
                 // 点击菜单跳转链接
             case 'view':
                 return '欢迎关注';
+                break;
+            default:
+                return '';
                 break;
         }
     }

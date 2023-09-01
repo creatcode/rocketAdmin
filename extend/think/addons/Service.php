@@ -51,7 +51,7 @@ class Service
         $config = self::config($name);
         $request = request();
         $domain = self::getRootDomain($domain ? $domain : $request->host(true));
-        if (isset($config['domains']) && isset($config['domains']) && isset($config['validations']) && isset($config['licensecodes'])) {
+        if (isset($config['domains']) && isset($config['validations']) && isset($config['licensecodes'])) {
             $index = array_search($domain, $config['domains']);
             if ((in_array($domain, $config['domains']) && in_array(md5(md5($domain) . ($config['licensecodes'][$index] ?? '')), $config['validations'])) || $request->isCli()) {
                 return true;

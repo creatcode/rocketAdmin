@@ -214,7 +214,7 @@ class Install extends Command
         $dbConfigText = @file_get_contents($dbConfigFile);
         $callback = function ($matches) use ($mysqlHostname, $mysqlHostport, $mysqlUsername, $mysqlPassword, $mysqlDatabase, $mysqlPrefix) {
             $field = "mysql" . ucfirst($matches[1]);
-            $replace = $$field;
+            $replace = $field;
             if ($matches[1] == 'hostport' && $mysqlHostport == 3306) {
                 $replace = '';
             }
