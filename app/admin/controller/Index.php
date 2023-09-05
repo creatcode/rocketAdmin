@@ -132,7 +132,7 @@ class Index extends Backend
     {
         if ($this->request->isPost()) {
             AdminLog::setTitle(__('Logout'));
-            // TODO:此处仅为传递参数给访问日志调用
+            // TODO:传递参数给访问日志调用
             $this->auth->backendlog = $this->request->session('admin');
 
             $this->auth->logout();
