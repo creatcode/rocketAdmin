@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b90fb78bfd62308c896d2a79c2de01fc",
+    "content-hash": "1d6da9edba05a444255720a5740d6aa7",
     "packages": [
         {
             "name": "easywechat-composer/easywechat-composer",
@@ -3967,6 +3967,60 @@
                 "source": "https://github.com/top-think/think-template/tree/v2.0.9"
             },
             "time": "2023-02-14T10:50:39+00:00"
+        },
+        {
+            "name": "topthink/think-throttle",
+            "version": "v1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/top-think/think-throttle.git",
+                "reference": "daa5bace5e4844a346af403a0c44d9ce4bf7af06"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/top-think/think-throttle/zipball/daa5bace5e4844a346af403a0c44d9ce4bf7af06",
+                "reference": "daa5bace5e4844a346af403a0c44d9ce4bf7af06",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "php": ">=7.1.0",
+                "topthink/framework": "^6.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "think": {
+                    "config": {
+                        "throttle": "src/config.php"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "think\\middleware\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "hongweipeng",
+                    "email": "hongweichen8888@sina.com"
+                }
+            ],
+            "description": "throttle middleware for thinkphp6",
+            "support": {
+                "issues": "https://github.com/top-think/think-throttle/issues",
+                "source": "https://github.com/top-think/think-throttle/tree/v1.3.1"
+            },
+            "time": "2022-08-25T14:35:52+00:00"
         },
         {
             "name": "topthink/think-view",
