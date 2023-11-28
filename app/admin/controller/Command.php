@@ -138,7 +138,7 @@ class Command extends Backend
         $params = $this->request->request();
         $allowfields = [
             'crud' => 'table,controller,model,fields,force,local,delete,menu',
-            'menu' => 'controller,delete',
+            'menu' => 'controller,delete,force',
             'min'  => 'module,resource,optimize',
             'api'  => 'url,module,output,template,force,title,author,class,language,addon',
         ];
