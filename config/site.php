@@ -1,7 +1,7 @@
 <?php
 
 return [
-  'name' => '我的网站',
+  'name' => 'TP6FASTADMIN-我的网站',
   'beian' => '',
   'cdnurl' => '',
   'version' => '1.0.2',
