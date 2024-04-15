@@ -1,13 +1,14 @@
 <?php
 
-return array(
-  0 =>
-  array(
+return array (
+  0 => 
+  array (
     'name' => 'classname',
     'title' => '渲染文本框元素',
     'type' => 'string',
-    'content' =>
-    array(),
+    'content' => 
+    array (
+    ),
     'value' => '.summernote,.editor',
     'rule' => 'required',
     'msg' => '',

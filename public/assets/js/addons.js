@@ -57,9 +57,11 @@ require(['form', 'upload'], function (Form, Upload) {
                         });
                         return button.render();
                     };
+
                     $(Config.summernote.classname || '.editor', form).each(function () {
                         $(this).summernote($.extend(true, {}, {
-                            height: 250,
+                            // height: 250,
+                            minHeight: 250,
                             lang: 'zh-CN',
                             fontNames: [
                                 'Arial', 'Arial Black', 'Serif', 'Sans', 'Courier',
