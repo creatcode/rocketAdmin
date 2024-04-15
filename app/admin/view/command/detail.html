@@ -12,16 +12,16 @@
     </tr>
     <tr>
         <td>{:__('Params')}</td>
-        <td>{$row.params}</td>
+        <td>{$row.params|htmlentities}</td>
     </tr>
     <tr>
         <td>{:__('Command')}</td>
-        <td>{$row.command}</td>
+        <td>{$row.command|htmlentities}</td>
     </tr>
     <tr>
         <td>{:__('Content')}</td>
         <td>
-            <textarea class="form-control" name="" id="" cols="60" rows="10">{$row.content}</textarea>
+            <textarea class="form-control" name="" id="" cols="60" rows="10">{$row.content|htmlentities}</textarea>
         </td>
     </tr>
     <tr>

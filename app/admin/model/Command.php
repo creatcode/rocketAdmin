@@ -40,14 +40,14 @@ class Command extends Model
     {
         $value = $value ? $value : $data['type'];
         $list = ['crud' => '一键生成CRUD', 'menu' => '一键生成菜单', 'min' => '一键压缩打包', 'api' => '一键生成文档'];
-        return isset($list[$value]) ? $list[$value] : '';
+        return $list[$value] ?? '';
     }
 
     public function getStatusTextAttr($value, $data)
     {
         $value = $value ? $value : $data['status'];
         $list = $this->getStatusList();
-        return isset($list[$value]) ? $list[$value] : '';
+        return $list[$value] ?? '';
     }
 
     protected function setExecutetimeAttr($value)

@@ -186,9 +186,12 @@ class Command extends Backend
                 }
             } else {
                 if ($commandtype == 'min') {
+
                 } else {
                     if ($commandtype == 'api') {
+
                     } else {
+
                     }
                 }
             }
@@ -243,4 +246,5 @@ class Command extends Backend
         $this->model->save();
         return $result;
     }
+
 }

@@ -24,4 +24,5 @@ class Output extends \think\console\Output
     {
         return $this->message;
     }
+
 }
