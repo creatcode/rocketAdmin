@@ -4,7 +4,7 @@
 > 运行环境要求PHP7.2+
 
 ```
-fastadmin: V1.4.0.20230711
+fastadmin: V1.5.0.20240328
 
 thinkphp: v6.1.2
 ```
