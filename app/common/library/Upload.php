@@ -299,17 +299,6 @@ class Upload
 
         $attachment = null;
         try {
-            $file = new File($uploadPath);
-            $info = [
-                'name'     => $filename,
-                'type'     => $file->getMime(),
-                'tmp_name' => $uploadPath,
-                'error'    => 0,
-                'size'     => $file->getSize()
-            ];
-            $file->setSaveName($filename)->setUploadInfo($info);
-            $file->isTest(true);
-
             //重新设置文件
             $file = new UploadedFile($uploadPath, $filename, (new File($uploadPath))->getMime(), null, true);
             $this->setFile($file);
