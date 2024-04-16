@@ -502,7 +502,7 @@ if (!function_exists('format_bytes')) {
     function format_bytes($size, $delimiter = '', $precision = 2)
     {
         $units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB');
-        for ($i = 0; $size >= 1024 && $i < 6; $i++) {
+        for ($i = 0; $size >= 1024 && $i < 5; $i++) {
             $size /= 1024;
         }
         return round($size, $precision) . $delimiter . $units[$i];
@@ -980,7 +980,7 @@ if (!function_exists('check_url_allowed')) {
         }
 
         //如果是站外链接则需要判断HOST是否允许
-        if (preg_match("/((http[s]?:\/\/)+(?>[a-z\-0-9]{2,}\.){1,}[a-z]{2,8})(?:\s|\/)/i", $url)) {
+        if (preg_match("/((http[s]?:\/\/)+((?>[a-z\-0-9]{2,}\.)+[a-z]{2,8}|((?>([0-9]{1,3}\.)){3}[0-9]{1,3}))(:[0-9]{1,5})?)(?:\s|\/)/i", $url)) {
             $chkHost = parse_url(strtolower($url), PHP_URL_HOST);
             if ($chkHost && in_array($chkHost, $allowedHostArr)) {
                 return true;

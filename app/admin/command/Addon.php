@@ -2,7 +2,6 @@
 
 namespace app\admin\command;
 
-use PDOException;
 use think\addons\AddonException;
 use think\addons\Service;
 use think\Exception;
@@ -12,6 +11,7 @@ use think\facade\Config;
 use think\console\Output;
 use think\console\Command;
 use think\console\input\Option;
+use think\db\exception\PDOException;
 
 class Addon extends Command
 {
@@ -32,6 +32,7 @@ class Addon extends Command
 
     protected function execute(Input $input, Output $output)
     {
+        Config::load(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.php');
         $name = $input->getOption('name') ?: '';
         $action = $input->getOption('action') ?: '';
         if (stripos($name, 'addons' . DIRECTORY_SEPARATOR) !== false) {
@@ -177,12 +178,12 @@ class Addon extends Command
                 if (!$info) {
                     throw new Exception(__('Addon info file data incorrect'));
                 }
-                $infoname = isset($info['name']) ? $info['name'] : '';
+                $infoname = $info['name'] ?? '';
                 if (!$infoname || !preg_match("/^[a-z]+$/i", $infoname) || $infoname != $name) {
                     throw new Exception(__('Addon info name incorrect'));
                 }
 
-                $infoversion = isset($info['version']) ? $info['version'] : '';
+                $infoversion = $info['version'] ?? '';
                 if (!$infoversion || !preg_match("/^\d+\.\d+\.\d+$/i", $infoversion)) {
                     throw new Exception(__('Addon info version incorrect'));
                 }

@@ -25,7 +25,9 @@ html[layer-full]{height:inherit}
 
 .layui-layer-move{display: none; position: fixed; *position: absolute; left: 0px; top: 0px; width: 100%; height: 100%; cursor: move; opacity: 0; filter:alpha(opacity=0); background-color: #fff; z-index: 2147483647;}
 .layui-layer-resize{position: absolute; width: 15px; height: 15px; right: 0; bottom: 0; cursor: se-resize;}
-.layui-layer-confirm{position: absolute; width: 1px; height: 1px; left: 0; bottom: 0; border:none; background:transparent;}
+.layui-layer-confirm{position: absolute; width: 100%; height: 100%; left: 0; bottom: 0; border:1px solid transparent; background:transparent; color: transparent; }
+.layui-layer-confirm:focus{border: 1px solid #444c69; border-radius: 2px;}
+.layui-layer-confirm:focus-visible{outline: 0;}
 
 /* 动画 */
 .layer-anim{-webkit-animation-fill-mode: both; animation-fill-mode: both; -webkit-animation-duration:.3s; animation-duration:.3s;}

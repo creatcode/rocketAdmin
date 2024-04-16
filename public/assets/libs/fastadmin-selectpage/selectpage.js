@@ -1177,7 +1177,7 @@
         var q_word, val = $.trim(self.elem.combo_input.val());
         if (self.option.multiple) q_word = val;
         else {
-            if (val && val === self.prop.selected_text) q_word = '';
+            if (val && val == self.prop.selected_text) q_word = '';
             else q_word = val;
         }
         q_word = q_word.split(self.option.separator);

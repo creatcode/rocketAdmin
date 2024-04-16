@@ -28,7 +28,7 @@ class Ems
      *
      * @param int    $email 邮箱
      * @param string $event 事件
-     * @return  Ems
+     * @return  Ems|null
      */
     public static function get($email, $event = 'default')
     {
@@ -36,7 +36,7 @@ class Ems
             ->order('id', 'DESC')
             ->find();
         Event::trigger('ems_get', $ems, true);
-        return $ems ? $ems : null;
+        return $ems ?: null;
     }
 
     /**
@@ -102,7 +102,7 @@ class Ems
             });
         }
         $result = Event::trigger('ems_notice', $params, true);
-        return $result ? true : false;
+        return (bool)$result;
     }
 
     /**

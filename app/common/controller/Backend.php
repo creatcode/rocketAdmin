@@ -267,7 +267,8 @@ class Backend extends BaseController
         $sort = $this->request->get("sort", !empty($this->model) && $this->model->getPk() ? $this->model->getPk() : 'id');
         $order = $this->request->get("order", "DESC");
         $offset = $this->request->get("offset/d", 0);
-        $limit = $this->request->get("limit/d", 999999);
+        $limit = $this->request->get("limit/d", 0);
+        $limit = $limit ?: 999999;
         //新增自动计算页码
         $page = $limit ? intval($offset / $limit) + 1 : 1;
         if ($this->request->has("page")) {
@@ -540,6 +541,9 @@ class Backend extends BaseController
         $list = [];
         $total = $this->model->where($where)->count();
         if ($total > 0) {
+            if (is_array($adminIds)) {
+                $this->model->where($this->dataLimitField, 'in', $adminIds);
+            }
 
             $fields = is_array($this->selectpageFields) ? $this->selectpageFields : ($this->selectpageFields && $this->selectpageFields != '*' ? explode(',', $this->selectpageFields) : []);
 

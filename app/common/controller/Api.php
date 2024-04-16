@@ -10,6 +10,7 @@ use think\facade\Config;
 use think\facade\Event;
 use think\facade\Validate;
 use think\Response;
+use think\Request;
 
 /**
  * API控制器基类
@@ -18,7 +19,7 @@ class Api extends BaseController
 {
 
     /**
-     * @var \think\Request Request 实例
+     * @var Request Request 实例
      */
     protected $request;
 
@@ -61,10 +62,15 @@ class Api extends BaseController
      */
     protected $responseType = 'json';
 
-    public function initialize()
+    /**
+     * 构造方法
+     * @access public
+     * @param Request $request Request 对象
+     */
+    public function __construct(Request $request = null)
     {
         // 初始化
-        $this->_inithandle();
+        $this->_initialize();
 
         // 前置操作方法
         if ($this->beforeActionList) {
@@ -80,7 +86,7 @@ class Api extends BaseController
      * 初始化操作
      * @access protected
      */
-    protected function _inithandle()
+    protected function _initialize()
     {
         //跨域请求检测
         check_cors_request();
@@ -194,9 +200,8 @@ class Api extends BaseController
             'time' => $this->request->server('REQUEST_TIME'),
             'data' => $data,
         ];
-
-        // 如果未设置类型则自动判断
-        $type = $type ? $type : ($this->request->param(config('route.var_jsonp_handler')) ? 'jsonp' : $this->responseType);
+        // 如果未设置类型则使用默认类型判断
+        $type = $type ?: $this->responseType;
 
         if (isset($header['statuscode'])) {
             $code = $header['statuscode'];

@@ -61,6 +61,7 @@ class Redis extends Driver
     protected function getEncryptedToken($token)
     {
         $config = Config::get('token');
+        $token = $token ?? ''; // 为兼容 php8
         return $this->options['tokenprefix'] . hash_hmac($config['hashalgo'], $token, $config['key']);
     }
 
@@ -149,6 +150,7 @@ class Redis extends Driver
             $this->handler->sRem($this->getUserKey($user_id), $key);
         }
         return true;
+
     }
 
     /**
@@ -163,4 +165,5 @@ class Redis extends Driver
         $this->handler->del($keys);
         return true;
     }
+
 }

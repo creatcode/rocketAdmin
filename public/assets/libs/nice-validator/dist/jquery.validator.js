@@ -1,7 +1,3 @@
-/*! nice-validator 1.1.5
- * (c) 2012-2020 Jony Zhang <niceue@live.com>, MIT Licensed
- * https://github.com/niceue/nice-validator
- */
 ;(function(factory) {
     typeof module === 'object' && module.exports ? module.exports = factory( require( 'jquery' ) ) :
     typeof define === 'function' && define.amd ? define(['jquery'], factory) :
@@ -73,7 +69,8 @@
             formClass: 'n-default',
             validClass: 'n-valid',
             invalidClass: 'n-invalid',
-            bindClassTo: null
+            bindClassTo: null,
+            remoteDataType: 'cors'
         },
         fieldDefaults = {
             timely: 1,
@@ -1970,7 +1967,7 @@
                 queryString = '',
                 url = arr[3],
                 type = arr[2] || 'POST',            // GET / POST
-                rType = (arr[1]||'').toLowerCase(), // CORS / JSONP
+                rType = (arr[1] || this.validator.options.remoteDataType || '').toLowerCase(), // CORS / JSONP
                 dataType;
 
             rule.must = true;

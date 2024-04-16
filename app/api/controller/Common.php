@@ -37,8 +37,8 @@ class Common extends Api
      * 加载初始化
      *
      * @param string $version 版本号
-     * @param string $lng     经度
-     * @param string $lat     纬度
+     * @param string $lng 经度
+     * @param string $lat 纬度
      */
     public function init()
     {
@@ -134,6 +134,8 @@ class Common extends Api
                 $attachment = $upload->upload();
             } catch (UploadException $e) {
                 $this->error($e->getMessage());
+            } catch (\Exception $e) {
+                $this->error($e->getMessage());
             }
 
             $this->success(__('Uploaded successful'), ['url' => $attachment->url, 'fullurl' => cdnurl($attachment->url, true)]);
@@ -142,9 +144,10 @@ class Common extends Api
 
     /**
      * 验证码
+     * @param $id
      * @return \think\Response
      */
-    public function captcha()
+    public function captcha($id = "")
     {
         // Config::set(array_merge(config('captcha'), [
         //     'fontSize' => 44,

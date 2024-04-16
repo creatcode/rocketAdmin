@@ -116,8 +116,9 @@ class AdminAuth extends AuthService
                 return false;
             }
             Session::set("admin", $admin->toArray());
+            Session::set("admin.safecode", $this->getEncryptSafecode($admin));
             //刷新自动登录的时效
-            $this->keeplogin($keeptime);
+            $this->keeplogin($admin, $keeptime);
             return true;
         } else {
             return false;
@@ -342,7 +343,7 @@ class AdminAuth extends AuthService
             }
         }
         // 取出所有分组
-        $groupList = AuthGroup::where(['status' => 'normal'])->select();
+        $groupList = AuthGroup::where($this->isSuperAdmin() ? '1=1' : ['status' => 'normal'])->select();
         $objList = [];
         foreach ($groups as $k => $v) {
             if ($v['rules'] === '*') {
@@ -445,9 +446,9 @@ class AdminAuth extends AuthService
         foreach ($params as $k => $v) {
             $url = $k;
             if (is_array($v)) {
-                $nums = isset($v[0]) ? $v[0] : 0;
-                $color = isset($v[1]) ? $v[1] : $colorArr[(is_numeric($nums) ? $nums : strlen($nums)) % $colorNums];
-                $class = isset($v[2]) ? $v[2] : 'label';
+                $nums = $v[0] ?? 0;
+                $color = $v[1] ?? $colorArr[(is_numeric($nums) ? $nums : strlen($nums)) % $colorNums];
+                $class = $v[2] ?? 'label';
             } else {
                 $nums = $v;
                 $color = $colorArr[(is_numeric($nums) ? $nums : strlen($nums)) % $colorNums];
@@ -486,7 +487,7 @@ class AdminAuth extends AuthService
             }
             $v['icon'] = $v['icon'] . ' fa-fw';
             $v['url'] = isset($v['url']) && $v['url'] ? $v['url'] : '/' . $module . '/' . $v['name'];
-            $v['badge'] = isset($badgeList[$v['name']]) ? $badgeList[$v['name']] : '';
+            $v['badge'] = $badgeList[$v['name']] ?? '';
             $v['title'] = __($v['title']);
             $v['url'] = preg_match("/^((?:[a-z]+:)?\/\/|data:image\/)(.*)/i", $v['url']) ? $v['url'] : (string)url($v['url'], [], false);
             $v['menuclass'] = in_array($v['menutype'], ['dialog', 'ajax']) ? 'btn-' . $v['menutype'] : '';

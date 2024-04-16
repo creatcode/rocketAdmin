@@ -33,7 +33,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
                 if (val != '') {
                     $("ul.sidebar-menu li a[addtabs]:not([href^='javascript:;'])").each(function () {
                         if ($("span:first", this).text().indexOf(val) > -1 || $(this).attr("py").indexOf(val) > -1 || $(this).attr("pinyin").indexOf(val) > -1) {
-                            html.push('<a data-url="' + $(this).attr("href") + '" href="javascript:;">' + $("span:first", this).text() + '</a>');
+                            html.push('<a data-url="' + ($(this).attr("url") || $(this).attr("href")) + '" href="javascript:;">' + $("span:first", this).text() + '</a>');
                             if (html.length >= 100) {
                                 return false;
                             }
@@ -333,11 +333,13 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
 
             // 切换菜单栏
             $(document).on("click", ".sidebar-toggle", function () {
-                var value = $("body").hasClass("sidebar-collapse") ? 1 : 0;
-                setTimeout(function () {
-                    $(window).trigger("resize");
-                }, 300);
-                createCookie('sidebar_collapse', value);
+                setTimeout(function(){
+                    var value = $("body").hasClass("sidebar-collapse") ? 1 : 0;
+                    setTimeout(function () {
+                        $(window).trigger("resize");
+                    }, 300);
+                    createCookie('sidebar_collapse', value);
+                }, 0);
             });
 
             // 切换多级菜单

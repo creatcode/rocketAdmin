@@ -118,6 +118,8 @@ define(['jquery', 'bootstrap', 'toastr', 'layer', 'lang'], function ($, undefine
                 if (!url) {
                     url = window.location.href;
                 }
+                if (!name)
+                    return '';
                 name = name.replace(/[\[\]]/g, "\\$&");
                 var regex = new RegExp("[?&/]" + name + "([=/]([^&#/?]*)|&|#|$)"),
                     results = regex.exec(url);
@@ -133,6 +135,10 @@ define(['jquery', 'bootstrap', 'toastr', 'layer', 'lang'], function ($, undefine
                 url = Fast.api.fixurl(url);
                 url = url + (url.indexOf("?") > -1 ? "&" : "?") + "dialog=1";
                 var area = Fast.config.openArea != undefined ? Fast.config.openArea : [$(window).width() > 800 ? '800px' : '95%', $(window).height() > 600 ? '600px' : '95%'];
+                var success = options && typeof options.success === 'function' ? options.success : $.noop;
+                if (options && typeof options.success === 'function') {
+                    delete options.success;
+                }
                 options = $.extend({
                     type: 2,
                     title: title,
@@ -186,6 +192,7 @@ define(['jquery', 'bootstrap', 'toastr', 'layer', 'lang'], function ($, undefine
                                 height: $(window).height()
                             });
                         }
+                        success.call(this, layero, index);
                     }
                 }, options ? options : {});
                 if ($(window).width() < 480 || (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream && top.$(".tab-pane.active").length > 0)) {
@@ -270,6 +277,18 @@ define(['jquery', 'bootstrap', 'toastr', 'layer', 'lang'], function ($, undefine
                 Layer.msg(message, {
                     time: 2000
                 }, callback);
+            },
+            escape: function (text) {
+                if (typeof text === 'string') {
+                    return text
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;')
+                        .replace(/`/g, '&#x60;');
+                }
+                return text;
             },
             toastr: Toastr,
             layer: Layer

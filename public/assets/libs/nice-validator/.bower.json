@@ -38,14 +38,14 @@
     "*.yml",
     "!README.md"
   ],
-  "version": "1.1.5",
-  "_release": "1.1.5",
+  "version": "1.1.6",
+  "_release": "1.1.6",
   "_resolution": {
     "type": "version",
-    "tag": "1.1.5",
-    "commit": "76d0e5d7b098ce7cf0f4fd6bd8662cba8a366497"
+    "tag": "1.1.6",
+    "commit": "583061e6af8e2309194790884ebf9618453ad0cb"
   },
-  "_source": "https://github.com/niceue/validator.git",
-  "_target": "~1.1.1",
-  "_originalSource": "nice-validator"
+  "_source": "https://github.com/karsonzhang/fastadmin-nicevalidator.git",
+  "_target": "~1.1.6",
+  "_originalSource": "karsonzhang/fastadmin-nicevalidator"
 }

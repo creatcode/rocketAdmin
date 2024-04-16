@@ -28,15 +28,14 @@ class Profile extends Backend
         if ($this->request->isAjax()) {
             $this->model = model('AdminLog');
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model->where($where)->where('admin_id', $this->auth->id)->count();
+
             $list = $this->model
                 ->where($where)
                 ->where('admin_id', $this->auth->id)
                 ->order($sort, $order)
-                ->limit($offset, $limit)
-                ->select();
+                ->paginate($limit);
 
-            $result = array("total" => $total, "rows" => $list);
+            $result = array("total" => $list->total(), "rows" => $list->items());
 
             return json($result);
         }
@@ -75,6 +74,7 @@ class Profile extends Backend
                 $admin->save($params);
                 //因为个人资料面板读取的Session显示，修改自己资料后同时更新Session
                 Session::set("admin", $admin->toArray());
+                Session::set("admin.safecode", $this->auth->getEncryptSafecode($admin));
                 $this->success();
             }
             $this->error();

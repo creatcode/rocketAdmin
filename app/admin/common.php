@@ -17,9 +17,8 @@ if (!function_exists('build_select')) {
      */
     function build_select($name, $options, $selected = [], $attr = [])
     {
-        $options = is_array($options) ? $options : explode(',', $options);
-        $selected = is_array($selected) ? $selected : explode(',', $selected);
-
+        $options = is_array($options) ? $options : explode(',', $options ?? '');
+        $selected = is_array($selected) ? $selected : explode(',', $selected ?? '');
         return Form::select($name, $options, $selected, $attr);
     }
 }
@@ -123,7 +122,7 @@ if (!function_exists('build_toolbar')) {
         $html = [];
         foreach ($btns as $k => $v) {
             //如果未定义或没有权限
-            if (!isset($btnAttr[$v]) || ($v !== 'refresh' && !$auth->check("{$controller}/{$v}"))) {
+            if (!isset($btnAttr[$v]) || ($v !== 'refresh' && !$auth->check("{$controller}/{$v}", $auth->id))) {
                 continue;
             }
             list($href, $class, $icon, $text, $title) = $btnAttr[$v];
@@ -179,7 +178,7 @@ if (!function_exists('build_heading')) {
         $title = $content = '';
         if (is_null($path)) {
             $action = request()->action();
-            $controller = str_replace('.', '/', request()->controller());
+            $controller = str_replace('.', '/', parse_name(request()->controller()));
             $path = strtolower($controller . ($action && $action != 'index' ? '/' . $action : ''));
         }
         // 根据当前的URI自动匹配父节点的标题和备注

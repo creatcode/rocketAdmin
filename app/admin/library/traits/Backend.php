@@ -57,13 +57,11 @@ trait Backend
             return $this->selectpage();
         }
         [$where, $sort, $order, $offset, $limit] = $this->buildparams();
-        $total = $this->model->where($where)->count();
         $list = $this->model
             ->where($where)
             ->order($sort, $order)
-            ->limit($offset, $limit)
-            ->select();
-        $result = ['total' => $total, 'rows' => $list];
+            ->paginate($limit);
+        $result = ['total' => $list->total(), 'rows' => $list->items()];
         return json($result);
     }
 
@@ -81,14 +79,12 @@ trait Backend
             return $this->view->fetch();
         }
         [$where, $sort, $order, $offset, $limit] = $this->buildparams();
-        $total = $this->model->where($where)->count();
         $list = $this->model
             ->onlyTrashed()
             ->where($where)
             ->order($sort, $order)
-            ->limit($offset, $limit)
-            ->select();
-        $result = ['total' => $total, 'rows' => $list];
+            ->paginate($limit);
+        $result = ['total' => $list->total(), 'rows' => $list->items()];
         return json($result);
     }
 
@@ -121,7 +117,7 @@ trait Backend
                 $validate = is_bool($this->modelValidate) ? ($this->modelSceneValidate ? $name . '.add' : $name) : $this->modelValidate;
                 $this->model->validate($validate);
             }
-            $result = $this->model->save($params);
+            $result = $this->model->allowField(true)->save($params);
             Db::commit();
         } catch (ValidateException | PDOException | Exception $e) {
             Db::rollback();
@@ -225,7 +221,7 @@ trait Backend
     }
 
     /**
-     * 软删除-真实删除
+     * 真实删除
      *
      * @param $ids
      * @return void
@@ -264,7 +260,7 @@ trait Backend
     }
 
     /**
-     * 软删除-还原
+     * 还原
      *
      * @param $ids
      * @return void
@@ -469,7 +465,7 @@ trait Backend
             if ($has_admin_id) {
                 $auth = AdminAuth::instance();
                 foreach ($insert as &$val) {
-                    if (!isset($val['admin_id']) || empty($val['admin_id'])) {
+                    if (empty($val['admin_id'])) {
                         $val['admin_id'] = $auth->isLogin() ? $auth->id : 0;
                     }
                 }

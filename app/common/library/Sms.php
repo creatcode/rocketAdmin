@@ -36,7 +36,7 @@ class Sms
             ->order('id', 'DESC')
             ->find();
         Event::trigger('sms_get', $sms, true);
-        return $sms ? $sms : null;
+        return $sms ?: null;
     }
 
     /**

@@ -95,19 +95,24 @@ class Addon extends Backend
         }
         $tips = [];
         $groupList = [];
+        $ungroupList = [];
         foreach ($config as $index => &$item) {
             //如果有设置分组
             if (isset($item['group']) && $item['group']) {
                 if (!in_array($item['group'], $groupList)) {
                     $groupList["custom" . (count($groupList) + 1)] = $item['group'];
                 }
+            } elseif ($item['name'] != '__tips__') {
+                $ungroupList[] = $item['name'];
             }
             if ($item['name'] == '__tips__') {
                 $tips = $item;
                 unset($config[$index]);
             }
         }
-        $groupList['other'] = '其它';
+        if ($ungroupList) {
+            $groupList['other'] = '其它';
+        }
         $this->view->assign("groupList", $groupList);
         $this->view->assign("addon", ['info' => $info, 'config' => $config, 'tips' => $tips]);
         $configFile = ADDON_PATH . $name . DIRECTORY_SEPARATOR . 'config.html';
@@ -223,12 +228,15 @@ class Addon extends Backend
      */
     public function local()
     {
+        Config::set('default_return_type', 'json');
+
         $info = [];
         $file = $this->request->file('file');
         try {
             $uid = $this->request->post("uid");
             $token = $this->request->post("token");
             $faversion = $this->request->post("faversion");
+            $force = $this->request->post("force");
             if (!$uid || !$token) {
                 throw new Exception(__('Please login and try to install'));
             }
@@ -237,7 +245,7 @@ class Addon extends Backend
                 'token'     => $token,
                 'faversion' => $faversion
             ];
-            $info = Service::local($file, $extend);
+            $info = Service::local($file, $extend, $force);
         } catch (AddonException $e) {
             $this->result($e->getData(), $e->getCode(), __($e->getMessage()));
         } catch (Exception $e) {
@@ -318,9 +326,8 @@ class Addon extends Backend
     {
         $offset = (int)$this->request->get("offset");
         $limit = (int)$this->request->get("limit");
-        $filter = $this->request->get("filter");
-        $search = $this->request->get("search");
-        $search = htmlspecialchars(strip_tags($search));
+        $filter = $this->request->get("filter", '');
+        $search = $this->request->get("search", '', 'strip_tags,htmlspecialchars');
         $onlineaddons = $this->getAddonList();
         $filter = (array)json_decode($filter, true);
         $addons = get_addon_list();
@@ -338,7 +345,6 @@ class Addon extends Backend
                 $v['flag'] = '';
                 $v['banner'] = '';
                 $v['image'] = '';
-                $v['donateimage'] = '';
                 $v['demourl'] = '';
                 $v['price'] = __('None');
                 $v['screenshots'] = [];
@@ -441,13 +447,18 @@ class Addon extends Backend
             try {
                 $json = Service::addons($params);
             } catch (\Exception $e) {
+
             }
-            $rows = isset($json['rows']) ? $json['rows'] : [];
+            $rows = $json['rows'] ?? [];
             foreach ($rows as $index => $row) {
+                if (!isset($row['name'])) {
+                    continue;
+                }
                 $onlineaddons[$row['name']] = $row;
             }
             Cache::set("onlineaddons", $onlineaddons, 600);
         }
         return $onlineaddons;
     }
+
 }

@@ -1,6 +1,6 @@
 {
   "name": "dragsort",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "authors": [
     "Michael McDonald"
   ],
@@ -19,13 +19,13 @@
     "examples"
   ],
   "dependencies": {
-    "jquery": ">=1.6.0 <3.0.0"
+    "jquery": "~3.7.0"
   },
-  "_release": "1.0.1",
+  "_release": "1.0.2",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.1",
-    "commit": "5f28ea34e35d0faeb36f0bdeb964f99d19e18580"
+    "tag": "v1.0.2",
+    "commit": "2d6ebbf0d645d7ac1713346d8a2d34915ea6c07d"
   },
   "_source": "https://github.com/karsonzhang/fastadmin-dragsort.git",
   "_target": "~1.0.0",

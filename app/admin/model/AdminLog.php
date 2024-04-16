@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace app\admin\model;
 
 use app\admin\library\AdminAuth;
@@ -43,8 +41,8 @@ class AdminLog extends Model
 
     /**
      * 记录日志
-     * @param string $title
-     * @param string $content
+     * @param string $title   日志标题
+     * @param string $content 日志内容
      */
     public static function record($title = '', $content = '')
     {
@@ -57,6 +55,8 @@ class AdminLog extends Model
             $username = $auth->isLogin() ? $auth->username : __('Unknown');
         }
 
+        // 设置过滤函数
+        request()->filter('trim,strip_tags,htmlspecialchars');
 
         $controllername = parse_name(request()->controller(true));
         $actionname = strtolower(request()->action());
@@ -68,12 +68,12 @@ class AdminLog extends Model
                 }
             }
         }
-        $content = $content ? $content : self::$content;
+        $content = $content ?: self::$content;
         if (!$content) {
-            $content = request()->param('', null, 'trim,strip_tags,htmlspecialchars');
+            $content = request()->param('') ?: file_get_contents("php://input");
             $content = self::getPureContent($content);
         }
-        $title = $title ? $title : (self::$title ?? __('Unknown'));
+        $title = $title ?: self::$title;
         if (!$title) {
             $title = [];
             $breadcrumb = AdminAuth::instance()->getBreadcrumb($path);
@@ -85,18 +85,18 @@ class AdminLog extends Model
         self::create([
             'title'     => $title,
             'content'   => !is_scalar($content) ? json_encode($content, JSON_UNESCAPED_UNICODE) : $content,
-            'url'       => substr(request()->url(), 0, 1500),
+            'url'       => substr(xss_clean(strip_tags(request()->url())), 0, 1500),
             'admin_id'  => $admin_id,
             'username'  => $username,
             'useragent' => substr(request()->server('HTTP_USER_AGENT'), 0, 255),
-            'ip'        => request()->ip()
+            'ip'        => xss_clean(strip_tags(request()->ip()))
         ]);
     }
 
     /**
      * 获取已屏蔽关键信息的数据
      * @param $content
-     * @return false|string
+     * @return array
      */
     protected static function getPureContent($content)
     {
@@ -104,7 +104,7 @@ class AdminLog extends Model
             return $content;
         }
         foreach ($content as $index => &$item) {
-            if (preg_match("/(password|salt|token)/i", (string)$index)) {
+            if (preg_match("/(password|salt|token)/i", $index)) {
                 $item = "***";
             } else {
                 if (is_array($item)) {

@@ -24,7 +24,7 @@ class User extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('User');
+        $this->model = new \app\admin\model\User;
     }
 
     /**
@@ -40,19 +40,17 @@ class User extends Backend
                 return $this->selectpage();
             }
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model->where($where)->count();
             $list = $this->model
                 ->alias('user')
                 ->with('group')
                 ->where($where)
                 ->order($sort, $order)
-                ->limit($offset, $limit)
-                ->select();
+                ->paginate($limit);
             foreach ($list as $k => $v) {
                 $v->avatar = $v->avatar ? cdnurl($v->avatar, true) : letter_avatar($v->nickname);
                 $v->hidden(['password', 'salt']);
             }
-            $result = array("total" => $total, "rows" => $list);
+            $result = array("total" => $list->total(), "rows" => $list->items());
 
             return json($result);
         }
@@ -104,4 +102,5 @@ class User extends Backend
         Auth::instance()->delete($row['id']);
         $this->success();
     }
+
 }

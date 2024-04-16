@@ -13,9 +13,6 @@ use util\Random;
 
 /**
  * 文件上传类
- *
- * @Author cookGod
- * @DateTime 2023-08-18
  */
 class Upload
 {
@@ -72,6 +69,7 @@ class Upload
             throw new UploadException(__('No file upload or server upload limit exceeded'));
         }
 
+        // $fileInfo = $file->getInfo();
         $fileInfo = [
             // 文件名
             'name' => $file->getOriginalName(),
@@ -83,6 +81,7 @@ class Upload
             'tmp_name' => $file->getPathname()
         ];
 
+        // $suffix = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
         $suffix = strtolower($file->extension());
         $suffix = $suffix && preg_match("/^[a-zA-Z0-9]+$/", $suffix) ? $suffix : 'file';
         $fileInfo['suffix'] = $suffix;
@@ -164,7 +163,7 @@ class Upload
         $size = $matches ? $matches[1] : $this->config['maxsize'];
         $type = $matches ? strtolower($matches[2]) : 'b';
         $typeDict = ['b' => 0, 'k' => 1, 'kb' => 1, 'm' => 2, 'mb' => 2, 'gb' => 3, 'g' => 3];
-        $size = $size * pow(1024, $typeDict[$type] ?? 0);
+        $size = (int)($size * pow(1024, $typeDict[$type] ?? 0));
         if ($this->fileInfo['size'] > $size) {
             throw new UploadException(__(
                 'File is too big (%sMiB), Max filesize: %sMiB.',
@@ -287,7 +286,6 @@ class Upload
                 if (!$handle = @fopen($partFile, "rb")) {
                     break;
                 }
-                // stream_copy_to_stream($handle, $destFile);
                 while ($buff = fread($handle, filesize($partFile))) {
                     fwrite($destFile, $buff);
                 }
@@ -301,6 +299,17 @@ class Upload
 
         $attachment = null;
         try {
+            $file = new File($uploadPath);
+            $info = [
+                'name'     => $filename,
+                'type'     => $file->getMime(),
+                'tmp_name' => $uploadPath,
+                'error'    => 0,
+                'size'     => $file->getSize()
+            ];
+            $file->setSaveName($filename)->setUploadInfo($info);
+            $file->isTest(true);
+
             //重新设置文件
             $file = new UploadedFile($uploadPath, $filename, (new File($uploadPath))->getMime(), null, true);
             $this->setFile($file);
@@ -310,10 +319,10 @@ class Upload
 
             //允许大文件
             $this->config['maxsize'] = "1024G";
-            // 合并
+
             $attachment = $this->upload();
         } catch (\Exception $e) {
-            // @unlink($destFile);
+            @unlink($uploadPath);
             throw new UploadException($e->getMessage());
         }
         return $attachment;
@@ -370,7 +379,7 @@ class Upload
 
         $destDir = public_path() . str_replace('/', DIRECTORY_SEPARATOR, $uploadDir);
 
-        $sha1 = $this->file->sha1();
+        $sha1 = $this->file->hash();
 
         //如果是合并文件
         if ($this->merging) {

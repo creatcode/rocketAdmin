@@ -6,6 +6,7 @@ use think\Model;
 
 class UserGroup extends Model
 {
+
     // 表名
     protected $name = 'user_group';
     // 自动写入时间戳字段
@@ -15,7 +16,7 @@ class UserGroup extends Model
     protected $updateTime = 'updatetime';
     // 追加属性
     protected $append = [
-        'status_text',
+        'status_text'
     ];
 
     public function getStatusList()
@@ -27,7 +28,7 @@ class UserGroup extends Model
     {
         $value = $value ? $value : $data['status'];
         $list = $this->getStatusList();
-
-        return isset($list[$value]) ? $list[$value] : '';
+        return $list[$value] ?? '';
     }
+
 }

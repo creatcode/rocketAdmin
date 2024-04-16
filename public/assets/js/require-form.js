@@ -91,8 +91,10 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                 $(".layer-footer [type=submit],.fixed-footer [type=submit],.normal-footer [type=submit]", form).removeClass("disabled");
                 //自定义关闭按钮事件
                 form.on("click", ".layer-close", function () {
-                    var index = parent.Layer.getFrameIndex(window.name);
-                    parent.Layer.close(index);
+                    if (window.name) {
+                        var index = parent.Layer.getFrameIndex(window.name);
+                        parent.Layer.close(index);
+                    }
                     return false;
                 });
             },
@@ -216,7 +218,7 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                         };
                         var origincallback = function (start, end) {
                             $(this.element).val(start.format(this.locale.format) + " - " + end.format(this.locale.format));
-                            $(this.element).trigger('blur');
+                            $(this.element).trigger('change');
                         };
                         $(".datetimerange", form).each(function () {
                             var callback = typeof $(this).data('callback') == 'function' ? $(this).data('callback') : origincallback;
@@ -224,9 +226,9 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                                 callback.call(picker, picker.startDate, picker.endDate);
                             });
                             $(this).on('cancel.daterangepicker', function (ev, picker) {
-                                $(this).val('').trigger('blur');
+                                $(this).val('').trigger('change');
                             });
-                            $(this).daterangepicker($.extend(true, options, $(this).data() || {}, $(this).data("daterangepicker-options") || {}));
+                            $(this).daterangepicker($.extend(true, {}, options, $(this).data() || {}, $(this).data("daterangepicker-options") || {}));
                         });
                     });
                 }
@@ -288,7 +290,7 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                                     }
                                     var result = urlArr.join(",");
                                     inputObj.val(result).trigger("change").trigger("validate");
-                                } else {
+                                } else if (input_id) {
                                     var url = Config.upload.fullmode ? Fast.api.cdnurl(data.url) : data.url;
                                     $("#" + input_id).val(url).trigger("change").trigger("validate");
                                 }
@@ -322,16 +324,21 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                             var result = template ? [] : {};
                             $.each(data, function (i, j) {
                                 if (j) {
-                                    if (!template) {
-                                        if (j.key != '') {
-                                            result[j.key] = j.value;
+                                    var keys = Object.keys(j);
+                                    if (keys.indexOf("value") > -1 && (keys.length === 1 || (keys.length === 2 && keys.indexOf("key") > -1))) {
+                                        if (keys.length === 2) {
+                                            if (j.key != '') {
+                                                result['__PLACEHOLDKEY__' + j.key] = j.value;
+                                            }
+                                        } else {
+                                            result.push(j.value);
                                         }
                                     } else {
                                         result.push(j);
                                     }
                                 }
                             });
-                            textarea.val(JSON.stringify(result));
+                            textarea.val(JSON.stringify(result).replace(/__PLACEHOLDKEY__/g, ''));
                         };
                         //追加一行数据
                         var append = function (container, row, initial) {
@@ -382,7 +389,7 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                         fieldlist.on("click", ".btn-append,.append", function (e, row) {
                             var container = $(this).closest(".fieldlist");
                             append(container, row);
-                            // refresh(container);
+                            refresh(container);
                         });
                         //移除控制(点击按钮)
                         fieldlist.on("click", ".btn-remove", function () {
@@ -405,11 +412,12 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                             $("[fieldlist-item]", container).remove();
                             var json = {};
                             try {
-                                json = JSON.parse(textarea.val());
+                                var val = textarea.val().replace(/"(\d+)"\:/g, "\"__PLACEHOLDERKEY__$1\":");
+                                json = JSON.parse(val);
                             } catch (e) {
                             }
                             $.each(json, function (i, j) {
-                                append(container, {key: i, value: j}, true);
+                                append(container, {key: i.toString().replace("__PLACEHOLDERKEY__", ""), value: j}, true);
                             });
                         });
                         //拖拽排序
@@ -473,9 +481,9 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
 
             },
             slider: function (form) {
-                if ($(".slider", form).length > 0) {
+                if ($("[data-role='slider'],input.slider", form).length > 0) {
                     require(['bootstrap-slider'], function () {
-                        $('.slider').removeClass('hidden').css('width', function (index, value) {
+                        $("[data-role='slider'],input.slider").removeClass('hidden').css('width', function (index, value) {
                             return $(this).parents('.form-control').width();
                         }).slider().on('slide', function (ev) {
                             var data = $(this).data();
@@ -583,10 +591,10 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                     });
                     return success === conditionArr.length;
                 };
-                form.on("keyup change click configchange", "input,select", function () {
+                form.on("keyup change click configchange", "input,textarea,select", function () {
                     $("[data-favisible][data-favisible!='']", form).each(function () {
                         var visible = $(this).data("favisible");
-                        var groupArr = visible.split(/\|\|/);
+                        var groupArr = visible ? visible.toString().split(/\|\|/) : [];
                         var success = 0;
                         $.each(groupArr, function (i, j) {
                             if (checkCondition(j)) {
@@ -603,10 +611,13 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
 
                 //追加上忽略元素
                 setTimeout(function () {
-                    form.data('validator').options.ignore += ((form.data('validator').options.ignore ? ',' : '') + '[data-favisible] :hidden,[data-favisible]:hidden');
+                    var validator = form.data('validator');
+                    if (validator) {
+                        validator.options.ignore += ((validator.options.ignore ? ',' : '') + '.hidden[data-favisible] :hidden,.hidden[data-favisible]:hidden');
+                    }
                 }, 0);
 
-                $("input,select", form).trigger("configchange");
+                $("input,textarea,select", form).trigger("configchange");
             }
         },
         api: {

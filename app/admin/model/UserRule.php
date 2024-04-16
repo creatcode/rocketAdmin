@@ -7,6 +7,7 @@ use util\Tree;
 
 class UserRule extends Model
 {
+
     // 表名
     protected $name = 'user_rule';
     // 自动写入时间戳字段
@@ -16,7 +17,7 @@ class UserRule extends Model
     protected $updateTime = 'updatetime';
     // 追加属性
     protected $append = [
-        'status_text',
+        'status_text'
     ];
     
     public static function onInsertWrite(Model $row)
@@ -39,33 +40,26 @@ class UserRule extends Model
     {
         $value = $value ? $value : $data['status'];
         $list = $this->getStatusList();
-
-        return isset($list[$value]) ? $list[$value] : '';
+        return $list[$value] ?? '';
     }
 
     public static function getTreeList($selected = [])
     {
-        $ruleList = self::where('status', 'normal')->order('weigh desc,id desc')->select()->toArray();
+        $ruleList = collect(self::where('status', 'normal')->order('weigh desc,id desc')->select())->toArray();
         $nodeList = [];
         Tree::instance()->init($ruleList);
         $ruleList = Tree::instance()->getTreeList(Tree::instance()->getTreeArray(0), 'name');
         $hasChildrens = [];
-        foreach ($ruleList as $k => $v) {
-            if ($v['haschild']) {
+        foreach ($ruleList as $k => $v)
+        {
+            if ($v['haschild'])
                 $hasChildrens[] = $v['id'];
-            }
         }
         foreach ($ruleList as $k => $v) {
-            $state = ['selected' => in_array($v['id'], $selected) && !in_array($v['id'], $hasChildrens)];
-            $nodeList[] = [
-                'id'          => $v['id'],
-                'parent' => $v['pid'] ? $v['pid'] : '#',
-                'text'   => __($v['title']),
-                'type'   => 'menu',
-                'state'  => $state,
-            ];
+            $state = array('selected' => in_array($v['id'], $selected) && !in_array($v['id'], $hasChildrens));
+            $nodeList[] = array('id' => $v['id'], 'parent' => $v['pid'] ? $v['pid'] : '#', 'text' => __($v['title']), 'type' => 'menu', 'state' => $state);
         }
-
         return $nodeList;
     }
+
 }

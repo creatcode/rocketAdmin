@@ -46,11 +46,6 @@ class Adminlog extends Backend
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
             $isSuperAdmin = $this->auth->isSuperAdmin();
             $childrenAdminIds = $this->childrenAdminIds;
-            $total = $this->model->where($where)->where(function ($query) use ($isSuperAdmin, $childrenAdminIds) {
-                if (!$isSuperAdmin) {
-                    $query->where('admin_id', 'in', $childrenAdminIds);
-                }
-            })->count();
             $list = $this->model
                 ->where($where)
                 ->where(function ($query) use ($isSuperAdmin, $childrenAdminIds) {
@@ -58,11 +53,11 @@ class Adminlog extends Backend
                         $query->where('admin_id', 'in', $childrenAdminIds);
                     }
                 })
+                ->withoutField('content,useragent')
                 ->order($sort, $order)
-                ->limit($offset, $limit)
-                ->select();
+                ->paginate($limit);
 
-            $result = array("total" => $total, "rows" => $list);
+            $result = array("total" => $list->total(), "rows" => $list->items());
 
             return json($result);
         }
@@ -147,4 +142,5 @@ class Adminlog extends Backend
         // 管理员禁止批量操作
         $this->error();
     }
+
 }

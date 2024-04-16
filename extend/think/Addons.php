@@ -40,8 +40,8 @@ abstract class Addons
         $this->view = View::instance($config);
 
         // 控制器初始化
-        if (method_exists($this, '_initialize')) {
-            $this->_initialize();
+        if (method_exists($this, 'initialize')) {
+            $this->initialize();
         }
     }
 

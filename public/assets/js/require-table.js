@@ -14,7 +14,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
             titleForm: '', //为空则不显示标题，不定义默认显示：普通搜索
             idTable: 'commonTable',
             showExport: true,
-            exportDataType: "auto",
+            exportDataType: "auto", //支持auto,selected,all 当设定为auto时自动时有选中则导出选中，没有选中则导出全部
             exportTypes: ['json', 'xml', 'csv', 'txt', 'doc', 'excel'],
             exportOptions: {
                 fileName: 'export_' + Moment().format("YYYY-MM-DD"),
@@ -34,7 +34,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
             singleSelect: false, //是否启用单选
             showRefresh: false,
             showJumpto: true,
-            locale: Config.language == 'zh-cn' ? 'zh-CN' : 'en-US',
+            locale: Config.language === 'zh-cn' ? 'zh-CN' : 'en-US',
             showToggle: true,
             showColumns: true,
             pk: 'id',
@@ -326,9 +326,15 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                         options.selectedIds = selectedIds;
                         options.selectedData = selectedData;
                     }
+
                     //如果导出类型为auto时则自动判断
                     if (exportDataType === 'auto') {
                         options.exportDataType = selectedIds.length > 0 ? 'selected' : 'all';
+                        if ($(".export .exporttips").length === 0) {
+                            $(".export .dropdown-menu").prepend("<li class='exporttips alert alert-warning-light mb-0 no-border p-2'></li>")
+                        }
+                        $(".export .exporttips").html("导出记录：" + (selectedIds.length > 0 ? "选中" : "全部"));
+
                     }
                     $(Table.config.disabledbtn, toolbar).toggleClass('disabled', !options.selectedIds.length);
                 });
@@ -347,12 +353,13 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     var field = $(this).closest("[data-field]").data("field");
                     var value = $(this).data("value");
                     var object = $("[name='" + field + "']", table.closest(".bootstrap-table").find(".commonsearch-table"));
-                    if (object.prop('tagName') == "SELECT") {
+                    if (object.prop('tagName') === "SELECT") {
                         $("option[value='" + value + "']", object).prop("selected", true);
                     } else {
                         object.val(value);
                     }
                     table.trigger("uncheckbox");
+                    table.bootstrapTable('getOptions').totalRows = 0;
                     table.bootstrapTable('refresh', {pageNumber: 1});
                     return false;
                 });
@@ -441,7 +448,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 $(document).on('click', Table.config.restoreonebtn + ',' + Table.config.destroyonebtn, function () {
                     var that = this;
                     var url = $(that).data("url") ? $(that).data("url") : $(that).attr("href");
-                    var row = Fast.api.getrowbyindex(table, $(that).data("row-index"));
+                    var row = Table.api.getrowbyindex(table, $(that).data("row-index"));
                     Fast.api.ajax({
                         url: url,
                         data: {ids: row[options.pk]}
@@ -562,7 +569,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     var target = $(".autocontent-item", this).get(0);
                     if (!target) return;
                     if (e.type === 'mouseenter') {
-                        if (target.scrollWidth > target.offsetWidth) {
+                        if (target.scrollWidth > target.offsetWidth && $(".autocontent-caret", this).length === 0) {
                             $(this).append("<div class='autocontent-caret'><i class='fa fa-chevron-down'></div>");
                         }
                     } else {
@@ -726,40 +733,30 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     return '<i class="' + value + '"></i> ' + value;
                 },
                 image: function (value, row, index) {
-                    value = value == null || value.length === 0 ? '' : value.toString();
-                    value = value ? value : '/assets/img/blank.gif';
-                    var classname = typeof this.classname !== 'undefined' ? this.classname : 'img-sm img-center';
-                    var url = Fast.api.cdnurl(value, true);
-                    url = url.match(/^(\/|data:image\\)/) ? url : url + Config.upload.thumbstyle;
-                    return '<a href="javascript:"><img class="' + classname + '" src="' + url + '" /></a>';
+                    return Table.api.formatter.images.call(this, value, row, index);
                 },
                 images: function (value, row, index) {
                     value = value == null || value.length === 0 ? '' : value.toString();
                     var classname = typeof this.classname !== 'undefined' ? this.classname : 'img-sm img-center';
-                    var arr = value != '' ? value.split(',') : [];
+                    var arr = value !== '' ? (value.indexOf('data:image/') === -1 ? value.split(',') : [value]) : [];
                     var html = [];
                     var url;
                     $.each(arr, function (i, value) {
                         value = value ? value : '/assets/img/blank.gif';
                         url = Fast.api.cdnurl(value, true);
-                        url = url.match(/^(\/|data:image\\)/) ? url : url + Config.upload.thumbstyle;
+                        //匹配本地、data:image、或已包含标识符首字符
+                        url = !Config.upload.thumbstyle || url.match(/^(\/|data:image\/)/) || url.indexOf(Config.upload.thumbstyle.substring(0, 1)) > -1 ? url : url + Config.upload.thumbstyle;
                         html.push('<a href="javascript:"><img class="' + classname + '" src="' + url + '" /></a>');
                     });
                     return html.join(' ');
                 },
                 file: function (value, row, index) {
-                    value = value == null || value.length === 0 ? '' : value.toString();
-                    value = Fast.api.cdnurl(value, true);
-                    var classname = typeof this.classname !== 'undefined' ? this.classname : 'img-sm img-center';
-                    var suffix = /[\.]?([a-zA-Z0-9]+)$/.exec(value);
-                    suffix = suffix ? suffix[1] : 'file';
-                    var url = Fast.api.fixurl("ajax/icon?suffix=" + suffix);
-                    return '<a href="' + value + '" target="_blank"><img src="' + url + '" class="' + classname + '"></a>';
+                    Table.api.formatter.files.call(this, value, row, index);
                 },
                 files: function (value, row, index) {
                     value = value == null || value.length === 0 ? '' : value.toString();
                     var classname = typeof this.classname !== 'undefined' ? this.classname : 'img-sm img-center';
-                    var arr = value != '' ? value.split(',') : [];
+                    var arr = value !== '' ? (value.indexOf('data:image/') === -1 ? value.split(',') : [value]) : [];
                     var html = [];
                     var suffix, url;
                     $.each(arr, function (i, value) {

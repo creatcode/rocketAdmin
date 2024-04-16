@@ -1,6 +1,6 @@
 {
   "name": "dragsort",
-  "version": "0.5.2",
+  "version": "1.0.2",
   "authors": [
     "Michael McDonald"
   ],
@@ -19,6 +19,6 @@
     "examples"
   ],
   "dependencies": {
-    "jquery": ">=1.6.0 <3.0.0"
+    "jquery": "~3.7.0"
   }
 }

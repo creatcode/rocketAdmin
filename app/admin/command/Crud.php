@@ -150,7 +150,7 @@ class Crud extends Command
     /**
      * JSON后缀
      */
-    protected $jsonSuffix = ['json'];
+    protected $jsonSuffix = ['json', 'array'];
 
     /**
      * 标签后缀
@@ -465,7 +465,7 @@ class Crud extends Command
                     }
                 }
                 $relationTableInfo = $relationTableInfo[0];
-                $relationModel = isset($relationModels[$index]) ? $relationModels[$index] : '';
+                $relationModel = $relationModels[$index] ?? '';
 
                 list($relationNamespace, $relationName, $relationFile) = $this->getModelData($modelModuleName, $relationModel, $relationName);
 
@@ -665,8 +665,8 @@ class Crud extends Command
         //如果是关联模型
         foreach ($relations as $index => &$relation) {
             if ($relation['relationMode'] == 'hasone') {
-                $relationForeignKey = $relation['relationForeignKey'] ? $relation['relationForeignKey'] : $table . "_id";
-                $relationPrimaryKey = $relation['relationPrimaryKey'] ? $relation['relationPrimaryKey'] : $priKey;
+                $relationForeignKey = $relation['relationForeignKey'] ?: $table . "_id";
+                $relationPrimaryKey = $relation['relationPrimaryKey'] ?: $priKey;
 
                 if (!in_array($relationForeignKey, $relation['relationFieldList'])) {
                     throw new Exception('relation table [' . $relation['relationTableName'] . '] must be contain field [' . $relationForeignKey . ']');
@@ -878,7 +878,7 @@ class Crud extends Command
                         $formEditElement = Form::input('text', $fieldName, $editValue, $attrArr);
                     } elseif ($inputType == 'fieldlist') {
                         $itemArr = $this->getItemArray($itemArr, $field, $v['COLUMN_COMMENT']);
-                        $templateName = !isset($itemArr['key']) && !isset($itemArr['value']) && count($itemArr) > 0 ? 'fieldlist-template' : 'fieldlist';
+                        $templateName = !isset($itemArr['key']) && count($itemArr) > 0 ? (isset($itemArr['value']) && count($itemArr) === 1 ? 'fieldlist-array' : 'fieldlist-template') : 'fieldlist';
                         $itemKey = isset($itemArr['key']) ? ucfirst($itemArr['key']) : 'Key';
                         $itemValue = isset($itemArr['value']) ? ucfirst($itemArr['value']) : 'Value';
                         $theadListArr = $tbodyListArr = [];
@@ -900,6 +900,12 @@ class Crud extends Command
                             $cssClassArr[] = 'selectpage';
                             $selectpageTable = substr($field, 0, strripos($field, '_'));
                             $selectpageField = '';
+                            foreach ($relations as $index => $relation) {
+                                if ($relation['relationForeignKey'] === $field) {
+                                    $selectpageTable = substr($relation['relationTableName'], strlen($prefix));
+                                    break;
+                                }
+                            }
                             $selectpageController = str_replace('_', '/', $selectpageTable);
                             $attrArr['data-source'] = $selectpageController . "/index";
                             //如果是类型表需要特殊处理下
@@ -1535,7 +1541,7 @@ EOD;
     {
         $itemArr = [];
         $comment = str_replace('，', ',', $comment);
-        if (stripos($comment, ':') !== false && stripos($comment, ',') && stripos($comment, '=') !== false) {
+        if (stripos($comment, ':') !== false && stripos($comment, '=') !== false) {
             list($fieldLang, $item) = explode(':', $comment);
             $itemArr = [];
             foreach (explode(',', $item) as $k => $v) {
