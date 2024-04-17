@@ -600,18 +600,12 @@ class Backend extends BaseController
      */
     protected function token()
     {
-        if (!$this->request->checkToken('__token__', $this->request->param())) {
-            $token = $this->request->buildToken();
-            header('__token__:' . $token);
+        $check = $this->request->checkToken('__token__');
+        // 刷新token
+        $token = $this->request->buildToken();
+        header('__token__:' . $token);
+        if (false === $check) {
             $this->error(__('Token verification error'), '', ['__token__' =>  $token]);
         }
-
-        // $token = $this->request->param('__token__');
-        // if (!Validate::check(['__token__' => $token], ['__token__' => 'require|token'])) {
-        //     $this->error(__('Token verification error'), '', ['__token__' =>  $this->request->buildToken()]);
-        // }
-
-        //刷新Token
-        $this->request->buildToken();
     }
 }

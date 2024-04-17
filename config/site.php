@@ -23,7 +23,6 @@ return [
     'email' => '邮件配置',
     'user' => '会员配置',
     'example' => '示例分组',
-    'sys' => '系统配置',
     'dictionary' => '字典配置',
   ],
   'mail_type' => '1',
