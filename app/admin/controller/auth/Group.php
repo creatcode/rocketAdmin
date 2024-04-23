@@ -32,11 +32,11 @@ class Group extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('AuthGroup');
+        $this->model = new AuthGroup;
 
         $this->childrenGroupIds = $this->auth->getChildrenGroupIds(true);
 
-        $groupList = collect(AuthGroup::where('id', 'in', $this->childrenGroupIds)->select())->toArray();
+        $groupList = collect($this->model::where('id', 'in', $this->childrenGroupIds)->select())->toArray();
 
         Tree::instance()->init($groupList);
         $groupList = [];
@@ -94,7 +94,7 @@ class Group extends Backend
             if (!in_array($params['pid'], $this->childrenGroupIds)) {
                 $this->error(__('The parent group exceeds permission limit'));
             }
-            $parentmodel = model("AuthGroup")->find($params['pid']);
+            $parentmodel = $this->model->find($params['pid']);
             if (!$parentmodel) {
                 $this->error(__('The parent group can not found'));
             }
@@ -142,7 +142,7 @@ class Group extends Backend
             }
             $params['rules'] = explode(',', $params['rules']);
 
-            $parentmodel = model("AuthGroup")->find($params['pid']);
+            $parentmodel = $this->model->find($params['pid']);
             if (!$parentmodel) {
                 $this->error(__('The parent group can not found'));
             }
@@ -160,13 +160,13 @@ class Group extends Backend
                 Db::startTrans();
                 try {
                     $row->save($params);
-                    $children_auth_groups = model("AuthGroup")->whereIn('id', implode(',', (Tree::instance()->getChildrenIds($row->id))))->select();
+                    $children_auth_groups = $this->model->whereIn('id', implode(',', (Tree::instance()->getChildrenIds($row->id))))->select();
                     $childparams = [];
                     foreach ($children_auth_groups as $key => $children_auth_group) {
                         $childparams[$key]['id'] = $children_auth_group->id;
                         $childparams[$key]['rules'] = implode(',', array_intersect(explode(',', $children_auth_group->rules), $rules));
                     }
-                    model("AuthGroup")->saveAll($childparams);
+                    $this->model->saveAll($childparams);
                     Db::commit();
                 } catch (Exception $e) {
                     Db::rollback();
@@ -246,13 +246,12 @@ class Group extends Backend
     {
         $this->loadlang('auth/group');
 
-        $model = model('AuthGroup');
         $id = $this->request->post("id");
         $pid = $this->request->post("pid");
-        $parentGroupModel = $model->find($pid);
+        $parentGroupModel = $this->model->find($pid);
         $currentGroupModel = null;
         if ($id) {
-            $currentGroupModel = $model->find($id);
+            $currentGroupModel = $this->model->find($id);
         }
         if (($pid || $parentGroupModel) && (!$id || $currentGroupModel)) {
             $id = $id ? $id : null;

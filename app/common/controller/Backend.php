@@ -348,13 +348,15 @@ class Backend extends BaseController
                 case 'FINDIN':
                 case 'FINDINSET':
                 case 'FIND_IN_SET':
-                    $v = is_array($v) ? $v : explode(',', str_replace(' ', ',', $v));
-                    $findArr = array_values($v);
-                    foreach ($findArr as $idx => $item) {
-                        $bindName = "item_" . $index . "_" . $idx;
-                        $bind[$bindName] = $item;
-                        $where[] = "FIND_IN_SET(:{$bindName}, `" . str_replace('.', '`.`', $k) . "`)";
-                    }
+                    // $v = is_array($v) ? $v : explode(',', str_replace(' ', ',', $v));
+                    // $findArr = array_values($v);
+                    // foreach ($findArr as $idx => $item) {
+                    //     $bindName = "item_" . $index . "_" . $idx;
+                    //     $bind[$bindName] = $item;
+                    //     $where[] = "FIND_IN_SET(:{$bindName}, `" . str_replace('.', '`.`', $k) . "`)";
+                    // }
+                    $v = is_array($v) ? implode(',', str_replace(' ', ',', $v)) : $v;
+                    $where[] = "FIND_IN_SET('$v', " . ($relationSearch ? $k : '`' . str_replace('.', '` . `', $k) . '`') . ')';
                     break;
                 case 'IN':
                 case 'IN(...)':
@@ -420,12 +422,7 @@ class Backend extends BaseController
         if (!empty($this->model)) {
             $this->model->alias($alias);
         }
-        $model = $this->model;
-        $where = function ($query) use ($where, $alias, $bind, &$model) {
-            if (!empty($model)) {
-                $model->alias($alias);
-                $model->bind($bind);
-            }
+        $where = function ($query) use ($where) {
             foreach ($where as $k => $v) {
                 if (is_array($v)) {
                     call_user_func_array([$query, 'where'], $v);

@@ -117,6 +117,6 @@ class AdminLog extends Model
 
     public function admin()
     {
-        return $this->belongsTo('Admin', 'admin_id')->setEagerlyType(0);
+        return $this->belongsTo('Admin', 'admin_id');
     }
 }

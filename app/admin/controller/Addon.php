@@ -150,7 +150,7 @@ class Addon extends Backend
         } catch (AddonException $e) {
             $this->result($e->getData(), $e->getCode(), __($e->getMessage()));
         } catch (Exception $e) {
-            $this->error(__($e->getMessage()), $e->getCode());
+            $this->error(__($e->getMessage()));
         }
         $this->success(__('Install successful'), '', ['addon' => $info]);
     }
@@ -447,7 +447,6 @@ class Addon extends Backend
             try {
                 $json = Service::addons($params);
             } catch (\Exception $e) {
-
             }
             $rows = $json['rows'] ?? [];
             foreach ($rows as $index => $row) {
@@ -460,5 +459,4 @@ class Addon extends Backend
         }
         return $onlineaddons;
     }
-
 }

@@ -292,7 +292,7 @@ class Config extends Backend
     {
         $table = $this->request->request('table');
         $default = \think\facade\Config::get('database.default');
-        $dbname =\think\facade\Config::get('database.connections.' . $default . '.database');
+        $dbname = \think\facade\Config::get('database.connections.' . $default . '.database');
         //从数据库中获取表字段信息
         $sql = "SELECT `COLUMN_NAME` AS `name`,`COLUMN_COMMENT` AS `title`,`DATA_TYPE` AS `type` FROM `information_schema`.`columns` WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION";
         //加载主表的列

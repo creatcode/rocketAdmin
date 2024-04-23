@@ -378,8 +378,8 @@ class TestService
                     $templine = str_ireplace('__PREFIX__', Env::get('database.prefix'), $templine);
                     $templine = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $templine);
                     try {
-                        Db::execute($templine);
-                    } catch (\PDOException $e) {
+                        Db::getPdo()->exec($templine);
+                    } catch (\PDOException | \Error $e) {
                         //$e->getMessage();
                     }
                     $templine = '';

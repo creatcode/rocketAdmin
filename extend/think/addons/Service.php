@@ -159,7 +159,7 @@ class Service
             throw new Exception(__($validate->getError()));
         }
 
-        $uploadFile = Filesystem::disk('runtime')->putFile('addons', $file, 'uniqid');
+        $uploadFile = Filesystem::disk('runtime')->putFile('addons', $file, 'md5');
 
         if (!$uploadFile) {
             // 上传失败获取错误信息
@@ -217,14 +217,14 @@ class Service
             $params = array_merge($config, $extend);
 
             // 压缩包验证、版本依赖判断，应用插件需要授权使用，移除或绕过授权验证，保留追究法律责任的权利
-            Service::valid($params);
+            self::valid($params);
 
             if (!$oldversion) {
                 // 新装模式
-                $info = Service::install($name, $force, $extend, $tmpFile);
+                $info = self::install($name, $force, $extend, $tmpFile);
             } else {
                 // 升级模式
-                $info = Service::upgrade($name, $extend, $tmpFile);
+                $info = self::upgrade($name, $extend, $tmpFile);
             }
         } catch (AddonException $e) {
             throw new AddonException($e->getMessage(), $e->getCode(), $e->getData());
@@ -237,8 +237,8 @@ class Service
         }
 
         $info['config'] = get_addon_config($name) ? 1 : 0;
-        $info['bootstrap'] = is_file(Service::getBootstrapFile($name));
-        $info['testdata'] = is_file(Service::getTestdataFile($name));
+        $info['bootstrap'] = is_file(self::getBootstrapFile($name));
+        $info['testdata'] = is_file(self::getTestdataFile($name));
         return $info;
     }
 
@@ -332,7 +332,7 @@ class Service
     /**
      * 导入SQL
      *
-     * @param string $name     插件名称
+     * @param string $name 插件名称
      * @param string $fileName SQL文件名称
      * @return  boolean
      */
@@ -353,8 +353,8 @@ class Service
                     $templine = str_ireplace('__PREFIX__', Env::get('database.prefix'), $templine);
                     $templine = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $templine);
                     try {
-                        Db::execute($templine);
-                    } catch (\PDOException $e) {
+                        Db::getPdo()->exec($templine);
+                    } catch (\PDOException | \Error $e) {
                         //$e->getMessage();
                     }
                     $templine = '';
@@ -432,19 +432,20 @@ EOD;
         $extend['domain'] = request()->host(true);
 
         // 远程下载插件
-        $tmpFile = $tmpFile ?: Service::download($name, $extend);
+        $tmpFile = $tmpFile ?: self::download($name, $extend);
 
         $addonDir = self::getAddonDir($name);
 
         try {
             // 解压插件压缩包到插件目录
-            Service::unzip($name, $tmpFile);
+            self::unzip($name, $tmpFile);
 
             // 检查插件是否完整
-            Service::check($name);
+            self::check($name);
 
             if (!$force) {
-                Service::noconflict($name);
+                // 是否有冲突
+                self::noconflict($name);
             }
         } catch (AddonException $e) {
             @rmdirs($addonDir);
@@ -481,14 +482,14 @@ EOD;
         }
 
         // 导入
-        Service::importsql($name);
+        self::importsql($name);
 
         // 启用插件
-        Service::enable($name, true);
+        self::enable($name, true);
 
         $info['config'] = get_addon_config($name) ? 1 : 0;
-        $info['bootstrap'] = is_file(Service::getBootstrapFile($name));
-        $info['testdata'] = is_file(Service::getTestdataFile($name));
+        $info['bootstrap'] = is_file(self::getBootstrapFile($name));
+        $info['testdata'] = is_file(self::getTestdataFile($name));
         return $info;
     }
 
@@ -507,12 +508,12 @@ EOD;
         }
 
         if (!$force) {
-            Service::noconflict($name);
+            self::noconflict($name);
         }
 
         // 移除插件全局资源文件
         if ($force) {
-            $list = Service::getGlobalFiles($name);
+            $list = self::getGlobalFiles($name);
             foreach ($list as $k => $v) {
                 @unlink(app()->getRootPath() . $v);
             }
@@ -533,7 +534,7 @@ EOD;
         rmdirs(ADDON_PATH . $name);
 
         // 刷新
-        Service::refresh();
+        self::refresh();
         return true;
     }
 
@@ -550,7 +551,7 @@ EOD;
         }
 
         if (!$force) {
-            Service::noconflict($name);
+            self::noconflict($name);
         }
 
         //备份冲突文件
@@ -560,7 +561,7 @@ EOD;
                 $zip = new ZipFile();
                 try {
                     foreach ($conflictFiles as $k => $v) {
-                        $zip->addFile(app()->getRootPath() . $v, $v);
+                        $zip->addFile(app()->getRootPath() . $k, $v);
                     }
                     $addonsBackupDir = self::getAddonsBackupDir();
                     $zip->saveAsFile($addonsBackupDir . $name . "-conflict-enable-" . date("YmdHis") . ".zip");
@@ -578,7 +579,7 @@ EOD;
         $files = self::getGlobalFiles($name);
         if ($files) {
             //刷新插件配置缓存
-            Service::config($name, ['files' => $files]);
+            self::config($name, ['files' => $files]);
         }
 
         // 复制文件
@@ -588,8 +589,8 @@ EOD;
 
         // 复制application和public到全局
         foreach (self::getCheckDirs() as $k => $dir) {
-            if (is_dir($addonDir . $dir)) {
-                copydirs($addonDir . $dir, app()->getRootPath() . $dir);
+            if (is_dir($addonDir . $k)) {
+                copydirs($addonDir . $k, app()->getRootPath() . $dir);
             }
         }
 
@@ -598,7 +599,7 @@ EOD;
             // 删除插件目录已复制到全局的文件
             @rmdirs($sourceAssetsDir);
             foreach (self::getCheckDirs() as $k => $dir) {
-                @rmdirs($addonDir . $dir);
+                @rmdirs($addonDir . $k);
             }
         }
 
@@ -622,7 +623,7 @@ EOD;
         set_addon_info($name, $info);
 
         // 刷新
-        Service::refresh();
+        self::refresh();
         return true;
     }
 
@@ -646,12 +647,12 @@ EOD;
         }
 
         if (!$force) {
-            Service::noconflict($name);
+            self::noconflict($name);
         }
 
         if (config('fastadmin.backup_global_files')) {
             //仅备份修改过的文件
-            $conflictFiles = Service::getGlobalFiles($name, true);
+            $conflictFiles = self::getGlobalFiles($name, true);
             if ($conflictFiles) {
                 $zip = new ZipFile();
                 try {
@@ -667,14 +668,15 @@ EOD;
             }
         }
 
-        $config = Service::config($name);
+        $config = self::config($name);
 
         $addonDir = self::getAddonDir($name);
         //插件资源目录
         $destAssetsDir = self::getDestAssetsDir($name);
 
         // 移除插件全局文件
-        $list = Service::getGlobalFiles($name);
+        $list = self::getGlobalFiles($name);
+
 
         //插件纯净模式时将原有的文件复制回插件目录
         //当无法获取全局文件列表时也将列表复制回插件目录
@@ -683,21 +685,24 @@ EOD;
                 foreach ($config['files'] as $index => $item) {
                     //避免切换不同服务器后导致路径不一致
                     $item = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $item);
+                    $item_tp5 = str_replace('app' . DIRECTORY_SEPARATOR, 'application' . DIRECTORY_SEPARATOR, $item);
+
                     //插件资源目录，无需重复复制
                     if (stripos($item, str_replace(app()->getRootPath(), '', $destAssetsDir)) === 0) {
                         continue;
                     }
                     //检查目录是否存在，不存在则创建
-                    $itemBaseDir = dirname($addonDir . $item);
+                    $itemBaseDir = dirname($addonDir . $item_tp5);
                     if (!is_dir($itemBaseDir)) {
                         @mkdir($itemBaseDir, 0755, true);
                     }
                     if (is_file(app()->getRootPath() . $item)) {
-                        @copy(app()->getRootPath() . $item, $addonDir . $item);
+                        @copy(app()->getRootPath() . $item, $addonDir . $item_tp5);
                     }
                 }
                 $list = $config['files'];
             }
+
             //复制插件目录资源
             if (is_dir($destAssetsDir)) {
                 @copydirs($destAssetsDir, $addonDir . 'assets' . DIRECTORY_SEPARATOR);
@@ -706,7 +711,9 @@ EOD;
 
         $dirs = [];
         foreach ($list as $k => $v) {
-            $file = app()->getRootPath() . $v;
+            $v = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $v);
+            $v_tp6 = str_replace('application' . DIRECTORY_SEPARATOR, 'app' . DIRECTORY_SEPARATOR, $v);
+            $file = app()->getRootPath() . $v_tp6;
             $dirs[] = dirname($file);
             @unlink($file);
         }
@@ -738,7 +745,7 @@ EOD;
         }
 
         // 刷新
-        Service::refresh();
+        self::refresh();
         return true;
     }
 
@@ -760,22 +767,22 @@ EOD;
         }
 
         // 远程下载插件(如果为本地文件则使用本地文件)
-        $tmpFile = $tmpFile ? $tmpFile : Service::download($name, $extend);
+        $tmpFile = $tmpFile ? $tmpFile : self::download($name, $extend);
 
         // 备份插件文件
-        Service::backup($name);
+        self::backup($name);
 
         $addonDir = self::getAddonDir($name);
 
         // 删除插件目录下的application和public
         $files = self::getCheckDirs();
         foreach ($files as $index => $file) {
-            @rmdirs($addonDir . $file);
+            @rmdirs($addonDir . $index);
         }
 
         try {
             // 解压插件
-            Service::unzip($name, $tmpFile);
+            self::unzip($name, $tmpFile);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         } finally {
@@ -799,7 +806,7 @@ EOD;
         }
 
         // 导入
-        Service::importsql($name);
+        self::importsql($name);
 
         // 执行升级脚本
         try {
@@ -828,13 +835,13 @@ EOD;
         }
 
         // 刷新
-        Service::refresh();
+        self::refresh();
 
         //必须变更版本号
         $info['version'] = $extend['version'] ?? $info['version'];
 
         $info['config'] = get_addon_config($name) ? 1 : 0;
-        $info['bootstrap'] = is_file(Service::getBootstrapFile($name));
+        $info['bootstrap'] = is_file(self::getBootstrapFile($name));
         return $info;
     }
 
@@ -871,12 +878,12 @@ EOD;
         $list = [];
         $addonDir = self::getAddonDir($name);
         $checkDirList = self::getCheckDirs();
-        $checkDirList = array_merge($checkDirList, ['assets']);
+        $checkDirList = array_merge($checkDirList, ['assets' => 'assets']);
 
         $assetDir = self::getDestAssetsDir($name);
 
         // 扫描插件目录是否有覆盖的文件
-        foreach ($checkDirList as $k => $dirName) {
+        foreach ($checkDirList as $dirName => $dirName_tp6) {
             //检测目录是否存在
             if (!is_dir($addonDir . $dirName)) {
                 continue;
@@ -888,6 +895,7 @@ EOD;
             );
 
             foreach ($files as $fileinfo) {
+
                 if ($fileinfo->isFile()) {
                     $filePath = $fileinfo->getPathName();
                     //如果名称为assets需要做特殊处理
@@ -958,7 +966,7 @@ EOD;
         // $config = self::config($name);
         // $domain = self::getRootDomain($request->host(true));
         // //应用插件需要授权使用，移除或绕过授权验证，保留追究法律责任的权利
-        // if (isset($config['domains']) && isset($config['validations']) && isset($config['licensecodes'])) {
+        // if (isset($config['domains']) && isset($config['domains']) && isset($config['validations']) && isset($config['licensecodes'])) {
         //     $index = array_search($domain, $config['domains']);
         //     if ((in_array($domain, $config['domains']) && in_array(md5(md5($domain) . ($config['licensecodes'][$index] ?? '')), $config['validations'])) || $request->isCli()) {
         //         $request->bind('authorized', $domain ?: 'cli');
@@ -1080,8 +1088,8 @@ EOD;
     protected static function getCheckDirs()
     {
         return [
-            'app',
-            'public',
+            'application' => 'app',
+            'public'     => 'public',
         ];
     }
 
@@ -1089,7 +1097,7 @@ EOD;
      * 获取请求对象
      * @return Client
      */
-    public static function getClient()
+    protected static function getClient()
     {
         $options = [
             'base_uri'        => self::getServerUrl(),

@@ -42,7 +42,7 @@ class User extends Backend
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
             $list = $this->model
                 ->alias('user')
-                ->with('group')
+                ->withJoin('group')
                 ->where($where)
                 ->order($sort, $order)
                 ->paginate($limit);
