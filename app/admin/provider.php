@@ -2,8 +2,8 @@
 
 // 容器Provider定义文件
 
-use app\admin\ExceptionHandle;
+use app\admin\library\AdminExceptionHandle;
 
 return [
-    'think\exception\Handle' => ExceptionHandle::class,
+    'think\exception\Handle' => AdminExceptionHandle::class,
 ];

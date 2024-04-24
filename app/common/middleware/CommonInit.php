@@ -24,7 +24,8 @@ class CommonInit
     {
         // 设置mbstring字符编码
         mb_internal_encoding('UTF-8');
-
+        // 加载插件默认语言包
+        $this->initDefaultLang();
         // 设置替换内容
         $this->initReplaceString();
         //设置DEBUG环境
@@ -35,6 +36,17 @@ class CommonInit
         }
 
         return $next($request);
+    }
+
+    /**
+     * 加载插件默认语言包
+     */
+    private function initDefaultLang()
+    {
+        // 加载插件语言包
+        $lang = app()->lang->getLangSet();
+        $lang = preg_match("/^([a-zA-Z\-_]{2,10})\$/i", $lang) ? $lang : 'zh-cn';
+        app()->lang->load(base_path() . 'common/lang/' . $lang . '/addon.php');
     }
 
     /**

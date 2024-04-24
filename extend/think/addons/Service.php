@@ -283,7 +283,6 @@ class Service
             $zipFile->close();
         }
 
-
         return true;
     }
 
@@ -300,7 +299,6 @@ class Service
             throw new Exception('Addon not exists');
         }
         $addonClass = get_addon_class($name);
-
         if (!$addonClass) {
             throw new Exception("The addon file does not exist");
         }
@@ -332,7 +330,7 @@ class Service
     /**
      * 导入SQL
      *
-     * @param string $name 插件名称
+     * @param string $name     插件名称
      * @param string $fileName SQL文件名称
      * @return  boolean
      */
@@ -1097,7 +1095,7 @@ EOD;
      * 获取请求对象
      * @return Client
      */
-    protected static function getClient()
+    public static function getClient()
     {
         $options = [
             'base_uri'        => self::getServerUrl(),

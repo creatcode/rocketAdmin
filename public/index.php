@@ -18,7 +18,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $http = (new App())->http;
 
 $response = $http->run();
-// dasdas
+
 $response->send();
 
 $http->end($response);
