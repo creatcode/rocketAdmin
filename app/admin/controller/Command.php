@@ -197,7 +197,7 @@ class Command extends Backend
             if (stripos(implode(' ', $argv), '--controller=all-controller') !== false) {
                 $this->error("只允许在命令行执行该命令，执行前请做好菜单规则备份！！！");
             }
-            if (strpos($params['table'], '_command')) {
+            if (isset($params['table']) && strpos($params['table'], '_command')) {
                 $this->error("当前数据表为命令行自用，无法操作！！！");
             }
             if (env('app_debug')) {
