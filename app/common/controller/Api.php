@@ -10,18 +10,13 @@ use think\facade\Config;
 use think\facade\Event;
 use think\facade\Validate;
 use think\Response;
-use think\Request;
+use think\App;
 
 /**
  * API控制器基类
  */
 class Api extends BaseController
 {
-
-    /**
-     * @var Request Request 实例
-     */
-    protected $request;
 
     /**
      * @var bool 验证失败是否抛出异常
@@ -65,13 +60,11 @@ class Api extends BaseController
     /**
      * 构造方法
      * @access public
-     * @param Request $request Request 对象
+     * @param  App  $app  应用对象
      */
-    public function __construct(Request $request = null)
+    public function __construct(App $app)
     {
-        // 初始化
-        $this->_initialize();
-
+        parent::__construct($app);
         // 前置操作方法
         if ($this->beforeActionList) {
             foreach ($this->beforeActionList as $method => $options) {
@@ -86,7 +79,7 @@ class Api extends BaseController
      * 初始化操作
      * @access protected
      */
-    protected function _initialize()
+    protected function initialize()
     {
         //跨域请求检测
         check_cors_request();

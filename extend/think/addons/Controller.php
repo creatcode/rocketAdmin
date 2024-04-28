@@ -78,7 +78,7 @@ class Controller extends BaseController
         parent::__construct($app);
     }
 
-    protected function _initialize()
+    protected function initialize()
     {
         // 渲染配置到视图中
         $config = get_addon_config($this->addon);
