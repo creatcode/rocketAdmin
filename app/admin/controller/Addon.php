@@ -228,15 +228,13 @@ class Addon extends Backend
      */
     public function local()
     {
-        Config::set('default_return_type', 'json');
-
         $info = [];
         $file = $this->request->file('file');
         try {
             $uid = $this->request->post("uid");
             $token = $this->request->post("token");
             $faversion = $this->request->post("faversion");
-            $force = $this->request->post("force");
+            $force = $this->request->post("force")?:1;
             if (!$uid || !$token) {
                 throw new Exception(__('Please login and try to install'));
             }
