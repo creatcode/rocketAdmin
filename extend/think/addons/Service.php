@@ -153,20 +153,27 @@ class Service
         if (!$file || !$file instanceof \think\File) {
             throw new Exception('No file upload or server upload limit exceeded');
         }
-        $validate = validate(['zip' => 'filesize:102400000|fileExt:zip,fastaddon'], [], false, false);
+        $validate = validate(
+            ['zip' => 'filesize:102400000|fileExt:zip,fastaddon'],
+            [
+                'zip.filesize' => 'File is too big (%sMiB), Max filesize: %sMiB',
+                'zip.fileExt' => 'Uploaded file format is limited'
+            ],
+            false,
+            false
+        );
         if (!$validate->check(['zip' => $file])) {
             // 文件验证错误
-            throw new Exception(__($validate->getError()));
+            throw new Exception(__($validate->getError(), round($file->getSize() / pow(1024, 2), 2), 100));
         }
+        // $uploadFile = Filesystem::disk()->putFile('addons', $file, 'md5');
 
-        $uploadFile = Filesystem::disk('runtime')->putFile('addons', $file, 'md5');
-
+        $uploadFile = $file->move($addonsTempDir, $file->hashName('md5'));
         if (!$uploadFile) {
             // 上传失败获取错误信息
             throw new Exception(__($file->getError()));
         }
-        $tmpFile = $addonsTempDir . $uploadFile;
-
+        $tmpFile = $uploadFile->getPathname();
         $info = [];
         $zip = new ZipFile();
         try {
@@ -175,7 +182,7 @@ class Service
             try {
                 $zip->openFile($tmpFile);
             } catch (ZipException $e) {
-                @unlink($tmpFile);
+                // @unlink($tmpFile);
                 throw new Exception('Unable to open the zip file');
             }
 
@@ -217,7 +224,9 @@ class Service
             $params = array_merge($config, $extend);
 
             // 压缩包验证、版本依赖判断，应用插件需要授权使用，移除或绕过授权验证，保留追究法律责任的权利
-            self::valid($params);
+            if (config('fastadmin.addon_auth_check')) {
+                self::valid($params);
+            }
 
             if (!$oldversion) {
                 // 新装模式

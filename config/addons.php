@@ -2,11 +2,7 @@
 
 return [
     'autoload' => false,
-    'hooks' => [
-        'config_init' => [
-            'summernote',
-        ],
-    ],
+    'hooks' => [],
     'route' => [],
     'priority' => [],
     'domain' => '',

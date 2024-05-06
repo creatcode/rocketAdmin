@@ -27,7 +27,7 @@ return [
     //后台是否启用面包屑
     'breadcrumb'            => true,
     //是否允许未知来源的插件压缩包
-    'unknownsources'        => false,
+    'unknownsources'        => true,
     //插件启用禁用时是否备份对应的全局文件
     'backup_global_files'   => true,
     //后台是否显示多语言切换开关
@@ -36,6 +36,8 @@ return [
     'auto_record_log'       => true,
     //插件纯净模式，插件启用后是否删除插件目录的application、public和assets文件夹
     'addon_pure_mode'       => true,
+    //插件压缩包授权验证
+    'addon_auth_check'       => false,
     //允许跨域的域名,多个以,分隔
     'cors_request_domain'   => 'localhost,127.0.0.1',
     //版本号
