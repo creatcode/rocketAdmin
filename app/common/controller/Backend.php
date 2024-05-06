@@ -215,7 +215,7 @@ class Backend extends BaseController
         Config::set(array_merge(Config::get('upload'), $upload), 'upload');
 
         // 配置信息后
-        $config = Event::trigger("config_init", $config, true);
+        Event::trigger("config_init", $config, true);
         //加载当前控制器语言包
         $this->loadlang($controllername);
         //渲染站点配置
