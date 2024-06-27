@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "deec07980d378896d21808cc9f5fea20",
+    "content-hash": "1d6da9edba05a444255720a5740d6aa7",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -80,76 +80,6 @@
                 }
             ],
             "time": "2023-12-11T17:09:12+00:00"
-        },
-        {
-            "name": "creatcode/crontab-task",
-            "version": "v1.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/creatcode/crontab-task.git",
-                "reference": "9fe511afeb21be7b8596a2970a1ea0fe7544bc75"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/creatcode/crontab-task/zipball/9fe511afeb21be7b8596a2970a1ea0fe7544bc75",
-                "reference": "9fe511afeb21be7b8596a2970a1ea0fe7544bc75",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
-            },
-            "require": {
-                "ext-json": "*",
-                "php": ">=7.0",
-                "workerman/crontab": "^1.0"
-            },
-            "require-dev": {
-                "creatcode/crontab-expression": "^1.0"
-            },
-            "suggest": {
-                "creatcode/crontab-expression": "The generation and validation of cron expressions"
-            },
-            "type": "think-extend",
-            "extra": {
-                "think-config": {
-                    "crontabtask": "src/config.php"
-                },
-                "think": {
-                    "services": [
-                        "Creatcode\\Crontask\\Service"
-                    ],
-                    "config": {
-                        "crontabtask": "src/config.php"
-                    }
-                }
-            },
-            "autoload": {
-                "files": [
-                    "src/helper.php"
-                ],
-                "psr-4": {
-                    "Creatcode\\Crontask\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "creatcode",
-                    "email": "872864670@qq.com"
-                }
-            ],
-            "description": "适用于tp5和tp6的秒级定时任务",
-            "support": {
-                "issues": "https://github.com/creatcode/crontab-task/issues",
-                "source": "https://github.com/creatcode/crontab-task/tree/v1.0.1"
-            },
-            "time": "2024-06-26T09:28:02+00:00"
         },
         {
             "name": "easywechat-composer/easywechat-composer",
@@ -4436,131 +4366,6 @@
                 }
             ],
             "time": "2022-09-05T08:22:34+00:00"
-        },
-        {
-            "name": "workerman/crontab",
-            "version": "v1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/walkor/crontab.git",
-                "reference": "b78f1556f2977715b9cb5653129e6d9cf160d966"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/walkor/crontab/zipball/b78f1556f2977715b9cb5653129e6d9cf160d966",
-                "reference": "b78f1556f2977715b9cb5653129e6d9cf160d966",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
-            },
-            "require": {
-                "php": ">=7.0",
-                "workerman/workerman": ">=4.0.20"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Workerman\\Crontab\\": "./src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "walkor",
-                    "email": "walkor@workerman.net",
-                    "homepage": "http://www.workerman.net",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A crontab written in PHP based on workerman",
-            "homepage": "http://www.workerman.net",
-            "keywords": [
-                "crontab"
-            ],
-            "support": {
-                "email": "walkor@workerman.net",
-                "forum": "http://wenda.workerman.net/",
-                "issues": "https://github.com/walkor/workerman/issues",
-                "source": "https://github.com/walkor/crontab",
-                "wiki": "http://doc.workerman.net/"
-            },
-            "time": "2022-10-17T01:59:19+00:00"
-        },
-        {
-            "name": "workerman/workerman",
-            "version": "v4.1.15",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/walkor/workerman.git",
-                "reference": "afc8242fc769ab7cf22eb4ac22b97cb59d465e4e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/walkor/workerman/zipball/afc8242fc769ab7cf22eb4ac22b97cb59d465e4e",
-                "reference": "afc8242fc769ab7cf22eb4ac22b97cb59d465e4e",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
-            },
-            "require": {
-                "php": ">=7.0"
-            },
-            "suggest": {
-                "ext-event": "For better performance. "
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Workerman\\": "./"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "walkor",
-                    "email": "walkor@workerman.net",
-                    "homepage": "http://www.workerman.net",
-                    "role": "Developer"
-                }
-            ],
-            "description": "An asynchronous event driven PHP framework for easily building fast, scalable network applications.",
-            "homepage": "http://www.workerman.net",
-            "keywords": [
-                "asynchronous",
-                "event-loop"
-            ],
-            "support": {
-                "email": "walkor@workerman.net",
-                "forum": "http://wenda.workerman.net/",
-                "issues": "https://github.com/walkor/workerman/issues",
-                "source": "https://github.com/walkor/workerman",
-                "wiki": "http://doc.workerman.net/"
-            },
-            "funding": [
-                {
-                    "url": "https://opencollective.com/workerman",
-                    "type": "open_collective"
-                },
-                {
-                    "url": "https://www.patreon.com/walkor",
-                    "type": "patreon"
-                }
-            ],
-            "time": "2024-02-19T02:10:39+00:00"
         }
     ],
     "packages-dev": [
