@@ -91,9 +91,10 @@ class Install extends Command
         $this->request = app()->request;
 
         if (!defined('INSTALL_PATH')) {
-            define('INSTALL_PATH', app_path() . 'admin' . DIRECTORY_SEPARATOR . 'command' . DIRECTORY_SEPARATOR . 'Install' . DIRECTORY_SEPARATOR);
+            define('INSTALL_PATH', base_path() . 'admin' . DIRECTORY_SEPARATOR . 'command' . DIRECTORY_SEPARATOR . 'Install' . DIRECTORY_SEPARATOR);
         }
-        $lang = strtolower($this->app->lang->getLangSet());
+
+        $lang = strtolower(app()->lang->getLangSet());
         $lang = preg_match("/^([a-zA-Z\-_]{2,10})\$/i", $lang) ? $lang : 'zh-cn';
 
         if (!$lang || in_array($lang, ['zh-cn', 'zh-hans-cn'])) {
@@ -187,8 +188,8 @@ class Install extends Command
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $pdo->query("CREATE DATABASE IF NOT EXISTS `{$mysqlDatabase}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;");
 
-            // 连接install命令中指定的数据库
-            $instance = Db::connect([
+            $base_db = Config::get('database');
+            $base_db['connections']['tmp'] = [
                 'type'     => "{$config['type']}",
                 'hostname' => "{$mysqlHostname}",
                 'hostport' => "{$mysqlHostport}",
@@ -196,7 +197,11 @@ class Install extends Command
                 'username' => "{$mysqlUsername}",
                 'password' => "{$mysqlPassword}",
                 'prefix'   => "{$mysqlPrefix}",
-            ]);
+            ];
+            Config::set($base_db, 'database');
+
+            // 连接install命令中指定的数据库
+            $instance = Db::connect('tmp');
 
             // 查询一次SQL,判断连接是否正常
             $instance->execute("SELECT 1");
@@ -289,7 +294,7 @@ class Install extends Command
 
         try {
             //删除安装脚本
-            @unlink(root_path() . 'public' . DIRECTORY_SEPARATOR . 'install.php');
+            // @unlink(root_path() . 'public' . DIRECTORY_SEPARATOR . 'install.php');
         } catch (\Exception $e) {
         }
 
@@ -303,7 +308,6 @@ class Install extends Command
     {
         // 检测目录是否存在
         $checkDirs = [
-            'thinkphp',
             'vendor',
             'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'libs'
         ];
