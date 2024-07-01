@@ -22,7 +22,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $http = (new App())->http;
 
 // 绑定到安装控制器
-\think\facade\Route::rule('', '\app\admin\command\Install@index');
+\think\facade\Route::rule('/', '\app\admin\command\Install@index');
 
 $response = $http->run();
 
