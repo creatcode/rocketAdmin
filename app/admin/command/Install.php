@@ -294,7 +294,7 @@ class Install extends Command
 
         try {
             //删除安装脚本
-            // @unlink(root_path() . 'public' . DIRECTORY_SEPARATOR . 'install.php');
+            @unlink(root_path() . 'public' . DIRECTORY_SEPARATOR . 'install.php');
         } catch (\Exception $e) {
         }
 
