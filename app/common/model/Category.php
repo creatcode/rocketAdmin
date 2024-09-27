@@ -22,7 +22,9 @@ class Category extends Model
 
     protected static function onAfterInsert($row)
     {
-        $row->save(['weigh' => $row['id']]);
+        if (!$row['weigh']) {
+            $row->save(['weigh' => $row['id']]);
+        }
     }
 
     public function setFlagAttr($value, $data)

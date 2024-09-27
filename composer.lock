@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1d6da9edba05a444255720a5740d6aa7",
+    "content-hash": "2169e91715955c3f3c7620de627e8f07",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -1157,16 +1157,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "2.72.4",
+            "version": "2.72.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "117671bd1a44c819b941dcd152bd0268466464e0"
+                "reference": "afd46589c216118ecd48ff2b95d77596af1e57ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/117671bd1a44c819b941dcd152bd0268466464e0",
-                "reference": "117671bd1a44c819b941dcd152bd0268466464e0",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/afd46589c216118ecd48ff2b95d77596af1e57ed",
+                "reference": "afd46589c216118ecd48ff2b95d77596af1e57ed",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -1266,20 +1266,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-06-03T15:00:23+00:00"
+            "time": "2024-06-03T19:18:41+00:00"
         },
         {
             "name": "overtrue/easy-sms",
-            "version": "2.6.0",
+            "version": "2.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/overtrue/easy-sms.git",
-                "reference": "bb88b244f0de8d1f74bc50c4c08414f4c5f30281"
+                "reference": "d71d32f6631dda4c0da09c2831ff110a1c19873c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/overtrue/easy-sms/zipball/bb88b244f0de8d1f74bc50c4c08414f4c5f30281",
-                "reference": "bb88b244f0de8d1f74bc50c4c08414f4c5f30281",
+                "url": "https://api.github.com/repos/overtrue/easy-sms/zipball/d71d32f6631dda4c0da09c2831ff110a1c19873c",
+                "reference": "d71d32f6631dda4c0da09c2831ff110a1c19873c",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -1330,7 +1330,7 @@
             "description": "The easiest way to send short message.",
             "support": {
                 "issues": "https://github.com/overtrue/easy-sms/issues",
-                "source": "https://github.com/overtrue/easy-sms/tree/2.6.0"
+                "source": "https://github.com/overtrue/easy-sms/tree/2.7.1"
             },
             "funding": [
                 {
@@ -1338,7 +1338,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-08T06:36:45+00:00"
+            "time": "2024-04-17T07:10:05+00:00"
         },
         {
             "name": "overtrue/pinyin",
@@ -1549,16 +1549,16 @@
         },
         {
             "name": "phpoffice/phpspreadsheet",
-            "version": "1.29.0",
+            "version": "1.29.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPOffice/PhpSpreadsheet.git",
-                "reference": "fde2ccf55eaef7e86021ff1acce26479160a0fa0"
+                "reference": "59ee38f7480904cd6487e5cbdea4d80ff2758719"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/fde2ccf55eaef7e86021ff1acce26479160a0fa0",
-                "reference": "fde2ccf55eaef7e86021ff1acce26479160a0fa0",
+                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/59ee38f7480904cd6487e5cbdea4d80ff2758719",
+                "reference": "59ee38f7480904cd6487e5cbdea4d80ff2758719",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -1599,7 +1599,7 @@
                 "phpcompatibility/php-compatibility": "^9.3",
                 "phpstan/phpstan": "^1.1",
                 "phpstan/phpstan-phpunit": "^1.0",
-                "phpunit/phpunit": "^8.5 || ^9.0 || ^10.0",
+                "phpunit/phpunit": "^8.5 || ^9.0",
                 "squizlabs/php_codesniffer": "^3.7",
                 "tecnickcom/tcpdf": "^6.5"
             },
@@ -1654,9 +1654,9 @@
             ],
             "support": {
                 "issues": "https://github.com/PHPOffice/PhpSpreadsheet/issues",
-                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/1.29.0"
+                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/1.29.1"
             },
-            "time": "2023-06-14T22:48:31+00:00"
+            "time": "2024-09-03T00:55:32+00:00"
         },
         {
             "name": "pimple/pimple",

@@ -19,11 +19,13 @@ class UserRule extends Model
     protected $append = [
         'status_text'
     ];
-    
+
     public static function onInsertWrite(Model $row)
     {
-        $pk = $row->getPk();
-        $row->where($pk, $row[$pk])->save(['weigh' => $row[$pk]]);
+        if (!$row['weigh']) {
+            $pk = $row->getPk();
+            $row->where($pk, $row[$pk])->save(['weigh' => $row[$pk]]);
+        }
     }
 
     public function getTitleAttr($value, $data)
@@ -50,8 +52,7 @@ class UserRule extends Model
         Tree::instance()->init($ruleList);
         $ruleList = Tree::instance()->getTreeList(Tree::instance()->getTreeArray(0), 'name');
         $hasChildrens = [];
-        foreach ($ruleList as $k => $v)
-        {
+        foreach ($ruleList as $k => $v) {
             if ($v['haschild'])
                 $hasChildrens[] = $v['id'];
         }
@@ -61,5 +62,4 @@ class UserRule extends Model
         }
         return $nodeList;
     }
-
 }
