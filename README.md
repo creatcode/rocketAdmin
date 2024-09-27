@@ -1,10 +1,10 @@
 基于ThinkPHP6+Fastadmin的后台系统
 ===============
 
-> 运行环境要求PHP7.2+
+> 运行环境要求PHP7.4+
 
 ```
-fastadmin: V1.5.0.20240328
+fastadmin: V1.5.2.20240906
 
 thinkphp: v6.1.2
 ```
