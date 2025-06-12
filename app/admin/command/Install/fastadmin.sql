@@ -1,6 +1,6 @@
 /*
  FastAdmin Install SQL
- Date: 2023-06-07 15:17:57
+ Date: 2024-09-03 15:05:25
 */
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -32,7 +32,7 @@ CREATE TABLE `fa_admin` (
 -- Records of fa_admin
 -- ----------------------------
 BEGIN;
-INSERT INTO `fa_admin` VALUES (1, 'admin', 'Admin', '', '', '/assets/img/avatar.png', 'admin@admin.com', '', 0, 1491635035, '127.0.0.1',1491635035, 1491635035, '', 'normal');
+INSERT INTO `fa_admin` VALUES (1, 'admin', 'Admin', '', '', '/assets/img/avatar.png', 'admin@example.com', '', 0, 1491635035, '127.0.0.1',1491635035, 1491635035, '', 'normal');
 COMMIT;
 
 -- ----------------------------
@@ -81,8 +81,8 @@ CREATE TABLE `fa_attachment` (
   `admin_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '管理员ID',
   `user_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '会员ID',
   `url` varchar(255) DEFAULT '' COMMENT '物理路径',
-  `imagewidth` varchar(30) DEFAULT '' COMMENT '宽度',
-  `imageheight` varchar(30) DEFAULT '' COMMENT '高度',
+  `imagewidth` int(10) unsigned DEFAULT 0 COMMENT '宽度',
+  `imageheight` int(10) unsigned DEFAULT 0 COMMENT '高度',
   `imagetype` varchar(30) DEFAULT '' COMMENT '图片类型',
   `imageframes` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '图片帧数',
   `filename` varchar(100) DEFAULT '' COMMENT '文件名称',
@@ -452,6 +452,7 @@ CREATE TABLE `fa_user` (
   `logintime` bigint(16) DEFAULT NULL COMMENT '登录时间',
   `loginip` varchar(50) DEFAULT '' COMMENT '登录IP',
   `loginfailure` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '失败次数',
+  `loginfailuretime` bigint(16) DEFAULT NULL COMMENT '最后登录失败时间',
   `joinip` varchar(50) DEFAULT '' COMMENT '加入IP',
   `jointime` bigint(16) DEFAULT NULL COMMENT '加入时间',
   `createtime` bigint(16) DEFAULT NULL COMMENT '创建时间',
@@ -469,7 +470,7 @@ CREATE TABLE `fa_user` (
 -- Records of fa_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `fa_user` VALUES (1, 1, 'admin', 'admin', '', '', 'admin@163.com', '13000000000', '', 0, 0, '2017-04-08', '', 0, 0, 1, 1, 1491635035, 1491635035, '127.0.0.1', 0, '127.0.0.1', 1491635035, 0, 1491635035, '', 'normal','');
+INSERT INTO `fa_user` VALUES (1, 1, 'admin', 'admin', '', '', 'admin@163.com', '13000000000', '', 0, 0, '2017-04-08', '', 0, 0, 1, 1, 1491635035, 1491635035, '127.0.0.1', 0, 1491635035,'127.0.0.1', 1491635035, 0, 1491635035, '', 'normal','');
 COMMIT;
 
 -- ----------------------------

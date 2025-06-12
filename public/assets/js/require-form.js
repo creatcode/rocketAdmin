@@ -264,7 +264,7 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                         var url = $(this).data("url") ? $(this).data("url") : (typeof Backend !== 'undefined' ? "general/attachment/select" : "user/attachment");
                         parent.Fast.api.open(url + "?element_id=" + $(this).attr("id") + "&multiple=" + multiple + "&mimetype=" + mimetype + "&admin_id=" + admin_id + "&user_id=" + user_id, __('Choose'), {
                             callback: function (data) {
-                                var button = $("#" + $(that).attr("id"));
+                                var button = $(that);
                                 var maxcount = $(button).data("maxcount");
                                 var input_id = $(button).data("input-id") ? $(button).data("input-id") : "";
                                 maxcount = typeof maxcount !== "undefined" ? maxcount : 0;
@@ -321,16 +321,28 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
                                 }
                                 data[match[1]][match[2]] = j.value;
                             });
-                            var result = template ? [] : {};
+                            //使用数组保存
+                            var usearray = container.data("usearray") || false;
+                            //保留空数据
+                            var keepempty = container.data("keepempty") || false;
+
+                            var result = template || usearray ? [] : {};
+                            var keys = Object.keys(Object.values(data)[0] || {});
+
+                            var isassociative = !usearray && keys.indexOf("value") > -1 && (keys.length === 1 || (keys.length === 2 && keys.indexOf("key") > -1));
+                            if(isassociative && keys.length ===2){
+                                result = {};
+                            }
+
                             $.each(data, function (i, j) {
                                 if (j) {
-                                    var keys = Object.keys(j);
-                                    if (keys.indexOf("value") > -1 && (keys.length === 1 || (keys.length === 2 && keys.indexOf("key") > -1))) {
+                                    if (isassociative) {
                                         if (keys.length === 2) {
-                                            if (j.key != '') {
+                                            if (j.key != '' || keepempty) {
                                                 result['__PLACEHOLDKEY__' + j.key] = j.value;
                                             }
                                         } else {
+                                            //一维数组
                                             result.push(j.value);
                                         }
                                     } else {
@@ -509,7 +521,11 @@ define(['jquery', 'bootstrap', 'upload', 'validator', 'validator-lang'], functio
             autocomplete: function (form) {
                 if ($("[data-role='autocomplete']", form).length > 0) {
                     require(['autocomplete'], function () {
-                        $("[data-role='autocomplete']").autocomplete();
+                        $("[data-role='autocomplete']").autocomplete({
+                            onSelect: function () {
+                                $(this).trigger('change').trigger('validate');
+                            }
+                        });
                     });
                 }
             },
