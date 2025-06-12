@@ -100,6 +100,11 @@ class Upload
      */
     protected function checkExecutable()
     {
+        //禁止上传以.开头的文件
+        if (substr($this->fileInfo['name'], 0, 1) === '.') {
+            throw new UploadException(__('Uploaded file format is limited'));
+        }
+
         //禁止上传PHP和HTML文件
         if (in_array($this->fileInfo['type'], ['text/x-php', 'text/html']) || in_array($this->fileInfo['suffix'], ['php', 'html', 'htm', 'phar', 'phtml']) || preg_match("/^php(.*)/i", $this->fileInfo['suffix'])) {
             throw new UploadException(__('Uploaded file format is limited'));

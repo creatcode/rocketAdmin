@@ -331,10 +331,7 @@ class AdminAuth extends AuthService
     {
         //取出当前管理员所有的分组
         $groups = $this->getGroups();
-        $groupIds = [];
-        foreach ($groups as $k => $v) {
-            $groupIds[] = $v['id'];
-        }
+        $groupIds = array_column($groups, 'id');
         $originGroupIds = $groupIds;
         foreach ($groups as $k => $v) {
             if (in_array($v['pid'], $originGroupIds)) {
@@ -375,12 +372,8 @@ class AdminAuth extends AuthService
         $childrenAdminIds = [];
         if (!$this->isSuperAdmin()) {
             $groupIds = $this->getChildrenGroupIds(false);
-            $authGroupList = AuthGroupAccess::field('uid,group_id')
-                ->where('group_id', 'in', $groupIds)
-                ->select();
-            foreach ($authGroupList as $k => $v) {
-                $childrenAdminIds[] = $v['uid'];
-            }
+            $childrenAdminIds = AuthGroupAccess::where('group_id', 'in', $groupIds)
+                ->column('uid');
         } else {
             //超级管理员拥有所有人的权限
             $childrenAdminIds = Admin::column('id');
@@ -476,7 +469,7 @@ class AdminAuth extends AuthService
             ->column('name,pid');
         $pidArr = array_unique(array_filter(array_column($ruleList, 'pid')));
         foreach ($ruleList as $k => &$v) {
-            if (!in_array($v['name'], $userRule)) {
+            if (!in_array(strtolower($v['name']), $userRule)) {
                 unset($ruleList[$k]);
                 continue;
             }
