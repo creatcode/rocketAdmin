@@ -2,7 +2,7 @@
  * @summary     SelectPage
  * @desc        Simple and powerful selection plugin
  * @file        selectpage.js
- * @version     2.20
+ * @version     2.21
  * @author      TerryZeng
  * @contact     https://terryz.github.io/
  * @license     MIT License
@@ -1101,6 +1101,7 @@
         if (now_value != self.prop.prev_value) {
             self.prop.prev_value = now_value;
             self.prop.first_show = false;
+            self.prop.current_page = 1;
 
             if (self.option.selectOnly) self.setButtonAttrDefault();
             if (!self.option.multiple && !now_value) {
