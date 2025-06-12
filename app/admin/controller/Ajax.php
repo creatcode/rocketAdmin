@@ -70,6 +70,8 @@ class Ajax extends Backend
      */
     public function upload()
     {
+        Config::set('default_return_type', 'json');
+
         //必须还原upload配置,否则分片及cdnurl函数计算错误
         Config::load(config_path() . 'upload.php', 'upload');
         $chunkid = $this->request->post("chunkid");
@@ -175,18 +177,18 @@ class Ajax extends Backend
             $weighdata[$v[$prikey]] = $v[$field];
         }
         $position = array_search($changeid, $ids);
-        $desc_id = isset($sour[$position]) ? $sour[$position] : end($sour);    //移动到目标的ID值,取出所处改变前位置的值
+        $desc_id = $sour[$position] ?? end($sour);    //移动到目标的ID值,取出所处改变前位置的值
         $sour_id = $changeid;
-        $weighids = array();
+        $weighids = [];
         $temp = array_values(array_diff_assoc($ids, $sour));
         foreach ($temp as $m => $n) {
             if ($n == $sour_id) {
                 $offset = $desc_id;
             } else {
                 if ($sour_id == $temp[0]) {
-                    $offset = isset($temp[$m + 1]) ? $temp[$m + 1] : $sour_id;
+                    $offset = $temp[$m + 1] ?? $sour_id;
                 } else {
-                    $offset = isset($temp[$m - 1]) ? $temp[$m - 1] : $sour_id;
+                    $offset = $temp[$m - 1] ?? $sour_id;
                 }
             }
             if (!isset($weighdata[$offset])) {
@@ -207,7 +209,6 @@ class Ajax extends Backend
             $type = $this->request->request("type");
             switch ($type) {
                 case 'all':
-                    // no break
                 case 'content':
                     //内容缓存
                     rmdirs(app()->getRuntimePath(), false);
@@ -215,18 +216,21 @@ class Ajax extends Backend
                     if ($type == 'content') {
                         break;
                     }
+                    // no break
                 case 'template':
                     // 模板缓存
                     rmdirs(app()->getRuntimePath(), false);
                     if ($type == 'template') {
                         break;
                     }
+                    // no break
                 case 'addons':
                     // 插件缓存
                     Service::refresh();
                     if ($type == 'addons') {
                         break;
                     }
+                    // no break
                 case 'browser':
                     // 浏览器缓存
                     // 只有生产环境下才修改

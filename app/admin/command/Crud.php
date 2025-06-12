@@ -282,7 +282,7 @@ class Crud extends Command
             ->addOption('headingfilterfield', null, Option::VALUE_OPTIONAL, 'heading filter field', null)
             ->addOption('fixedcolumns', null, Option::VALUE_OPTIONAL, 'fixed columns', null)
             ->addOption('editorclass', null, Option::VALUE_OPTIONAL, 'automatically generate editor class', null)
-            ->addOption('db', null, Option::VALUE_OPTIONAL, 'database config name', 'mysql')
+            ->addOption('db', null, Option::VALUE_OPTIONAL, 'database config name', 'database')
             ->setDescription('Build CRUD controller and model from table');
     }
 
@@ -434,16 +434,19 @@ class Crud extends Command
         $modelName = $table = stripos($table, $prefix) === 0 ? substr($table, strlen($prefix)) : $table;
         $modelTableType = 'table';
         $modelTableTypeName = $modelTableName = $modelName;
-        $modelTableInfo = $dbconnect->query("SHOW TABLE STATUS LIKE '{$modelTableName}'", [], true);
-        if (!$modelTableInfo) {
-            $modelTableType = 'name';
-            $modelTableName = $prefix . $modelName;
+        $modelTableInfo = null;
+        if (!$input->getOption('delete')) {
             $modelTableInfo = $dbconnect->query("SHOW TABLE STATUS LIKE '{$modelTableName}'", [], true);
             if (!$modelTableInfo) {
-                throw new Exception("table not found");
+                $modelTableType = 'name';
+                $modelTableName = $prefix . $modelName;
+                $modelTableInfo = $dbconnect->query("SHOW TABLE STATUS LIKE '{$modelTableName}'", [], true);
+                if (!$modelTableInfo) {
+                    throw new Exception("table not found");
+                }
             }
+            $modelTableInfo = $modelTableInfo[0];
         }
-        $modelTableInfo = $modelTableInfo[0];
 
         $relations = [];
         //检查关联表
@@ -803,7 +806,7 @@ class Crud extends Command
                                 break;
                             case 'timestamp':
                                 $fieldFunc = 'datetime';
-                                // no break
+                            // no break
                             case 'datetime':
                                 $format = "YYYY-MM-DD HH:mm:ss";
                                 $phpFormat = 'Y-m-d H:i:s';
@@ -916,6 +919,7 @@ class Crud extends Command
                                 $replace = '\'{"custom[type]":"' . $table . '"}\'';
                             } elseif ($selectpageController == 'admin') {
                                 $attrArr['data-source'] = 'auth/admin/selectpage';
+                                $attrArr['data-field'] = 'nickname';
                             } elseif ($selectpageController == 'user') {
                                 $attrArr['data-source'] = 'user/user/index';
                                 $attrArr['data-field'] = 'nickname';
@@ -1080,7 +1084,7 @@ class Crud extends Command
             }
 
             //表注释
-            $tableComment = $modelTableInfo['Comment'];
+            $tableComment = $modelTableInfo ? $modelTableInfo['Comment'] : '';
             $tableComment = mb_substr($tableComment, -1) == '表' ? mb_substr($tableComment, 0, -1) . '管理' : $tableComment;
 
             $modelInit = '';
@@ -1089,7 +1093,7 @@ class Crud extends Command
             }
 
             $data = [
-                'modelConnection'         => $db == 'mysql' ? '' : "protected \$connection = '{$db}';",
+                'modelConnection'         => $db == 'database' ? '' : "protected \$connection = '{$db}';",
                 'controllerNamespace'     => $controllerNamespace,
                 'modelNamespace'          => $modelNamespace,
                 'validateNamespace'       => $validateNamespace,
@@ -1403,7 +1407,7 @@ EOD;
         if (in_array(strtolower($parseName), $this->internalKeywords)) {
             throw new Exception('Unable to use internal variable:' . $parseName);
         }
-        $appNamespace = Config::get('app.app_namespace') ?: 'app';
+        $appNamespace = Config::get('app.app_namespace');
         $parseNamespace = "{$appNamespace}\\{$module}\\{$type}" . ($arr ? "\\" . implode("\\", $arr) : "");
         $moduleDir = app()->getBasePath() . $module . DIRECTORY_SEPARATOR;
         $parseFile = $moduleDir . $type . DIRECTORY_SEPARATOR . ($arr ? implode(DIRECTORY_SEPARATOR, $arr) . DIRECTORY_SEPARATOR : '') . $parseName . '.php';

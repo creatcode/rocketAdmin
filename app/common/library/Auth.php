@@ -4,13 +4,13 @@ namespace app\common\library;
 
 use app\common\model\User;
 use app\common\model\UserRule;
-use Carbon\Carbon;
 use Exception;
 use think\facade\Config;
 use think\facade\Db;
 use think\facade\Event;
 use think\facade\Validate;
 use util\Random;
+use util\Date;
 
 class Auth
 {
@@ -222,7 +222,14 @@ class Auth
             $this->setError('Account is locked');
             return false;
         }
+
+        if ($user->loginfailure >= 10 && time() - $user->loginfailuretime < 86400) {
+            $this->setError('Please try again after 1 day');
+            return false;
+        }
+
         if ($user->password != $this->getEncryptPassword($password, $user->salt)) {
+            $user->save(['loginfailure' => $user->loginfailure + 1, 'loginfailuretime' => time()]);
             $this->setError('Password is incorrect');
             return false;
         }
@@ -303,8 +310,8 @@ class Auth
                 $time = time();
 
                 //判断连续登录和最大连续登录
-                if ($user->logintime < Carbon::today()->getTimestamp()) {
-                    $user->successions = $user->logintime < Carbon::yesterday()->getTimestamp() ? 1 : $user->successions + 1;
+                if ($user->logintime < Date::unixtime('day')) {
+                    $user->successions = $user->logintime < Date::unixtime('day', -1) ? 1 : $user->successions + 1;
                     $user->maxsuccessions = max($user->successions, $user->maxsuccessions);
                 }
 
@@ -357,7 +364,7 @@ class Auth
         }
         $url = ($module ? $module : app()->http->getName()) . '/' . (is_null($path) ? $this->getRequestUri() : $path);
         $url = strtolower(str_replace('.', '/', $url));
-        return in_array($url, $rules) ? true : false;
+        return in_array($url, $rules);
     }
 
     /**

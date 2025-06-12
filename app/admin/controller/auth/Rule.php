@@ -33,10 +33,9 @@ class Rule extends Backend
         $ruleList = $this->model->withoutField('type,condition,remark,createtime,updatetime')->order('weigh DESC,id ASC')->select();
         foreach ($ruleList as $k => &$v) {
             $v['title'] = __($v['title']);
-            // $v['remark'] = __($v['remark']);
         }
         unset($v);
-        Tree::instance()->init($ruleList);
+        Tree::instance()->init($ruleList)->icon = ['&nbsp;&nbsp;&nbsp;&nbsp;', '&nbsp;&nbsp;&nbsp;&nbsp;', '&nbsp;&nbsp;&nbsp;&nbsp;'];
         $this->rulelist = Tree::instance()->getTreeList(Tree::instance()->getTreeArray(0), 'title');
         $ruledata = [0 => __('None')];
         foreach ($this->rulelist as $k => &$v) {

@@ -165,7 +165,10 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                             title: __('Operate'),
                             table: table,
                             formatter: Controller.api.formatter.operate,
-                            align: 'right'
+                            align: 'right',
+                            cellStyle: function (value, row, index) {
+                                return {css: {'min-width': '158px'}};
+                            }
                         },
                     ]
                 ],
@@ -238,6 +241,27 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                             Layer.close(index);
                         });
                         return false;
+                    } else if (ret && ret.code === -3) {
+                        //插件目录发现影响全局的文件
+                        Layer.open({
+                            content: Template("conflicttpl", ret.data),
+                            shade: 0.8,
+                            area: area,
+                            title: __('Warning'),
+                            btn: [__('Continue install'), __('Cancel')],
+                            end: function () {
+
+                            },
+                            yes: function (index) {
+                                up.removeFile(file);
+                                file.force = true;
+                                up.uploadFile(file);
+                                Layer.close(index);
+                            }
+                        });
+
+                    } else {
+                        Layer.alert(ret.msg, {title: __('Warning'), icon: 0});
                     }
                 });
 
@@ -480,7 +504,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                         //如果登录已经超时,重新提醒登录
                         if (uid && uid != ret.data.uid) {
                             Controller.api.userinfo.set(null);
-                            $(".operate[data-name='" + name + "'] .btn-install").trigger("click");
+                            $(".operate[data-name='" + name + "'] .btn-install:first").trigger("click");
                             return;
                         }
                         top.Fast.api.open(ret.data.payurl, __('Pay now'), {

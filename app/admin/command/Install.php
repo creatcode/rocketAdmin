@@ -16,6 +16,13 @@ use util\Random;
 
 class Install extends Command
 {
+
+    /**
+     * 最低PHP版本
+     * @var string
+     */
+    protected $minPhpVersion = '7.4.0';
+
     protected $model = null;
     /**
      * @var \think\View 视图类实例
@@ -71,7 +78,7 @@ class Install extends Command
 
         $adminName = $this->installation($hostname, $hostport, $database, $username, $password, $prefix, $adminUsername, $adminPassword, $adminEmail, $siteName);
         if ($adminName) {
-            $output->highlight("Admin url:http://www.example.com/{$adminName}");
+            $output->highlight("Admin url:https://www.example.com/{$adminName}");
         }
 
         $output->highlight("Admin username:{$adminUsername}");
@@ -215,22 +222,27 @@ class Install extends Command
         $adminFile = root_path() . 'public' . DIRECTORY_SEPARATOR . 'admin.php';
 
         // 数据库配置文件
-        $dbConfigFile = config_path() . 'database.php';
-        $dbConfigText = @file_get_contents($dbConfigFile);
+        $envSampleFile = root_path() . '.env.sample';
+        $envFile = root_path() . '.env';
+        if (!file_exists($envFile)) {
+            if (!copy($envSampleFile, $envFile)) {
+                throw new Exception(__('Failed to copy %s to %s', '.env.sample', '.env'));
+            }
+        }
+
+        $envText = @file_get_contents($envFile);
+
         $callback = function ($matches) use ($mysqlHostname, $mysqlHostport, $mysqlUsername, $mysqlPassword, $mysqlDatabase, $mysqlPrefix) {
             $field = "mysql" . ucfirst($matches[1]);
-            $replace = $field;
-            if ($matches[1] == 'hostport' && $mysqlHostport == 3306) {
-                $replace = '';
-            }
-            return "'{$matches[1]}'{$matches[2]}=>{$matches[3]}Env::get('database.{$matches[1]}', '{$replace}'),";
+            $replace = $$field;
+            return "{$matches[1]} = {$replace}";
         };
-        $dbConfigText = preg_replace_callback("/'(hostname|database|username|password|hostport|prefix)'(\s+)=>(\s+)Env::get\((.*)\)\,/", $callback, $dbConfigText);
+        $envText = preg_replace_callback("/(hostname|database|username|password|hostport|prefix)\s*=\s*(.*)/", $callback, $envText);
 
         // 检测能否成功写入数据库配置
-        $result = @file_put_contents($dbConfigFile, $dbConfigText);
+        $result = @file_put_contents($envFile, $envText);
         if (!$result) {
-            throw new Exception(__('The current permissions are insufficient to write the file %s', 'application/database.php'));
+            throw new Exception(__('The current permissions are insufficient to write the file %s', '.env'));
         }
 
         // 设置新的Token随机密钥key
@@ -245,7 +257,7 @@ class Install extends Command
             throw new Exception(__('The current permissions are insufficient to write the file %s', 'application/config.php'));
         }
 
-        $avatar = request()->domain() . '/assets/img/avatar.png';
+        $avatar = '/assets/img/avatar.png';
         // 变更默认管理员密码
         $adminPassword = $adminPassword ? $adminPassword : Random::alnum(8);
         $adminEmail = $adminEmail ? $adminEmail : "admin@admin.com";
@@ -308,6 +320,7 @@ class Install extends Command
     {
         // 检测目录是否存在
         $checkDirs = [
+            'thinkphp',
             'vendor',
             'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'libs'
         ];
@@ -315,8 +328,8 @@ class Install extends Command
         //数据库配置文件
         $dbConfigFile = config_path() . 'database.php';
 
-        if (version_compare(PHP_VERSION, '7.4.0', '<')) {
-            throw new Exception(__("The current version %s is too low, please use PHP 7.4 or higher", PHP_VERSION));
+        if (version_compare(PHP_VERSION, $this->minPhpVersion, '<')) {
+            throw new Exception(__("The current PHP %s is too low, please use PHP %s or higher", PHP_VERSION, $this->minPhpVersion));
         }
         if (!extension_loaded("PDO")) {
             throw new Exception(__("PDO is not currently installed and cannot be installed"));

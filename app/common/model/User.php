@@ -1,17 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
 namespace app\common\model;
 
 use think\facade\Db;
 use think\Model;
 
 /**
- * @mixin \think\Model
+ * 会员模型
+ * @method static mixed getByUsername($str) 通过用户名查询用户
+ * @method static mixed getByNickname($str) 通过昵称查询用户
+ * @method static mixed getByMobile($str) 通过手机查询用户
+ * @method static mixed getByEmail($str) 通过邮箱查询用户
  */
 class User extends Model
 {
+
     // 开启自动写入时间戳字段
     protected $autoWriteTimestamp = 'int';
     // 定义时间戳字段名
@@ -83,9 +86,9 @@ class User extends Model
 
     /**
      * 变更会员余额
-     * @param  $money   余额
-     * @param  $user_id 会员ID
-     * @param  $memo    备注
+     * @param int    $money   余额
+     * @param int    $user_id 会员ID
+     * @param string $memo    备注
      */
     public static function money($money, $user_id, $memo)
     {
@@ -98,7 +101,7 @@ class User extends Model
                 //更新会员信息
                 $user->save(['money' => $after]);
                 //写入日志
-                UserBill::create(['user_id' => $user_id, 'money' => $money, 'before' => $before, 'after' => $after, 'memo' => $memo]);
+                MoneyLog::create(['user_id' => $user_id, 'money' => $money, 'before' => $before, 'after' => $after, 'memo' => $memo]);
             }
         });
     }
@@ -121,7 +124,7 @@ class User extends Model
                 //更新会员信息
                 $user->save(['score' => $after, 'level' => $level]);
                 //写入日志
-                // ScoreLog::create(['user_id' => $user_id, 'score' => $score, 'before' => $before, 'after' => $after, 'memo' => $memo]);
+                ScoreLog::create(['user_id' => $user_id, 'score' => $score, 'before' => $before, 'after' => $after, 'memo' => $memo]);
             }
             Db::commit();
         } catch (\Exception $e) {

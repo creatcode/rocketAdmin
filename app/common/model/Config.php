@@ -1,17 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
 namespace app\common\model;
 
 use app\admin\library\AdminAuth;
 use think\Model;
 
 /**
- * @mixin \think\Model
+ * 配置模型
  */
 class Config extends Model
 {
+
     // 表名,不含前缀
     protected $name = 'config';
     // 自动写入时间戳字段
@@ -225,4 +224,5 @@ class Config extends Model
         );
         return true;
     }
+
 }

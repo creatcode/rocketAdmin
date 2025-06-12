@@ -97,13 +97,19 @@ class Api extends Command
             foreach ($files as $name => $file) {
                 if (!$file->isDir() && $file->getExtension() == 'php') {
                     $filePath = $file->getRealPath();
-                    $classes[] = $this->getClassFromFile($filePath);
+                    $className = $this->getClassFromFile($filePath);
+                    if ($className) {
+                        $classes[] = $className;
+                    }
                 }
             }
         } else {
             foreach ($controller as $index => $item) {
                 $filePath = $moduleDir . Config::get('route.controller_layer') . DIRECTORY_SEPARATOR . $item . '.php';
-                $classes[] = $this->getClassFromFile($filePath);
+                $className = $this->getClassFromFile($filePath);
+                if ($className) {
+                    $classes[] = $className;
+                }
             }
         }
 
@@ -182,7 +188,7 @@ class Api extends Command
                 }
             }
         }
-
-        return $namespace . '\\' . $class;
+        $className = $namespace . '\\' . $class;
+        return preg_match('/([a-z0-9_\\]+)([a-z0-9_]+)$/i', $className) ? $className : '';
     }
 }

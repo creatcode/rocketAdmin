@@ -157,7 +157,7 @@
             } else {
                 key = isArray ? value : key;
             }
-            optionList.push(sprintf("<option value='" + key + "' %s>" + value + "</option>", key == vObjCol.defaultValue ? 'selected' : ''));
+            optionList.push(sprintf("<option value='" + Fast.api.escape(key) + "' %s>" + Fast.api.escape(value) + "</option>", key == vObjCol.defaultValue ? 'selected' : ''));
         });
         return optionList;
     };
@@ -208,7 +208,7 @@
             } else {
                 value = process ? process(obj.val()) : obj.val();
             }
-            if (removeempty && (value == '' || value == null || ($.isArray(value) && value.length == 0)) && !sym.match(/null/i)) {
+            if (removeempty && (value === '' || value == null || ($.isArray(value) && value.length === 0)) && !sym.match(/null/i)) {
                 return true;
             }
 
@@ -268,7 +268,7 @@
             return "Common search";
         },
         formatCommonSubmitButton: function () {
-            return "Submit";
+            return "Search";
         },
         formatCommonResetButton: function () {
             return "Reset";

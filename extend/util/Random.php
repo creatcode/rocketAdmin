@@ -12,9 +12,8 @@ class Random
      * 生成数字和字母
      *
      * @param int $len 长度
-     * @return string
      */
-    public static function alnum($len = 6)
+    public static function alnum(int $len = 6)
     {
         return self::build('alnum', $len);
     }
@@ -23,9 +22,8 @@ class Random
      * 仅生成字符
      *
      * @param int $len 长度
-     * @return string
      */
-    public static function alpha($len = 6)
+    public static function alpha(int $len = 6)
     {
         return self::build('alpha', $len);
     }
@@ -34,9 +32,8 @@ class Random
      * 生成指定长度的随机数字
      *
      * @param int $len 长度
-     * @return string
      */
-    public static function numeric($len = 4)
+    public static function numeric(int $len = 4)
     {
         return self::build('numeric', $len);
     }
@@ -45,9 +42,8 @@ class Random
      * 生成指定长度的无0随机数字
      *
      * @param int $len 长度
-     * @return string
      */
-    public static function nozero($len = 4)
+    public static function nozero(int $len = 4)
     {
         return self::build('nozero', $len);
     }
@@ -56,9 +52,8 @@ class Random
      * 能用的随机数生成
      * @param string $type 类型 alpha/alnum/numeric/nozero/unique/md5/encrypt/sha1
      * @param int    $len  长度
-     * @return string
      */
-    public static function build($type = 'alnum', $len = 8)
+    public static function build(string $type = 'alnum', int $len = 8)
     {
         switch ($type) {
             case 'alpha':
@@ -154,7 +149,7 @@ class Random
      * 获取全球唯一标识
      * @return string
      */
-    public static function uuid()
+    public static function uuid(): string
     {
         return sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',

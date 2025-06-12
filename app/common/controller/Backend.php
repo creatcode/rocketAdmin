@@ -348,15 +348,13 @@ class Backend extends BaseController
                 case 'FINDIN':
                 case 'FINDINSET':
                 case 'FIND_IN_SET':
-                    // $v = is_array($v) ? $v : explode(',', str_replace(' ', ',', $v));
-                    // $findArr = array_values($v);
-                    // foreach ($findArr as $idx => $item) {
-                    //     $bindName = "item_" . $index . "_" . $idx;
-                    //     $bind[$bindName] = $item;
-                    //     $where[] = "FIND_IN_SET(:{$bindName}, `" . str_replace('.', '`.`', $k) . "`)";
-                    // }
-                    $v = is_array($v) ? implode(',', str_replace(' ', ',', $v)) : $v;
-                    $where[] = "FIND_IN_SET('$v', " . ($relationSearch ? $k : '`' . str_replace('.', '` . `', $k) . '`') . ')';
+                    $v = is_array($v) ? $v : explode(',', str_replace(' ', ',', $v));
+                    $findArr = array_values($v);
+                    foreach ($findArr as $idx => $item) {
+                        $bindName = "item_" . $index . "_" . $idx;
+                        $bind[$bindName] = $item;
+                        $where[] = "FIND_IN_SET(:{$bindName}, `" . str_replace('.', '`.`', $k) . "`)";
+                    }
                     break;
                 case 'IN':
                 case 'IN(...)':
@@ -398,10 +396,8 @@ class Backend extends BaseController
                         $arr = $arr[0];
                     }
                     $tableArr = explode('.', $k);
-                    if (
-                        count($tableArr) > 1 && $tableArr[0] != $name && !in_array($tableArr[0], $alias)
-                        && !empty($this->model) && $this->relationSearch
-                    ) {
+                    if (count($tableArr) > 1 && $tableArr[0] != $name && !in_array($tableArr[0], $alias)
+                        && !empty($this->model) && $this->relationSearch) {
                         //修复关联模型下时间无法搜索的BUG
                         $relation = parse_name($tableArr[0], 1, false);
                         $alias[$this->model->$relation()->getTable()] = $tableArr[0];
@@ -422,7 +418,12 @@ class Backend extends BaseController
         if (!empty($this->model)) {
             $this->model->alias($alias);
         }
-        $where = function ($query) use ($where) {
+        $model = $this->model;
+        $where = function ($query) use ($where, $alias, $bind, &$model) {
+            if (!empty($model)) {
+                $model->alias($alias);
+                $model->bind($bind);
+            }
             foreach ($where as $k => $v) {
                 if (is_array($v)) {
                     call_user_func_array([$query, 'where'], $v);
@@ -501,7 +502,7 @@ class Backend extends BaseController
 
         //如果有primaryvalue,说明当前是初始化传值
         if ($primaryvalue !== null) {
-            $where = [$primarykey, 'in', $primaryvalue];
+            $where = [$primarykey => ['in', $primaryvalue]];
             $pagesize = 999999;
         } else {
             $where = function ($query) use ($word, $andor, $field, $searchfield, $custom) {
@@ -533,7 +534,7 @@ class Backend extends BaseController
         }
         $adminIds = $this->getDataLimitAdminIds();
         if (is_array($adminIds)) {
-            $where[] = [$this->dataLimitField, 'in', $adminIds];
+            $this->model->where($this->dataLimitField, 'in', $adminIds);
         }
         $list = [];
         $total = $this->model->where($where)->count();
@@ -574,6 +575,7 @@ class Backend extends BaseController
                     $result = array_intersect_key(($item instanceof Model ? $item->toArray() : (array)$item), array_flip($fields));
                 }
                 $result['pid'] = isset($item['pid']) ? $item['pid'] : (isset($item['parent_id']) ? $item['parent_id'] : 0);
+                $result = array_map("htmlentities", $result);
                 $list[] = $result;
             }
             if ($istree && !$primaryvalue) {
