@@ -331,7 +331,7 @@ class AdminAuth extends AuthService
     {
         //取出当前管理员所有的分组
         $groups = $this->getGroups();
-        $groupIds = array_column($groups, 'id');
+        $groupIds = array_column(collect($groups)->toArray(), 'id');
         $originGroupIds = $groupIds;
         foreach ($groups as $k => $v) {
             if (in_array($v['pid'], $originGroupIds)) {

@@ -62,14 +62,6 @@ class AdminExceptionHandle extends Handle
             ]);
         }
 
-        if ($e instanceof HttpResponseException) {
-            return $e->getResponse();
-        } elseif ($e instanceof HttpException) {
-            return $this->renderHttpException($e);
-        } else {
-            return $this->convertExceptionToResponse($e);
-        }
-
         // 其他错误交给系统处理
         return parent::render($request, $e);
     }
