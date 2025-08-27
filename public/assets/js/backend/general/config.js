@@ -44,7 +44,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             $(document).on('change', "#c-selectpage-table", function (e, first) {
                 var that = this;
                 Fast.api.ajax({
-                    url: "general/config/get_fields_list",
+                    url: "general.config/get_fields_list",
                     data: {table: $(that).val()},
                 }, function (data, ret) {
                     renderselect("#c-selectpage-primarykey", data.fieldList, first ? $("#c-selectpage-primarykey").data("value") : '');
@@ -66,7 +66,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                 if (["selectpage", "selectpages"].indexOf(value) > -1 && $("#c-selectpage-table option").length == 1) {
                     //异步加载表列表
                     Fast.api.ajax({
-                        url: "general/config/get_table_list",
+                        url: "general.config/get_table_list",
                     }, function (data, ret) {
                         renderselect("#c-selectpage-table", data.tableList);
                         return false;
@@ -99,7 +99,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                 var that = this;
                 Layer.prompt({title: __('Please input your email'), formType: 0}, function (value, index) {
                     Backend.api.ajax({
-                        url: "general/config/emailtest",
+                        url: "general.config/emailtest",
                         data: $(that).closest("form").serialize() + "&receiver=" + value
                     });
                 });
@@ -114,7 +114,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     title: '提示'
                 }, function (index) {
                     Backend.api.ajax({
-                        url: "general/config/del",
+                        url: "general.config/del",
                         data: {name: $(that).data("name")}
                     }, function () {
                         $(that).closest("tr").remove();

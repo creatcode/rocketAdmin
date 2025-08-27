@@ -20,11 +20,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'jstree'], function (
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    "index_url": "auth/group/index",
-                    "add_url": "auth/group/add",
-                    "edit_url": "auth/group/edit",
-                    "del_url": "auth/group/del",
-                    "multi_url": "auth/group/multi",
+                    "index_url": "auth.group/index",
+                    "add_url": "auth.group/add",
+                    "edit_url": "auth.group/edit",
+                    "del_url": "auth.group/del",
+                    "multi_url": "auth.group/multi",
                 }
             });
 
@@ -97,7 +97,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'jstree'], function (
                         return false;
                     }
                     $.ajax({
-                        url: "auth/group/roletree",
+                        url: "auth.group/roletree",
                         type: 'post',
                         dataType: 'json',
                         data: {id: id, pid: $(this).val()},

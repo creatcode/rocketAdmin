@@ -5,11 +5,11 @@ define(['jquery', 'bootstrap', 'backend', 'form', 'table'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'general/attachment/index',
-                    add_url: 'general/attachment/add',
-                    edit_url: 'general/attachment/edit',
-                    del_url: 'general/attachment/del',
-                    multi_url: 'general/attachment/multi',
+                    index_url: 'general.attachment/index',
+                    add_url: 'general.attachment/add',
+                    edit_url: 'general.attachment/edit',
+                    del_url: 'general.attachment/del',
+                    multi_url: 'general.attachment/multi',
                     table: 'attachment'
                 }
             });
@@ -91,7 +91,7 @@ define(['jquery', 'bootstrap', 'backend', 'form', 'table'], function ($, undefin
                     yes: function (index, layero) {
                         var category = $("select[name='category']", layero).val();
                         Fast.api.ajax({
-                            url: "general/attachment/classify",
+                            url: "general.attachment/classify",
                             type: "post",
                             data: {category: category, ids: ids.join(',')},
                         }, function () {
@@ -109,7 +109,7 @@ define(['jquery', 'bootstrap', 'backend', 'form', 'table'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'general/attachment/select',
+                    index_url: 'general.attachment/select',
                 }
             });
             var urlArr = [];

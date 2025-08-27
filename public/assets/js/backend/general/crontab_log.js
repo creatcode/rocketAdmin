@@ -5,11 +5,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'general/crontab_log/index',
-                    add_url: 'general/crontab_log/add',
+                    index_url: 'general.crontab_log/index',
+                    add_url: 'general.crontab_log/add',
                     edit_url: '',
-                    del_url: 'general/crontab_log/del',
-                    multi_url: 'general/crontab_log/multi',
+                    del_url: 'general.crontab_log/del',
+                    multi_url: 'general.crontab_log/multi',
                     table: 'crontab'
                 }
             });
@@ -36,7 +36,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                     text: __("Result"),
                                     classname: "btn btn-xs btn-info btn-dialog",
                                     icon: "fa fa-file",
-                                    url: "general/crontab_log/detail",
+                                    url: "general.crontab_log/detail",
                                     extend: "data-window='parent'"
                                 }
                             ]

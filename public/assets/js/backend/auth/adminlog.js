@@ -5,11 +5,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'auth/adminlog/index',
+                    index_url: 'auth.adminlog/index',
                     add_url: '',
                     edit_url: '',
-                    del_url: 'auth/adminlog/del',
-                    multi_url: 'auth/adminlog/multi',
+                    del_url: 'auth.adminlog/del',
+                    multi_url: 'auth.adminlog/multi',
                 }
             });
 
@@ -38,7 +38,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                 text: __('Detail'),
                                 icon: 'fa fa-list',
                                 classname: 'btn btn-info btn-xs btn-detail btn-dialog',
-                                url: 'auth/adminlog/detail'
+                                url: 'auth.adminlog/detail'
                             }],
                             formatter: Table.api.formatter.operate
                         }

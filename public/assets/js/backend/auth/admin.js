@@ -5,11 +5,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'auth/admin/index',
-                    add_url: 'auth/admin/add',
-                    edit_url: 'auth/admin/edit',
-                    del_url: 'auth/admin/del',
-                    multi_url: 'auth/admin/multi',
+                    index_url: 'auth.admin/index',
+                    add_url: 'auth.admin/add',
+                    edit_url: 'auth.admin/edit',
+                    del_url: 'auth.admin/del',
+                    multi_url: 'auth.admin/multi',
                 }
             });
 

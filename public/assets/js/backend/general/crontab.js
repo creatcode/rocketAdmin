@@ -5,11 +5,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'general/crontab/index',
-                    add_url: 'general/crontab/add',
-                    edit_url: 'general/crontab/edit',
-                    del_url: 'general/crontab/del',
-                    multi_url: 'general/crontab/multi',
+                    index_url: 'general.crontab/index',
+                    add_url: 'general.crontab/add',
+                    edit_url: 'general.crontab/edit',
+                    del_url: 'general.crontab/del',
+                    multi_url: 'general.crontab/multi',
                     table: 'crontab'
                 }
             });
@@ -47,7 +47,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                     },
                                     text: __('Logs'),
                                     classname: "btn btn-xs btn-info btn-dialog",
-                                    url: "general/crontab_log/index?crontab_id={ids}",
+                                    url: "general.crontab_log/index?crontab_id={ids}",
                                 }
                             ]
                         }
@@ -85,7 +85,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                 });
                 Form.api.bindevent($("form[role=form]"));
                 $(document).on("change", "#pickdays", function () {
-                    Fast.api.ajax({ url: "general/crontab/get_schedule_future", data: { schedule: $("#schedule").val(), days: $(this).val() } }, function (data, ret) {
+                    Fast.api.ajax({ url: "general.crontab/get_schedule_future", data: { schedule: $("#schedule").val(), days: $(this).val() } }, function (data, ret) {
                         if (typeof data.futuretime !== 'undefined' && $.isArray(data.futuretime)) {
                             var result = [];
                             $.each(data.futuretime, function (i, j) {
