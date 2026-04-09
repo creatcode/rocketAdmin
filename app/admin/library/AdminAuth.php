@@ -68,6 +68,7 @@ class AdminAuth extends AuthService
         Session::set("admin", $admin->toArray());
         Session::set("admin.safecode", $this->getEncryptSafecode($admin));
         $this->keeplogin($admin, $keeptime);
+        $this->logined = true;
         return true;
     }
 
@@ -76,12 +77,14 @@ class AdminAuth extends AuthService
      */
     public function logout()
     {
-        $admin = Admin::find(intval($this->id));
-        if ($admin) {
-            $admin->token = '';
-            $admin->save();
+        if ($this->id) {
+            $admin = Admin::find(intval($this->id));
+            if ($admin) {
+                $admin->token = '';
+                $admin->save();
+            }
         }
-        $this->logined = false; //重置登录状态
+        $this->logined = false;
         Session::delete("admin");
         Cookie::delete("keeplogin");
         // 向客户端发送一个 HTTP cookie
@@ -100,14 +103,18 @@ class AdminAuth extends AuthService
         if (!$keeplogin) {
             return false;
         }
-        list($id, $keeptime, $expiretime, $key) = explode('|', $keeplogin);
+        $parts = explode('|', $keeplogin);
+        if (count($parts) !== 4) {
+            return false;
+        }
+        list($id, $keeptime, $expiretime, $key) = $parts;
         if ($id && $keeptime && $expiretime && $key && $expiretime > time()) {
             $admin = Admin::find($id);
             if (!$admin || !$admin->token) {
                 return false;
             }
             //token有变更
-            if ($key != $this->getKeeploginKey($admin, $keeptime, $expiretime)) {
+            if ($key !== $this->getKeeploginKey($admin, $keeptime, $expiretime)) {
                 return false;
             }
             $ip = request()->ip();
@@ -119,10 +126,10 @@ class AdminAuth extends AuthService
             Session::set("admin.safecode", $this->getEncryptSafecode($admin));
             //刷新自动登录的时效
             $this->keeplogin($admin, $keeptime);
+            $this->logined = true;
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**

@@ -68,9 +68,11 @@ class Api extends BaseController
         // 前置操作方法
         if ($this->beforeActionList) {
             foreach ($this->beforeActionList as $method => $options) {
-                is_numeric($method) ?
-                    $this->beforeAction($options) :
+                if (is_numeric($method)) {
+                    $this->beforeAction($options);
+                } else {
                     $this->beforeAction($method, $options);
+                }
             }
         }
     }
@@ -88,7 +90,7 @@ class Api extends BaseController
         check_ip_allowed();
 
         //移除HTML标签
-        $this->request->filter('trim,strip_tags,htmlspecialchars');
+        $this->request->filter(['trim', 'strip_tags', 'htmlspecialchars']);
 
         $this->auth = Auth::instance();
 

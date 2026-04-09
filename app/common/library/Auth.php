@@ -271,8 +271,8 @@ class Auth
             $this->setError('You are not logged in');
             return false;
         }
-        //判断旧密码是否正确
-        if ($this->_user->password == $this->getEncryptPassword($oldpassword, $this->_user->salt) || $ignoreoldpassword) {
+        // 判断旧密码是否正确
+        if ($ignoreoldpassword || $this->_user->password == $this->getEncryptPassword($oldpassword, $this->_user->salt)) {
             Db::startTrans();
             try {
                 $salt = Random::alnum();

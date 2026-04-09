@@ -5,9 +5,9 @@ namespace app\admin\library\traits;
 use app\admin\library\AdminAuth;
 use Exception;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
-use PhpOffice\PhpSpreadsheet\Reader\Xls;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use think\db\exception\BindParamException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -207,14 +207,16 @@ trait Backend
         Db::startTrans();
         try {
             foreach ($list as $item) {
-                $count += $item->delete();
+                if ($item->delete()) {
+                    $count++;
+                }
             }
             Db::commit();
         } catch (PDOException | Exception $e) {
             Db::rollback();
             $this->error($e->getMessage());
         }
-        if ($count) {
+        if ($count > 0) {
             $this->success();
         }
         $this->error(__('No rows were deleted'));
@@ -271,6 +273,9 @@ trait Backend
             $this->error(__('Invalid parameters'));
         }
         $ids = $ids ?: $this->request->post('ids');
+        if (empty($ids)) {
+            $this->error(__('Parameter %s can not be empty', 'ids'));
+        }
         $pk = $this->model->getPk();
         $adminIds = $this->getDataLimitAdminIds();
         $where = [];
@@ -285,14 +290,16 @@ trait Backend
         try {
             $list = $this->model->onlyTrashed()->where($where)->select();
             foreach ($list as $item) {
-                $count += $item->restore();
+                if ($item->restore()) {
+                    $count++;
+                }
             }
             Db::commit();
         } catch (PDOException | Exception $e) {
             Db::rollback();
             $this->error($e->getMessage());
         }
-        if ($count) {
+        if ($count > 0) {
             $this->success();
         }
         $this->error(__('No rows were updated'));
@@ -323,7 +330,8 @@ trait Backend
             $this->error(__('You have no permission'));
         }
         $adminIds = $this->getDataLimitAdminIds();
-        $where[] = [$this->model->getPk(), 'in', $ids];
+        $pk = $this->model->getPk();
+        $where[] = [$pk, 'in', $ids];
         if (is_array($adminIds)) {
             $where[] = [$this->dataLimitField, 'in', $adminIds];
         }
@@ -332,14 +340,16 @@ trait Backend
         try {
             $list = $this->model->where($where)->select();
             foreach ($list as $item) {
-                $count += $item->save($values);
+                if ($item->save($values)) {
+                    $count++;
+                }
             }
             Db::commit();
         } catch (PDOException | Exception $e) {
             Db::rollback();
             $this->error($e->getMessage());
         }
-        if ($count) {
+        if ($count > 0) {
             $this->success();
         }
         $this->error(__('No rows were updated'));
@@ -358,21 +368,23 @@ trait Backend
         if (!$file) {
             $this->error(__('Parameter %s can not be empty', 'file'));
         }
-        $filePath = public_path()  . $file;
+        $filePath = public_path() . $file;
         if (!is_file($filePath)) {
             $this->error(__('No results were found'));
         }
         //实例化reader
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
         if (!in_array($ext, ['csv', 'xls', 'xlsx'])) {
             $this->error(__('Unknown data format'));
         }
+
+        // CSV文件需要转换为UTF-8编码
         if ($ext === 'csv') {
-            $file = fopen($filePath, 'r');
-            $filePath = tempnam(sys_get_temp_dir(), 'import_csv');
-            $fp = fopen($filePath, 'w');
+            $tempPath = tempnam(sys_get_temp_dir(), 'import_csv');
+            $fp = fopen($tempPath, 'w');
+            $fp2 = fopen($filePath, 'r');
             $n = 0;
-            while ($line = fgets($file)) {
+            while ($line = fgets($fp2)) {
                 $line = rtrim($line, "\n\r\0");
                 $encoding = mb_detect_encoding($line, ['utf-8', 'gbk', 'latin1', 'big5']);
                 if ($encoding !== 'utf-8') {
@@ -385,102 +397,590 @@ trait Backend
                 }
                 $n++;
             }
-            fclose($file) || fclose($fp);
-
-            $reader = new Csv();
-        } elseif ($ext === 'xls') {
-            $reader = new Xls();
-        } else {
-            $reader = new Xlsx();
+            fclose($fp2);
+            fclose($fp);
+            $tempFilePath = $tempPath;
+            $filePath = $tempFilePath;
         }
 
         //导入文件首行类型,默认是注释,如果需要使用字段名称请使用name
-        $importHeadType = isset($this->importHeadType) ? $this->importHeadType : 'comment';
+        $importHeadType = !empty($this->importHeadType) ? $this->importHeadType : 'comment';
 
         $table = $this->model->getQuery()->getTable();
         $default = Config::get('database.default');
         $database = Config::get('database.connections.' . $default . '.database');
         $fieldArr = [];
-        $list = Db::query("SELECT COLUMN_NAME,COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND TABLE_SCHEMA = ?", [$table, $database]);
-        foreach ($list as $k => $v) {
-            if ($importHeadType == 'comment') {
-                $v['COLUMN_COMMENT'] = explode(':', $v['COLUMN_COMMENT'])[0]; //字段备注有:时截取
-                $fieldArr[$v['COLUMN_COMMENT']] = $v['COLUMN_NAME'];
-            } else {
-                $fieldArr[$v['COLUMN_NAME']] = $v['COLUMN_NAME'];
+        try {
+            $list = Db::query("SELECT COLUMN_NAME,COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND TABLE_SCHEMA = ?", [$table, $database]);
+            foreach ($list as $v) {
+                if ($importHeadType == 'comment') {
+                    $comment = explode(':', $v['COLUMN_COMMENT'])[0];
+                    $fieldArr[$comment] = $v['COLUMN_NAME'];
+                } else {
+                    $fieldArr[$v['COLUMN_NAME']] = $v['COLUMN_NAME'];
+                }
             }
+        } catch (Exception $e) {
+            if ($tempFilePath) {
+                @unlink($tempFilePath);
+            }
+            $this->error($e->getMessage());
         }
 
         //加载文件
         $insert = [];
         try {
-            if (!$PHPExcel = $reader->load($filePath)) {
-                $this->error(__('Unknown data format'));
-            }
-            $currentSheet = $PHPExcel->getSheet(0);  //读取文件中的第一个工作表
-            $allColumn = $currentSheet->getHighestDataColumn(); //取得最大的列号
-            $allRow = $currentSheet->getHighestRow(); //取得一共有多少行
-            $maxColumnNumber = Coordinate::columnIndexFromString($allColumn);
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
+
+            $sheet = $spreadsheet->getActiveSheet();
+            $highestRow = $sheet->getHighestRow();
+            $highestColumn = $sheet->getHighestColumn();
+            $highestColumnIndex = Coordinate::columnIndexFromString($highestColumn);
+
+            // 读取表头
             $fields = [];
-            for ($currentRow = 1; $currentRow <= 1; $currentRow++) {
-                for ($currentColumn = 1; $currentColumn <= $maxColumnNumber; $currentColumn++) {
-                    $val = $currentSheet->getCellByColumnAndRow($currentColumn, $currentRow)->getValue();
-                    $fields[] = $val;
-                }
+            for ($col = 1; $col <= $highestColumnIndex; $col++) {
+                $columnLetter = Coordinate::stringFromColumnIndex($col);
+                $fields[] = $sheet->getCell($columnLetter . '1')->getValue();
             }
 
-            for ($currentRow = 2; $currentRow <= $allRow; $currentRow++) {
+            // 读取数据行
+            for ($row = 2; $row <= $highestRow; $row++) {
                 $values = [];
-                for ($currentColumn = 1; $currentColumn <= $maxColumnNumber; $currentColumn++) {
-                    $val = $currentSheet->getCellByColumnAndRow($currentColumn, $currentRow)->getValue();
+                for ($col = 1; $col <= $highestColumnIndex; $col++) {
+                    $columnLetter = Coordinate::stringFromColumnIndex($col);
+                    $val = $sheet->getCell($columnLetter . $row)->getValue();
                     $values[] = is_null($val) ? '' : $val;
                 }
-                $row = [];
-                $temp = array_combine($fields, $values);
-                foreach ($temp as $k => $v) {
-                    if (isset($fieldArr[$k]) && $k !== '') {
-                        $row[$fieldArr[$k]] = $v;
-                    }
-                }
-                if ($row) {
-                    $insert[] = $row;
+                $rowData = array_combine($fields, $values);
+                $rowData = array_filter($rowData, fn($k) => isset($fieldArr[$k]) && $k !== '', ARRAY_FILTER_USE_KEY);
+                $rowData = array_combine(
+                    array_map(fn($k) => $fieldArr[$k], array_keys($rowData)),
+                    $rowData
+                );
+                if ($rowData) {
+                    $insert[] = $rowData;
                 }
             }
+            unset($spreadsheet, $sheet);
         } catch (Exception $exception) {
+            if ($tempFilePath) {
+                @unlink($tempFilePath);
+            }
             $this->error($exception->getMessage());
+        } finally {
+            if ($tempFilePath && file_exists($tempFilePath)) {
+                @unlink($tempFilePath);
+            }
         }
+
         if (!$insert) {
             $this->error(__('No rows were updated'));
         }
 
         try {
-            //是否包含admin_id字段
-            $has_admin_id = false;
-            foreach ($fieldArr as $name => $key) {
-                if ($key == 'admin_id') {
-                    $has_admin_id = true;
-                    break;
-                }
-            }
-            if ($has_admin_id) {
+            $hasAdminId = in_array('admin_id', $fieldArr);
+            if ($hasAdminId) {
                 $auth = AdminAuth::instance();
                 foreach ($insert as &$val) {
                     if (empty($val['admin_id'])) {
                         $val['admin_id'] = $auth->isLogin() ? $auth->id : 0;
                     }
                 }
+                unset($val);
             }
             $this->model->saveAll($insert);
         } catch (PDOException $exception) {
             $msg = $exception->getMessage();
             if (preg_match("/.+Integrity constraint violation: 1062 Duplicate entry '(.+)' for key '(.+)'/is", $msg, $matches)) {
                 $msg = "导入失败，包含【{$matches[1]}】的记录已存在";
-            };
+            }
             $this->error($msg);
         } catch (Exception $e) {
             $this->error($e->getMessage());
         }
 
         $this->success();
+    }
+
+    /**
+     * 基于原生PHP的高速导出（CSV/XLSX，无需任何扩展）
+     * CSV 模式直接流式写入，适合百万级数据
+     *
+     * @param array $headers 表头名称数组，如 ['ID', '名称', '创建时间']
+     * @param array $fieldNames 字段名数组，如 ['id', 'name', 'createtime']，与headers一一对应
+     * @param array $data 导出的数据数组，如果为空则根据fieldNames从数据库查询
+     * @param string $fileName 导出文件名，不含扩展名
+     * @throws Exception
+     */
+    protected function fastExport($headers = [], $fieldNames = [], $data = [], $fileName = '', $exportLimit = 100000)
+    {
+        $this->request->filter(['strip_tags', 'trim']);
+
+        $format = $this->request->request('format', 'csv');
+        if ($exportLimit <= 0) {
+            $exportLimit = (int) $this->request->request('limit', 100000);
+            $exportLimit = $exportLimit > 0 ? min($exportLimit, 1000000) : 100000;
+        } else {
+            $exportLimit = min($exportLimit, 1000000);
+        }
+
+        if (empty($headers) || empty($fieldNames)) {
+            [$where, $sort, $order] = $this->buildparams();
+
+            $table = $this->model->getQuery()->getTable();
+            $default = Config::get('database.default');
+            $database = Config::get('database.connections.' . $default . '.database');
+
+            $fieldMap = [];
+            $exportFields = $this->exportFields ?? [];
+            try {
+                $columns = Db::query(
+                    "SELECT COLUMN_NAME, COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND TABLE_SCHEMA = ?",
+                    [$table, $database]
+                );
+                foreach ($columns as $col) {
+                    $comment = explode(':', $col['COLUMN_COMMENT'])[0];
+                    $fieldName = $col['COLUMN_NAME'];
+                    if ($exportFields && !in_array($fieldName, $exportFields)) {
+                        continue;
+                    }
+                    $fieldMap[$fieldName] = $comment ?: $fieldName;
+                }
+            } catch (Exception $e) {
+                $this->error($e->getMessage());
+            }
+
+            if (empty($fieldMap)) {
+                $this->error(__('No fields available for export'));
+            }
+
+            $fieldNames = array_keys($fieldMap);
+            $headers = array_values($fieldMap);
+        }
+
+        $fileName = $fileName ?: ($this->exportFileName ?? 'export') . '_' . date('YmdHis');
+
+        if ($format === 'csv') {
+            $this->fastExportCsv($headers, $fieldNames, $data, $fileName, $exportLimit);
+        } else {
+            $this->fastExportXlsx($headers, $fieldNames, $data, $fileName, $exportLimit);
+        }
+    }
+
+    /**
+     * CSV 高速导出（流式写入，内存占用极低）
+     *
+     * @param array $headers 表头名称数组
+     * @param array $fieldNames 字段名数组
+     * @param array $data 数据数组，如果为空则使用默认查询
+     * @param string $fileName 文件名
+     * @param int $exportLimit 导出数量限制
+     * @throws Exception
+     */
+    protected function fastExportCsv($headers, $fieldNames, $data = [], $fileName = '', $exportLimit = 100000)
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'export_') . '.csv';
+
+        try {
+            $fp = fopen($tempFile, 'w');
+            if ($fp === false) {
+                $this->error('无法创建临时文件');
+            }
+
+            // BOM + 表头
+            fprintf($fp, "\xEF\xBB\xBF");
+            fputcsv($fp, $headers);
+
+            $totalWritten = 0;
+            $batchSize = 2000;
+
+            $writeRow = function ($row) use ($fp, &$totalWritten, $fieldNames, $exportLimit) {
+                if ($totalWritten >= $exportLimit) {
+                    return false;
+                }
+
+                $rowData = is_object($row) ? $row->toArray() : $row;
+                $line = [];
+                foreach ($fieldNames as $fieldName) {
+                    $value = $rowData[$fieldName] ?? '';
+
+                    if (is_array($value)) {
+                        $value = json_encode($value, JSON_UNESCAPED_UNICODE);
+                    } elseif (is_null($value)) {
+                        $value = '';
+                    } elseif (in_array($fieldName, ['createtime', 'updatetime', 'deletetime'])) {
+                        $value = $value ? date('Y-m-d H:i:s', $value) : '';
+                    }
+
+                    $line[] = $value;
+                }
+
+                fputcsv($fp, $line);
+                $totalWritten++;
+
+                if ($totalWritten % 20000 === 0) {
+                    fflush($fp);
+                    gc_collect_cycles();
+                }
+            };
+
+            if (!empty($data)) {
+                foreach ($data as $row) {
+                    if ($writeRow($row) === false) break;
+                }
+            } else {
+                [$where, $sort, $order] = $this->buildparams();
+                $query = $this->model->where($where)->order($sort, $order)->limit($exportLimit);
+                $query->chunk($batchSize, function ($list) use ($writeRow) {
+                    foreach ($list as $row) {
+                        if ($writeRow($row) === false) {
+                            return false;
+                        }
+                    }
+                });
+            }
+
+            fclose($fp);
+            $fileSize = filesize($tempFile);
+            $downloadFileName = $fileName . '.csv';
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: text/csv; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="' . rawurlencode($downloadFileName) . '"');
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Pragma: public');
+            header('Content-Length: ' . $fileSize);
+
+            readfile($tempFile);
+            @unlink($tempFile);
+            exit;
+        } catch (Exception $e) {
+            if (isset($fp) && is_resource($fp)) {
+                fclose($fp);
+            }
+            if (isset($tempFile) && file_exists($tempFile)) {
+                @unlink($tempFile);
+            }
+            $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * XLSX 高速导出（基于原生 XML 打包，内存效率高）
+     *
+     * @param array $headers 表头名称数组
+     * @param array $fieldNames 字段名数组
+     * @param array $data 数据数组，如果为空则使用默认查询
+     * @param string $fileName 文件名
+     * @param int $exportLimit 导出数量限制
+     * @throws Exception
+     */
+    protected function fastExportXlsx($headers, $fieldNames, $data = [], $fileName = '', $exportLimit = 100000)
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        foreach ($headers as $colIndex => $title) {
+            $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+            $sheet->setCellValue($colLetter . '1', $title);
+        }
+
+        $currentRow = 2;
+        $totalWritten = 0;
+        $batchSize = 2000;
+
+        $writeRow = function ($row) use (&$currentRow, &$totalWritten, $sheet, $fieldNames, $exportLimit) {
+            if ($totalWritten >= $exportLimit) {
+                return false;
+            }
+
+            $rowData = is_object($row) ? $row->toArray() : $row;
+            foreach ($fieldNames as $colIndex => $fieldName) {
+                $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+                $value = $rowData[$fieldName] ?? '';
+
+                if (is_array($value)) {
+                    $value = json_encode($value, JSON_UNESCAPED_UNICODE);
+                } elseif (is_null($value)) {
+                    $value = '';
+                } elseif (in_array($fieldName, ['createtime', 'updatetime', 'deletetime'])) {
+                    $value = $value ? date('Y-m-d H:i:s', $value) : '';
+                }
+
+                $sheet->setCellValue($colLetter . $currentRow, $value);
+            }
+            $currentRow++;
+            $totalWritten++;
+
+            if ($totalWritten % 10000 === 0) {
+                gc_collect_cycles();
+            }
+        };
+
+        try {
+            if (!empty($data)) {
+                foreach ($data as $row) {
+                    if ($writeRow($row) === false) break;
+                }
+            } else {
+                [$where, $sort, $order] = $this->buildparams();
+                $query = $this->model->where($where)->order($sort, $order)->limit($exportLimit);
+                $query->chunk($batchSize, function ($list) use ($writeRow) {
+                    foreach ($list as $row) {
+                        if ($writeRow($row) === false) {
+                            return false;
+                        }
+                    }
+                });
+            }
+        } catch (Exception $e) {
+            unset($spreadsheet);
+            $this->error($e->getMessage());
+        }
+
+        try {
+            ob_end_clean();
+            ob_start();
+
+            $writer = new Xlsx($spreadsheet);
+            $tempFile = tempnam(sys_get_temp_dir(), 'export_');
+            $writer->save($tempFile);
+
+            $fileSize = filesize($tempFile);
+            $downloadFileName = $fileName . '.xlsx';
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . rawurlencode($downloadFileName) . '"');
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Pragma: public');
+            header('Content-Length: ' . $fileSize);
+
+            readfile($tempFile);
+            @unlink($tempFile);
+            unset($spreadsheet, $writer);
+            exit;
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * 导出
+     *
+     * @param array $headers 表头名称数组，如 ['ID', '名称', '创建时间']
+     * @param array $fieldNames 字段名数组，如 ['id', 'name', 'createtime']，与headers一一对应
+     * @param array $data 导出的数据数组，如果为空则根据fieldNames从数据库查询
+     * @param string $fileName 导出文件名，不含扩展名
+     * @param int $exportLimit 导出数量限制，默认100000
+     * @throws Exception
+     */
+    protected function export($headers = [], $fieldNames = [], $data = [], $fileName = '', $exportLimit = 100000)
+    {
+        $this->request->filter(['strip_tags', 'trim']);
+
+        $format = $this->request->request('format', 'xlsx');
+        if ($exportLimit <= 0) {
+            $exportLimit = (int) $this->request->request('limit', 100000);
+            $exportLimit = $exportLimit > 0 ? min($exportLimit, 100000) : 100000;
+        } else {
+            $exportLimit = min($exportLimit, 100000);
+        }
+
+        if (empty($headers) || empty($fieldNames)) {
+            [$where, $sort, $order] = $this->buildparams();
+
+            $table = $this->model->getQuery()->getTable();
+            $default = Config::get('database.default');
+            $database = Config::get('database.connections.' . $default . '.database');
+
+            $fieldMap = [];
+            $exportFields = $this->exportFields ?? [];
+            try {
+                $columns = Db::query(
+                    "SELECT COLUMN_NAME, COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND TABLE_SCHEMA = ?",
+                    [$table, $database]
+                );
+                foreach ($columns as $col) {
+                    $comment = explode(':', $col['COLUMN_COMMENT'])[0];
+                    $fieldName = $col['COLUMN_NAME'];
+                    if ($exportFields && !in_array($fieldName, $exportFields)) {
+                        continue;
+                    }
+                    $fieldMap[$fieldName] = [
+                        'comment' => $comment ?: $fieldName,
+                        'name' => $fieldName,
+                    ];
+                }
+            } catch (Exception $e) {
+                $this->error($e->getMessage());
+            }
+
+            if (empty($fieldMap)) {
+                $this->error(__('No fields available for export'));
+            }
+
+            $fileName = ($this->exportFileName ?? $table) . '_' . date('YmdHis');
+            $headers = array_column($fieldMap, 'comment');
+            $fieldNames = array_keys($fieldMap);
+        } else {
+            $fileName = $fileName ?: 'export_' . date('YmdHis');
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        foreach ($headers as $colIndex => $title) {
+            $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+            $sheet->setCellValue($colLetter . '1', $title);
+        }
+
+        $currentRow = 2;
+        $batchSize = 1000;
+        $totalWritten = 0;
+
+        $writeRow = function ($row) use (&$currentRow, &$totalWritten, $sheet, $fieldNames, $exportLimit) {
+            if ($totalWritten >= $exportLimit) {
+                return false;
+            }
+
+            $rowData = is_object($row) ? $row->toArray() : $row;
+            foreach ($fieldNames as $colIndex => $fieldName) {
+                $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+                $value = $rowData[$fieldName] ?? '';
+
+                if (is_array($value)) {
+                    $value = json_encode($value, JSON_UNESCAPED_UNICODE);
+                } elseif (is_null($value)) {
+                    $value = '';
+                } elseif (in_array($fieldName, ['createtime', 'updatetime', 'deletetime'])) {
+                    $value = $value ? date('Y-m-d H:i:s', $value) : '';
+                }
+
+                $sheet->setCellValue($colLetter . $currentRow, $value);
+            }
+            $currentRow++;
+            $totalWritten++;
+
+            if ($totalWritten % 10000 === 0) {
+                gc_collect_cycles();
+            }
+        };
+
+        try {
+            if (!empty($data)) {
+                foreach ($data as $row) {
+                    if ($writeRow($row) === false) break;
+                }
+            } else {
+                [$where, $sort, $order] = $this->buildparams();
+                $query = $this->model->where($where)->order($sort, $order)->limit($exportLimit);
+                $query->chunk($batchSize, function ($list) use ($writeRow) {
+                    foreach ($list as $row) {
+                        if ($writeRow($row) === false) {
+                            return false;
+                        }
+                    }
+                });
+            }
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
+        }
+
+        try {
+            ob_end_clean();
+            ob_start();
+
+            if ($format === 'csv') {
+                $writer = new Csv($spreadsheet);
+                $writer->setDelimiter(',');
+                $writer->setEnclosure('"');
+                $writer->setLineEnding("\r\n");
+                $writer->setUseBOM(true);
+                $contentType = 'text/csv';
+            } else {
+                $writer = new Xlsx($spreadsheet);
+                $contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            }
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'export_');
+            $writer->save($tempFile);
+
+            $fileSize = filesize($tempFile);
+            $downloadFileName = $fileName . '.' . $format;
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: ' . $contentType);
+            header('Content-Disposition: attachment; filename="' . rawurlencode($downloadFileName) . '"');
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Pragma: public');
+            header('Content-Length: ' . $fileSize);
+
+            readfile($tempFile);
+            @unlink($tempFile);
+            unset($spreadsheet, $writer);
+            exit;
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * Excel导出
+     *
+     * @param string $filename 完整文件名
+     * @param array $header 首行
+     * @param array $export_data 数据
+     */
+    protected function exportData(string $filename, array $header, array $export_data)
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        // 首行
+        $h_column = 'A';
+        $row = 1;
+        foreach ($header as $value) {
+            $sheet->getColumnDimension($h_column)->setWidth(25);
+            $sheet->setCellValue($h_column . $row, $value);
+            $h_column++;
+        }
+        $sheet->getRowDimension(1)->setRowHeight(30);
+        $sheet->getStyle('A1:' . $h_column . $row)->getFont()->setBold(true);
+
+        // 写入数据
+        foreach ($export_data as $item) {
+            $column = 'A';
+            $row++;
+            foreach ($item as $kk => $vv) {
+                $sheet->setCellValue($column . $row, $vv);
+                $column++;
+            }
+        }
+
+        // 设置内容样式
+        $sheet->getStyle('A1:' . $column . $row)->applyFromArray([
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                'wrapText' => true
+            ]
+        ]);
+        $sheet->getStyle('A1:' . $column . $row)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+
+        // 下载
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit;
     }
 }

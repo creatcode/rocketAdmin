@@ -178,7 +178,9 @@ class Backend extends BaseController
         $breadcrumb = [];
         if (!IS_DIALOG && !config('fastadmin.multiplenav') && config('fastadmin.breadcrumb')) {
             $breadcrumb = $this->auth->getBreadCrumb($path);
-            array_pop($breadcrumb);
+            if (!empty($breadcrumb)) {
+                array_pop($breadcrumb);
+            }
         }
         $this->view->breadcrumb = $breadcrumb;
 
@@ -349,7 +351,9 @@ class Backend extends BaseController
                 case 'FINDINSET':
                 case 'FIND_IN_SET':
                     $v = is_array($v) ? $v : explode(',', str_replace(' ', ',', $v));
-                    $findArr = array_values($v);
+                    $findArr = array_values(array_filter($v, function ($item) {
+                        return $item !== '' && $item !== null;
+                    }));
                     foreach ($findArr as $idx => $item) {
                         $bindName = "item_" . $index . "_" . $idx;
                         $bind[$bindName] = $item;
@@ -365,8 +369,8 @@ class Backend extends BaseController
                 case 'BETWEEN':
                 case 'NOT BETWEEN':
                     $arr = array_slice(explode(',', $v), 0, 2);
-                    if (stripos($v, ',') === false || !array_filter($arr, function ($v) {
-                        return $v != '' && $v !== false && $v !== null;
+                    if (stripos($v, ',') === false || !array_filter($arr, function ($val) {
+                        return $val != '' && $val !== false && $val !== null;
                     })) {
                         continue 2;
                     }
@@ -496,9 +500,11 @@ class Backend extends BaseController
         }
         $order = [];
         foreach ($orderby as $k => $v) {
-            $order[$v[0]] = $v[1];
+            if (is_array($v) && isset($v[0]) && preg_match('/^[a-zA-Z0-9_\.]+$/', $v[0])) {
+                $order[$v[0]] = isset($v[1]) && in_array(strtoupper($v[1]), ['ASC', 'DESC']) ? $v[1] : 'DESC';
+            }
         }
-        $field = $field ? $field : 'name';
+        $field = $field && preg_match('/^[a-zA-Z0-9_]+$/', $field) ? $field : 'name';
 
         //如果有primaryvalue,说明当前是初始化传值
         if ($primaryvalue !== null) {
@@ -508,6 +514,7 @@ class Backend extends BaseController
             $where = function ($query) use ($word, $andor, $field, $searchfield, $custom) {
                 $logic = $andor == 'AND' ? '&' : '|';
                 $searchfield = is_array($searchfield) ? implode($logic, $searchfield) : $searchfield;
+                $searchfield = preg_replace('/[^a-zA-Z0-9_\.\,\|]/', '', $searchfield);
                 $searchfield = str_replace(',', $logic, $searchfield);
                 $word = array_filter(array_unique($word));
                 if (count($word) == 1) {
@@ -523,10 +530,12 @@ class Backend extends BaseController
                 }
                 if ($custom && is_array($custom)) {
                     foreach ($custom as $k => $v) {
-                        if (is_array($v) && 2 == count($v)) {
-                            $query->where($k, trim($v[0]), $v[1]);
-                        } else {
-                            $query->where($k, '=', $v);
+                        if (preg_match('/^[a-zA-Z0-9_]+$/', $k)) {
+                            if (is_array($v) && 2 == count($v)) {
+                                $query->where($k, trim($v[0]), $v[1]);
+                            } else {
+                                $query->where($k, '=', $v);
+                            }
                         }
                     }
                 }
@@ -539,14 +548,10 @@ class Backend extends BaseController
         $list = [];
         $total = $this->model->where($where)->count();
         if ($total > 0) {
-            if (is_array($adminIds)) {
-                $this->model->where($this->dataLimitField, 'in', $adminIds);
-            }
-
             $fields = is_array($this->selectpageFields) ? $this->selectpageFields : ($this->selectpageFields && $this->selectpageFields != '*' ? explode(',', $this->selectpageFields) : []);
 
             //如果有primaryvalue,说明当前是初始化传值,按照选择顺序排序
-            if ($primaryvalue !== null && preg_match("/^[a-z0-9_\-]+$/i", $primarykey)) {
+            if ($primaryvalue !== null && preg_match("/^[a-zA-Z0-9_\-]+$/i", $primarykey)) {
                 $primaryvalue = array_unique(is_array($primaryvalue) ? $primaryvalue : explode(',', $primaryvalue));
                 //修复自定义data-primary-key为字符串内容时，给排序字段添加上引号
                 $primaryvalue = array_map(function ($value) {

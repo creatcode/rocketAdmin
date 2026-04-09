@@ -88,8 +88,8 @@ abstract class BaseController
                 list($validate, $scene) = explode('.', $validate);
             }
             $class = false !== strpos($validate, '\\') ? $validate : $this->app->parseClass('validate', $validate);
-            $v     = new $class();
-            if (!empty($scene)) {
+            $v = class_exists($class) ? new $class() : new Validate();
+            if (!empty($scene) && method_exists($v, 'scene')) {
                 $v->scene($scene);
             }
         }

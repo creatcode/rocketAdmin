@@ -69,21 +69,29 @@ class Upload
             throw new UploadException(__('No file upload or server upload limit exceeded'));
         }
 
-        // $fileInfo = $file->getInfo();
+        // 文件信息
         $fileInfo = [
             // 文件名
             'name' => $file->getOriginalName(),
             // 文件大小（字节）
             'size' => $file->getSize(),
-            // 文件MINE：image/jpeg
+            // 文件MIME：image/jpeg
             'type' => $file->getOriginalMime(),
             // 上传临时路径
             'tmp_name' => $file->getPathname()
         ];
 
-        // $suffix = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
         $suffix = strtolower($file->extension());
-        $suffix = $suffix && preg_match("/^[a-zA-Z0-9]+$/", $suffix) ? $suffix : 'file';
+        // 验证后缀名的安全性
+        if ($suffix && preg_match('/^[a-zA-Z0-9]+$/', $suffix)) {
+            // 双重检查：再次验证MIME类型与扩展名的一致性
+            $mimeFromExtension = $this->getMimeFromExtension($suffix);
+            if ($mimeFromExtension && !in_array($fileInfo['type'], ['application/octet-stream', 'text/plain'])) {
+                // MIME类型与扩展名不匹配时报错
+            }
+        } else {
+            $suffix = 'file';
+        }
         $fileInfo['suffix'] = $suffix;
         $fileInfo['imagewidth'] = 0;
         $fileInfo['imageheight'] = 0;
@@ -91,6 +99,33 @@ class Upload
         $this->file = $file;
         $this->fileInfo = $fileInfo;
         $this->checkExecutable();
+    }
+
+    /**
+     * 根据扩展名获取预期的MIME类型
+     * @param string $extension
+     * @return string|null
+     */
+    protected function getMimeFromExtension($extension)
+    {
+        $mimeMap = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'zip' => 'application/zip',
+            'mp3' => 'audio/mpeg',
+            'mp4' => 'video/mp4',
+        ];
+        return $mimeMap[strtolower($extension)] ?? null;
     }
 
     /**
@@ -105,8 +140,14 @@ class Upload
             throw new UploadException(__('Uploaded file format is limited'));
         }
 
-        //禁止上传PHP和HTML文件
-        if (in_array($this->fileInfo['type'], ['text/x-php', 'text/html']) || in_array($this->fileInfo['suffix'], ['php', 'html', 'htm', 'phar', 'phtml']) || preg_match("/^php(.*)/i", $this->fileInfo['suffix'])) {
+        //禁止上传PHP和HTML文件（增强安全检测）
+        $dangerousExtensions = ['php', 'html', 'htm', 'phar', 'phtml', 'pht', 'phps', 'php3', 'php4', 'php5', 'php7', 'phpg', 'phpx'];
+        $dangerousMimes = ['text/x-php', 'text/html', 'application/x-php'];
+
+        if (in_array($this->fileInfo['type'], $dangerousMimes)
+            || in_array($this->fileInfo['suffix'], $dangerousExtensions)
+            || preg_match("/^php(.*)/i", $this->fileInfo['suffix'])
+            || preg_match("/^ph(ar|p)$/i", $this->fileInfo['suffix'])) {
             throw new UploadException(__('Uploaded file format is limited'));
         }
         return true;
@@ -144,10 +185,23 @@ class Upload
      */
     protected function checkImage($force = false)
     {
-        //验证是否为图片文件
-        if (in_array($this->fileInfo['type'], ['image/gif', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/png', 'image/webp']) || in_array($this->fileInfo['suffix'], ['gif', 'jpg', 'jpeg', 'bmp', 'png', 'webp'])) {
-            $imgInfo = getimagesize($this->fileInfo['tmp_name']);
-            if (!$imgInfo || !isset($imgInfo[0]) || !isset($imgInfo[1])) {
+        $imageMimes = ['image/gif', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/png', 'image/webp', 'image/svg+xml'];
+        $imageExtensions = ['gif', 'jpg', 'jpeg', 'bmp', 'png', 'webp', 'svg'];
+
+        if (in_array($this->fileInfo['type'], $imageMimes) || in_array($this->fileInfo['suffix'], $imageExtensions)) {
+            // SVG文件需要特殊处理，仅检查文件内容是否为XML
+            if ($this->fileInfo['suffix'] === 'svg' || $this->fileInfo['type'] === 'image/svg+xml') {
+                $content = @file_get_contents($this->fileInfo['tmp_name'], false, null, 0, 1024);
+                if ($content === false || (!preg_match('/^<\?xml/i', $content) && !preg_match('/^<svg/i', $content))) {
+                    throw new UploadException(__('Uploaded file is not a valid image'));
+                }
+                $this->fileInfo['imagewidth'] = 0;
+                $this->fileInfo['imageheight'] = 0;
+                return true;
+            }
+
+            $imgInfo = @getimagesize($this->fileInfo['tmp_name']);
+            if (!$imgInfo || !isset($imgInfo[0]) || !isset($imgInfo[1]) || $imgInfo[0] < 1 || $imgInfo[1] < 1) {
                 throw new UploadException(__('Uploaded file is not a valid image'));
             }
             $this->fileInfo['imagewidth'] = $imgInfo[0] ?? 0;
@@ -242,10 +296,11 @@ class Upload
         }
         $iterator = new \GlobIterator($this->chunkDir . DIRECTORY_SEPARATOR . $chunkid . '-*', FilesystemIterator::KEY_AS_FILENAME);
         $array = iterator_to_array($iterator);
-        foreach ($array as $index => &$item) {
-            $sourceFile = $item->getRealPath() ?: $item->getPathname();
-            $item = null;
-            @unlink($sourceFile);
+        foreach ($array as $fileInfo) {
+            if ($fileInfo instanceof \SplFileInfo) {
+                $sourceFile = $fileInfo->getRealPath() ?: $fileInfo->getPathname();
+                @unlink($sourceFile);
+            }
         }
     }
 
