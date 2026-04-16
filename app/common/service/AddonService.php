@@ -46,7 +46,8 @@ class AddonService extends \think\Service
             foreach ($hooks as $key => $values) {
                 $values = is_string($values) ? explode(',', $values) : (array)$values;
                 $hooks[$key] = array_filter(array_map(function ($v) use ($key) {
-                    return [get_addon_class($v), Str::camel($key)];
+                    $class = get_addon_class($v);
+                    return $class ? [$class, Str::camel($key)] : null;
                 }, $values));
 
                 // $values = is_string($values) ? explode(',', $values) : (array)$values;
@@ -79,14 +80,24 @@ class AddonService extends \think\Service
         $execute = '\\think\\addons\\Route::execute';
         foreach ($routeArr as $k => $v) {
             if (is_array($v)) {
-                $domain = $v['domain'];
+                $domain = $v['domain'] ?? '';
+                if (!$domain || empty($v['rule']) || !is_array($v['rule'])) {
+                    continue;
+                }
                 $drules = [];
                 foreach ($v['rule'] as $m => $n) {
-                    [$addon, $controller, $action] = explode('/', $n);
+                    $parts = explode('/', (string)$n);
+                    if (count($parts) !== 3) {
+                        continue;
+                    }
+                    [$addon, $controller, $action] = $parts;
                     $drules[$m] = [
                         'addon'    => $addon, 'controller' => $controller, 'action' => $action,
                         'indomain' => 1,
                     ];
+                }
+                if (!$drules) {
+                    continue;
                 }
                 Route::domain($domain, function () use ($drules, $execute) {
                     // 动态注册域名的路由规则
@@ -102,7 +113,11 @@ class AddonService extends \think\Service
                 if (!$v) {
                     continue;
                 }
-                [$addon, $controller, $action] = explode('/', $v);
+                $parts = explode('/', (string)$v);
+                if (count($parts) !== 3) {
+                    continue;
+                }
+                [$addon, $controller, $action] = $parts;
                 Route::rule($k, $execute)
                     ->middleware([CommonInit::class, \think\middleware\LoadLangPack::class])
                     ->name($k)

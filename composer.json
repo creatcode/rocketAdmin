@@ -35,7 +35,8 @@
         "topthink/think-filesystem": "^2.0",
         "nesbot/carbon": "^2.72",
         "overtrue/easy-sms": "^2.7",
-        "topthink/think-throttle": "^1.3"
+        "topthink/think-throttle": "^1.3",
+        "creatcode/easyaddons": "*"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",
@@ -61,5 +62,11 @@
             "@php think service:discover",
             "@php think vendor:publish"
         ]
-    }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "E:\\phpstudy_pro\\rocket-admin\\fastadmin-addons"
+        }
+    ]
 }

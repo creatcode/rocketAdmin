@@ -79,6 +79,56 @@
             "install-path": "../carbonphp/carbon-doctrine-types"
         },
         {
+            "name": "creatcode/easyaddons",
+            "version": "1.4.3",
+            "version_normalized": "1.4.3.0",
+            "dist": {
+                "type": "path",
+                "url": "E:/phpstudy_pro/rocket-admin/fastadmin-addons",
+                "reference": "bcf9665a88cee86d37cd1f52e72f1be99f193a4e"
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.0",
+                "nelexa/zip": "^3.3 || ^4.0",
+                "php": ">=7.1.0",
+                "symfony/var-exporter": "^5.4|^6.0|^7.0",
+                "topthink/framework": "^6.1|^7.0|^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "think": {
+                    "services": [
+                        "creatcode\\easyaddons\\AddonService"
+                    ],
+                    "config": {
+                        "addons": "src/config.php"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "creatcode\\easyaddons\\": "src/"
+                },
+                "files": [
+                    "src/helper.php"
+                ]
+            },
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Dedicated addons development package for this TP8 project",
+            "keywords": [
+                "addons",
+                "project-package",
+                "thinkphp8"
+            ],
+            "transport-options": {
+                "relative": false
+            },
+            "install-path": "../creatcode/easyaddons"
+        },
+        {
             "name": "easywechat-composer/easywechat-composer",
             "version": "1.4.1",
             "version_normalized": "1.4.1.0",

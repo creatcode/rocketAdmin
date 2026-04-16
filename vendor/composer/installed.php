@@ -19,6 +19,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'creatcode/easyaddons' => array(
+            'pretty_version' => '1.4.3',
+            'version' => '1.4.3.0',
+            'reference' => 'bcf9665a88cee86d37cd1f52e72f1be99f193a4e',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../creatcode/easyaddons',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'easywechat-composer/easywechat-composer' => array(
             'pretty_version' => '1.4.1',
             'version' => '1.4.1.0',

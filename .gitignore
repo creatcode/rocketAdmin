@@ -1,8 +1,12 @@
 *.log
 .env
+.install.lock
 composer.phar
 .DS_Store
 Thumbs.db
+runtime/
+public/uploads/
+public/assets/addons/
 /.idea
 /.vscode
 /.settings

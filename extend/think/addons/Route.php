@@ -22,6 +22,9 @@ class Route
         $action = $action ? trim(call_user_func($filter, $action)) : 'index';
         Event::trigger('addon_begin', $request);
         if (! empty($addon) && ! empty($controller) && ! empty($action)) {
+            if (!self::checkRouteParams($addon, $controller, $action)) {
+                throw new HttpException(404, __('addon action %s not found', $controller . '->' . $action . '()'));
+            }
             $info = get_addon_info($addon);
             if (! $info) {
                 throw new HttpException(404, __('addon %s not found', $addon));
@@ -57,5 +60,19 @@ class Route
         } else {
             abort(500, lang('addon can not be empty'));
         }
+    }
+
+    protected static function checkRouteParams($addon, $controller, $action)
+    {
+        if (!preg_match('/^[a-zA-Z0-9]+$/', $addon)) {
+            return false;
+        }
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)*$/', $controller)) {
+            return false;
+        }
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $action) || strpos($action, '__') === 0) {
+            return false;
+        }
+        return true;
     }
 }

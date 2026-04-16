@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{:__('Installing RocketAdmin')}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+    <meta name="renderer" content="webkit">
+    <style>
+        :root {
+            --bg: linear-gradient(135deg, #edf4ff 0%, #f9fbff 55%, #eef8f2 100%);
+            --card: rgba(255, 255, 255, 0.92);
+            --line: rgba(37, 72, 124, 0.12);
+            --text: #28415f;
+            --muted: #6f8199;
+            --primary: #2f6fed;
+            --primary-dark: #204fa9;
+            --success: #1f8a5b;
+            --danger: #d24747;
+            --danger-soft: #fff1f1;
+            --shadow: 0 24px 60px rgba(44, 85, 145, 0.14);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); }
+        .page { max-width: 1120px; margin: 0 auto; padding: 36px 20px 48px; }
+        .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; }
+        .panel { background: var(--card); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+        .brand { padding: 34px 34px 26px; }
+        .badge { display: inline-block; padding: 7px 12px; border-radius: 999px; background: rgba(47, 111, 237, 0.1); color: var(--primary); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+        h1 { margin: 18px 0 12px; font-size: 42px; line-height: 1.08; }
+        .lead { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.8; }
+        .status-card { padding: 28px; }
+        .status-title { margin: 0 0 16px; font-size: 20px; }
+        .status-tip { margin: 0 0 18px; color: var(--muted); }
+        .status-list { margin: 0; padding: 0; list-style: none; }
+        .status-list li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+        .status-list li:last-child { border-bottom: 0; }
+        .tag { min-width: 56px; text-align: center; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .tag-success { color: var(--success); background: rgba(31, 138, 91, 0.12); }
+        .tag-failed { color: var(--danger); background: rgba(210, 71, 71, 0.12); }
+        .layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; margin-top: 24px; }
+        .form-panel { padding: 28px 30px 30px; }
+        .section-title { margin: 0 0 18px; font-size: 22px; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .field-full { grid-column: span 2; }
+        .field label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+        .field input { width: 100%; border: 1px solid rgba(37, 72, 124, 0.16); background: #fff; border-radius: 14px; padding: 13px 14px; font-size: 14px; color: var(--text); transition: border-color .2s ease, box-shadow .2s ease; }
+        .field input:focus { outline: none; border-color: rgba(47, 111, 237, 0.65); box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.12); }
+        .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 24px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border-radius: 14px; border: 0; cursor: pointer; text-decoration: none; font-weight: 700; transition: transform .18s ease, opacity .18s ease, background .18s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+        .btn-light { color: var(--primary-dark); background: rgba(47, 111, 237, 0.1); }
+        .btn[disabled] { cursor: not-allowed; opacity: 0.6; transform: none; }
+        .notice, .summary { padding: 18px 20px; border-radius: 16px; margin-bottom: 18px; line-height: 1.7; }
+        .notice { background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(210, 71, 71, 0.15); }
+        .summary { background: rgba(31, 138, 91, 0.1); color: var(--success); border: 1px solid rgba(31, 138, 91, 0.12); }
+        .side-panel { padding: 28px; }
+        .meta { margin: 0; padding: 0; list-style: none; }
+        .meta li { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+        .meta li:last-child { border-bottom: 0; }
+        .meta strong { display: block; margin-bottom: 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
+        .meta span, .meta a { word-break: break-all; color: var(--text); }
+        @media (max-width: 960px) {
+            .hero, .layout, .grid { grid-template-columns: 1fr; }
+            .field-full { grid-column: span 1; }
+            h1 { font-size: 34px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="hero">
+        <div class="panel brand">
+            <span class="badge">{:__('System installer')}</span>
+            <h1>{:__('Installing RocketAdmin')}</h1>
+            <p class="lead">安装流程已经从旧脚本整理为独立模块，页面安装和命令安装共用同一套核心服务，部署过程更稳定，也更容易维护。</p>
+        </div>
+        <div class="panel status-card">
+            <h2 class="status-title">{:__('Environment check')}</h2>
+            <p class="status-tip">{if $envStatus.ok}{:__('Environment is ready')}{else /}{:__('Environment is not ready')}{/if}</p>
+            <ul class="status-list">
+                {volist name="envStatus.items" id="item"}
+                <li>
+                    <div>
+                        <strong>{$item.name}</strong>
+                        <div style="color:#6f8199;font-size:13px;">{$item.message}</div>
+                    </div>
+                    <span class="tag {if $item.passed}tag-success{else /}tag-failed{/if}">
+                        {if $item.passed}{:__('Passed')}{else /}{:__('Failed')}{/if}
+                    </span>
+                </li>
+                {/volist}
+            </ul>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="panel form-panel">
+            {if $installed}
+            <div class="summary">{:__('Installation completed')}</div>
+            <div class="actions">
+                <a class="btn btn-primary" href="{$adminUrl}" target="_blank">{:__('Dashboard')}</a>
+                <a class="btn btn-light" href="/" target="_blank">{:__('Home')}</a>
+            </div>
+            {else /}
+            <div id="error" class="notice" style="display:none;"></div>
+            <form id="install-form" method="post">
+                <h2 class="section-title">{:__('System installer')}</h2>
+                <div class="grid">
+                    <div class="field">
+                        <label>{:__('Mysql Hostname')}</label>
+                        <input type="text" name="mysqlHostname" value="127.0.0.1" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Mysql Hostport')}</label>
+                        <input type="number" name="mysqlHostport" value="3306" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Mysql Database')}</label>
+                        <input type="text" name="mysqlDatabase" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Mysql Prefix')}</label>
+                        <input type="text" name="mysqlPrefix" value="fa_" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Mysql Username')}</label>
+                        <input type="text" name="mysqlUsername" value="root" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Mysql Password')}</label>
+                        <input type="password" name="mysqlPassword">
+                    </div>
+                    <div class="field">
+                        <label>{:__('Admin Username')}</label>
+                        <input type="text" name="adminUsername" value="admin" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Admin Email')}</label>
+                        <input type="email" name="adminEmail" value="admin@admin.com" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Admin Password')}</label>
+                        <input type="password" name="adminPassword" required>
+                    </div>
+                    <div class="field">
+                        <label>{:__('Repeat Password')}</label>
+                        <input type="password" name="adminPasswordConfirmation" required>
+                    </div>
+                    <div class="field field-full">
+                        <label>{:__('Website')}</label>
+                        <input type="text" name="siteName" value="{:__('My Website')}" required>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" type="submit" {if !$envStatus.ok}disabled{/if}>{:__('Install now')}</button>
+                </div>
+            </form>
+            <div id="success" class="summary" style="display:none;"></div>
+            <div id="success-actions" class="actions" style="display:none;"></div>
+            {/if}
+        </div>
+
+        <div class="panel side-panel">
+            <h2 class="section-title">{:__('Environment check')}</h2>
+            <ul class="meta">
+                <li>
+                    <strong>{:__('Current install lock')}</strong>
+                    <span>{$lockFileDisplay}</span>
+                </li>
+                <li>
+                    <strong>{:__('Installed site')}</strong>
+                    <span>{$installedSite}</span>
+                </li>
+                <li>
+                    <strong>{:__('Installed admin')}</strong>
+                    <span>{$installedAdmin}</span>
+                </li>
+                <li>
+                    <strong>{:__('Installed at')}</strong>
+                    <span>{$installedAt}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script src="__CDN__/assets/libs/jquery/dist/jquery.min.js"></script>
+<script>
+    $(function () {
+        var $form = $('#install-form');
+        if (!$form.length) {
+            return;
+        }
+
+        $form.on('submit', function (e) {
+            e.preventDefault();
+
+            var $button = $form.find('button[type="submit"]');
+            var $error = $('#error');
+            var $success = $('#success');
+            var $actions = $('#success-actions');
+
+            $error.hide().text('');
+            $success.hide().text('');
+            $actions.hide().empty();
+            $button.prop('disabled', true).text("{:__('Installing')}");
+
+            $.ajax({
+                url: '',
+                type: 'POST',
+                dataType: 'json',
+                data: $form.serialize(),
+                success: function (ret) {
+                    if (ret.code === 1) {
+                        $form.hide();
+                        $success.text(ret.msg).show();
+                        $('<a class="btn btn-primary" target="_blank"></a>').attr('href', ret.data.adminUrl).text("{:__('Dashboard')}").appendTo($actions);
+                        $('<a class="btn btn-light" target="_blank"></a>').attr('href', '/').text("{:__('Home')}").appendTo($actions);
+                        $actions.show();
+                        return;
+                    }
+
+                    $error.text(ret.msg || 'Install failed').show();
+                    $button.prop('disabled', false).text("{:__('Install now')}");
+                },
+                error: function (xhr) {
+                    $error.text(xhr.responseText || 'Install failed').show();
+                    $button.prop('disabled', false).text("{:__('Install now')}");
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

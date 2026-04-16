@@ -16,6 +16,9 @@ if (!function_exists('__')) {
      */
     function get_addon_list()
     {
+        if (!defined('ADDON_PATH') || !is_dir(ADDON_PATH)) {
+            return [];
+        }
         $results = scandir(ADDON_PATH);
         $list = [];
         foreach ($results as $name) {
@@ -62,7 +65,7 @@ if (!function_exists('__')) {
         $addons = get_addon_list();
         $list = [];
         foreach ($addons as $name => $addon) {
-            if (!$addon['state']) {
+            if (empty($addon['state'])) {
                 continue;
             }
             $addonServiceDir = ADDON_PATH . $name . DIRECTORY_SEPARATOR . 'service' . DIRECTORY_SEPARATOR;
@@ -74,7 +77,7 @@ if (!function_exists('__')) {
             $service_files = is_dir($addonServiceDir) ? scandir($addonServiceDir) : [];
             $namespace = 'addons\\' . $name . '\\service\\';
             foreach ($service_files as $file) {
-                if (strpos($file, '.php')) {
+                if (is_file($addonServiceDir . $file) && substr($file, -4) === '.php') {
                     $className = str_replace('.php', '', $file);
                     $class = $namespace . $className;
                     if (class_exists($class)) {
@@ -98,6 +101,9 @@ if (!function_exists('__')) {
     {
         // 读取addons的配置
         $config = (array) Config::get('addons');
+        $config['hooks'] = isset($config['hooks']) && is_array($config['hooks']) ? $config['hooks'] : [];
+        $config['route'] = isset($config['route']) && is_array($config['route']) ? $config['route'] : [];
+        $config['service'] = isset($config['service']) && is_array($config['service']) ? $config['service'] : [];
         if ($truncate) {
             // 清空手动配置的钩子
             $config['hooks'] = [];
@@ -110,12 +116,16 @@ if (!function_exists('__')) {
         $addons = get_addon_list();
         $domain = [];
         foreach ($addons as $name => $addon) {
-            if (!$addon['state']) {
+            if (empty($addon['state'])) {
                 continue;
             }
 
             // 读取出所有公共方法
-            $methods = (array) get_class_methods('\\addons\\' . $name . '\\' . ucfirst($name));
+            $addonClass = get_addon_class($name);
+            if (!$addonClass) {
+                continue;
+            }
+            $methods = (array) get_class_methods($addonClass);
             // 跟插件基类方法做比对，得到差异结果
             $hooks = array_diff($methods, $base);
             // 循环将钩子方法写入配置中
@@ -322,7 +332,8 @@ if (!function_exists('__')) {
     function addon_url($url, $vars = [], $suffix = true, $domain = false)
     {
         $url = ltrim($url, '/');
-        $addon = substr($url, 0, stripos($url, '/'));
+        $pos = stripos($url, '/');
+        $addon = $pos === false ? $url : substr($url, 0, $pos);
         if (!is_array($vars)) {
             parse_str($vars, $params);
             $vars = $params;
@@ -340,7 +351,7 @@ if (!function_exists('__')) {
         $rewrite = $config && isset($config['rewrite']) && $config['rewrite'] ? $config['rewrite'] : [];
 
         if ($rewrite) {
-            $path = substr($url, stripos($url, '/') + 1);
+            $path = $pos === false ? '' : substr($url, $pos + 1);
             if (isset($rewrite[$path]) && $rewrite[$path]) {
                 $val = $rewrite[$path];
                 array_walk($params, function ($value, $key) use (&$val) {
@@ -384,8 +395,14 @@ if (!function_exists('__')) {
      */
     function set_addon_info($name, $array)
     {
+        if (!$name || !preg_match("/^[a-zA-Z0-9]+$/", $name)) {
+            throw new Exception('插件名称不正确');
+        }
         $file = ADDON_PATH . $name . DIRECTORY_SEPARATOR . 'info.ini';
         $addon = get_addon_instance($name);
+        if (!$addon) {
+            throw new Exception('插件不存在');
+        }
         $array = $addon->setInfo($name, $array);
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
             throw new Exception('插件配置写入失败');
@@ -395,10 +412,10 @@ if (!function_exists('__')) {
             if (is_array($val)) {
                 $res[] = "[$key]";
                 foreach ($val as $skey => $sval) {
-                    $res[] = "$skey = " . (is_numeric($sval) ? $sval : $sval);
+                    $res[] = "$skey = " . addon_ini_encode($sval);
                 }
             } else {
-                $res[] = "$key = " . (is_numeric($val) ? $val : $val);
+                $res[] = "$key = " . addon_ini_encode($val);
             }
         }
         if ($handle = fopen($file, 'w')) {
@@ -411,6 +428,23 @@ if (!function_exists('__')) {
         }
 
         return true;
+    }
+
+    /**
+     * Encode value for addon info.ini.
+     * @param mixed $value
+     * @return string
+     */
+    function addon_ini_encode($value)
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+        if (is_numeric($value)) {
+            return (string)$value;
+        }
+        $value = str_replace(["\r", "\n"], ['\r', '\n'], (string)$value);
+        return '"' . addcslashes($value, "\\\"") . '"';
     }
 
     /**

@@ -54,9 +54,7 @@ class Addon extends Backend
         if (!$name) {
             $this->error(__('Parameter %s can not be empty', 'name'));
         }
-        if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-            $this->error(__('Addon name incorrect'));
-        }
+        $this->checkAddonName($name);
         $info = get_addon_info($name);
         $config = get_addon_fullconfig($name);
         if (!$info) {
@@ -130,9 +128,7 @@ class Addon extends Backend
         if (!$name) {
             $this->error(__('Parameter %s can not be empty', 'name'));
         }
-        if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-            $this->error(__('Addon name incorrect'));
-        }
+        $this->checkAddonName($name);
 
         $info = [];
         try {
@@ -166,9 +162,7 @@ class Addon extends Backend
         if (!$name) {
             $this->error(__('Parameter %s can not be empty', 'name'));
         }
-        if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-            $this->error(__('Addon name incorrect'));
-        }
+        $this->checkAddonName($name);
         //只有开启调试且为超级管理员才允许删除相关数据库
         $tables = [];
         if ($droptables && Env::get("app_debug") && $this->auth->isSuperAdmin()) {
@@ -207,9 +201,7 @@ class Addon extends Backend
         if (!$name) {
             $this->error(__('Parameter %s can not be empty', 'name'));
         }
-        if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-            $this->error(__('Addon name incorrect'));
-        }
+        $this->checkAddonName($name);
         try {
             $action = $action == 'enable' ? $action : 'disable';
             //调用启用、禁用的方法
@@ -262,9 +254,7 @@ class Addon extends Backend
         if (!$name) {
             $this->error(__('Parameter %s can not be empty', 'name'));
         }
-        if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-            $this->error(__('Addon name incorrect'));
-        }
+        $this->checkAddonName($name);
         if (!is_dir($addonTmpDir)) {
             @mkdir($addonTmpDir, 0755, true);
         }
@@ -303,9 +293,7 @@ class Addon extends Backend
         if (!$name) {
             $this->error(__('Parameter %s can not be empty', 'name'));
         }
-        if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-            $this->error(__('Addon name incorrect'));
-        }
+        $this->checkAddonName($name);
 
         try {
             Service::importsql($name, 'testdata.sql');
@@ -372,6 +360,7 @@ class Addon extends Backend
     public function isbuy()
     {
         $name = $this->request->post("name");
+        $this->checkAddonName($name);
         $uid = $this->request->post("uid");
         $token = $this->request->post("token");
         $version = $this->request->post("version");
@@ -414,9 +403,7 @@ class Addon extends Backend
     public function get_table_list()
     {
         $name = $this->request->post("name");
-        if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-            $this->error(__('Addon name incorrect'));
-        }
+        $this->checkAddonName($name);
         $tables = get_addon_tables($name);
         $default = Config::get('database.default');
         $prefix = Config::get('database.connections.' . $default . '.prefix');
@@ -456,5 +443,14 @@ class Addon extends Backend
             Cache::set("onlineaddons", $onlineaddons, 600);
         }
         return $onlineaddons;
+    }
+
+    protected function checkAddonName($name)
+    {
+        try {
+            Service::checkAddonName($name);
+        } catch (Exception $e) {
+            $this->error(__('Addon name incorrect'));
+        }
     }
 }

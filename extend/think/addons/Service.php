@@ -74,25 +74,38 @@ class Service
         try {
             $client = self::getClient();
             $response = $client->get('/addon/download', ['query' => array_merge(['name' => $name], $extend)]);
+            if ($response->getStatusCode() >= 400) {
+                throw new Exception("Addon package download failed");
+            }
             $body = $response->getBody();
             $content = $body->getContents();
             if (substr($content, 0, 1) === '{') {
                 $json = (array)json_decode($content, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new Exception("Unknown data format");
+                }
                 //如果传回的是一个下载链接,则再次下载
-                if ($json['data'] && isset($json['data']['url'])) {
+                if (!empty($json['data']) && isset($json['data']['url'])) {
                     $response = $client->get($json['data']['url']);
+                    if ($response->getStatusCode() >= 400) {
+                        throw new Exception("Addon package download failed");
+                    }
                     $body = $response->getBody();
                     $content = $body->getContents();
                 } else {
                     //下载返回错误，抛出异常
-                    throw new AddonException($json['msg'], $json['code'], $json['data']);
+                    throw new AddonException($json['msg'] ?? "Addon package download failed", $json['code'] ?? 0, $json['data'] ?? []);
                 }
             }
         } catch (TransferException $e) {
             throw new Exception("Addon package download failed");
         }
 
-        if ($write = fopen($tmpFile, 'w')) {
+        if ($content === '') {
+            throw new Exception("Addon package download failed");
+        }
+
+        if ($write = fopen($tmpFile, 'wb')) {
             fwrite($write, $content);
             fclose($write);
             return $tmpFile;
@@ -113,6 +126,7 @@ class Service
         if (!$name) {
             throw new Exception('Invalid parameters');
         }
+        self::checkAddonName($name);
         $addonsBackupDir = self::getAddonsBackupDir();
         $file = $file ?: $addonsBackupDir . $name . '.zip';
 
@@ -124,10 +138,11 @@ class Service
             $zip->close();
             throw new Exception('Unable to open the zip file');
         }
+        self::checkZipEntries($zip);
 
         $dir = self::getAddonDir($name);
         if (!is_dir($dir)) {
-            @mkdir($dir, 0755);
+            @mkdir($dir, 0755, true);
         }
 
         // 解压插件压缩包
@@ -195,9 +210,7 @@ class Service
             }
 
             // 判断插件是否存在
-            if (!preg_match("/^[a-zA-Z0-9]+$/", $name)) {
-                throw new Exception('Addon name incorrect');
-            }
+            self::checkAddonName($name);
 
             // 判断新插件是否存在
             $newAddonDir = self::getAddonDir($name);
@@ -304,6 +317,7 @@ class Service
      */
     public static function check($name)
     {
+        self::checkAddonName($name);
         if (!$name || !is_dir(ADDON_PATH . $name)) {
             throw new Exception('Addon not exists');
         }
@@ -345,11 +359,19 @@ class Service
      */
     public static function importsql($name, $fileName = null)
     {
+        self::checkAddonName($name);
         $fileName = is_null($fileName) ? 'install.sql' : $fileName;
+        if (!preg_match('/^[a-zA-Z0-9_.-]+\.sql$/', $fileName)) {
+            throw new Exception('Invalid parameters');
+        }
         $sqlFile = self::getAddonDir($name) . $fileName;
         if (is_file($sqlFile)) {
             $lines = file($sqlFile);
+            if ($lines === false) {
+                throw new Exception("Unable to open file '{$fileName}' for reading");
+            }
             $templine = '';
+            $errors = [];
             foreach ($lines as $line) {
                 if (substr($line, 0, 2) == '--' || $line == '' || substr($line, 0, 2) == '/*') {
                     continue;
@@ -362,10 +384,16 @@ class Service
                     try {
                         Db::getPdo()->exec($templine);
                     } catch (\PDOException | \Error $e) {
-                        //$e->getMessage();
+                        $errors[] = $e->getMessage();
                     }
                     $templine = '';
                 }
+            }
+            if (trim($templine) !== '') {
+                $errors[] = 'SQL statement is incomplete';
+            }
+            if ($errors) {
+                throw new Exception('Addon SQL import failed: ' . implode('; ', array_slice($errors, 0, 3)));
             }
         }
         return true;
@@ -407,15 +435,17 @@ EOD;
         $file = self::getExtraAddonsFile();
 
         $config = get_addon_autoload_config(true);
-        if ($config['autoload']) {
-            return;
+        if (!empty($config['autoload'])) {
+            return true;
         }
 
         if (!is_really_writable($file)) {
             throw new Exception(__("Unable to open file '%s' for writing", "addons.php"));
         }
 
-        file_put_contents($file, "<?php\n\n" . "return " . VarExporter::export($config) . ";\n", LOCK_EX);
+        if (file_put_contents($file, "<?php\n\n" . "return " . VarExporter::export($config) . ";\n", LOCK_EX) === false) {
+            throw new Exception(__("Unable to open file '%s' for writing", "addons.php"));
+        }
         return true;
     }
 
@@ -432,6 +462,7 @@ EOD;
      */
     public static function install($name, $force = false, $extend = [], $tmpFile = '')
     {
+        self::checkAddonName($name);
         if (!$name || (is_dir(ADDON_PATH . $name) && !$force)) {
             throw new Exception('Addon already exists');
         }
@@ -510,6 +541,7 @@ EOD;
      */
     public static function uninstall($name, $force = false)
     {
+        self::checkAddonName($name);
         if (!$name || !is_dir(ADDON_PATH . $name)) {
             throw new Exception('Addon not exists');
         }
@@ -522,7 +554,7 @@ EOD;
         if ($force) {
             $list = self::getGlobalFiles($name);
             foreach ($list as $k => $v) {
-                @unlink(app()->getRootPath() . $v);
+                self::deleteGlobalFile($v);
             }
         }
 
@@ -553,6 +585,7 @@ EOD;
      */
     public static function enable($name, $force = false)
     {
+        self::checkAddonName($name);
         if (!$name || !is_dir(ADDON_PATH . $name)) {
             throw new Exception('Addon not exists');
         }
@@ -568,7 +601,10 @@ EOD;
                 $zip = new ZipFile();
                 try {
                     foreach ($conflictFiles as $k => $v) {
-                        $zip->addFile(app()->getRootPath() . $k, $v);
+                        $path = self::getGlobalFilePath($v);
+                        if ($path && is_file($path)) {
+                            $zip->addFile($path, $v);
+                        }
                     }
                     $addonsBackupDir = self::getAddonsBackupDir();
                     $zip->saveAsFile($addonsBackupDir . $name . "-conflict-enable-" . date("YmdHis") . ".zip");
@@ -644,6 +680,7 @@ EOD;
      */
     public static function disable($name, $force = false)
     {
+        self::checkAddonName($name);
         if (!$name || !is_dir(ADDON_PATH . $name)) {
             throw new Exception('Addon not exists');
         }
@@ -664,7 +701,10 @@ EOD;
                 $zip = new ZipFile();
                 try {
                     foreach ($conflictFiles as $k => $v) {
-                        $zip->addFile(app()->getRootPath() . $v, $v);
+                        $path = self::getGlobalFilePath($v);
+                        if ($path && is_file($path)) {
+                            $zip->addFile($path, $v);
+                        }
                     }
                     $addonsBackupDir = self::getAddonsBackupDir();
                     $zip->saveAsFile($addonsBackupDir . $name . "-conflict-disable-" . date("YmdHis") . ".zip");
@@ -692,6 +732,9 @@ EOD;
                 foreach ($config['files'] as $index => $item) {
                     //避免切换不同服务器后导致路径不一致
                     $item = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $item);
+                    if (!self::normalizeGlobalFile($item)) {
+                        continue;
+                    }
                     $item_tp5 = str_replace('app' . DIRECTORY_SEPARATOR, 'application' . DIRECTORY_SEPARATOR, $item);
 
                     //插件资源目录，无需重复复制
@@ -703,8 +746,9 @@ EOD;
                     if (!is_dir($itemBaseDir)) {
                         @mkdir($itemBaseDir, 0755, true);
                     }
-                    if (is_file(app()->getRootPath() . $item)) {
-                        @copy(app()->getRootPath() . $item, $addonDir . $item_tp5);
+                    $globalFile = self::getGlobalFilePath($item);
+                    if ($globalFile && is_file($globalFile)) {
+                        @copy($globalFile, $addonDir . $item_tp5);
                     }
                 }
                 $list = $config['files'];
@@ -720,7 +764,10 @@ EOD;
         foreach ($list as $k => $v) {
             $v = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $v);
             $v_tp6 = str_replace('application' . DIRECTORY_SEPARATOR, 'app' . DIRECTORY_SEPARATOR, $v);
-            $file = app()->getRootPath() . $v_tp6;
+            $file = self::getGlobalFilePath($v_tp6);
+            if (!$file) {
+                continue;
+            }
             $dirs[] = dirname($file);
             @unlink($file);
         }
@@ -728,7 +775,7 @@ EOD;
         // 移除插件空目录
         $dirs = array_filter(array_unique($dirs));
         foreach ($dirs as $k => $v) {
-            remove_empty_folder($v);
+            self::removeEmptyGlobalFolder($v);
         }
 
         $info = get_addon_info($name);
@@ -764,6 +811,7 @@ EOD;
      */
     public static function upgrade($name, $extend = [], $tmpFile = false)
     {
+        self::checkAddonName($name);
         $info = get_addon_info($name);
         if ($info['state']) {
             throw new Exception(__('Please disable addon first'));
@@ -860,6 +908,7 @@ EOD;
      */
     public static function config($name, $changed = [])
     {
+        self::checkAddonName($name);
         $addonDir = self::getAddonDir($name);
         $addonConfigFile = $addonDir . '.addonrc';
         $config = [];
@@ -882,6 +931,7 @@ EOD;
      */
     public static function getGlobalFiles($name, $onlyconflict = false)
     {
+        self::checkAddonName($name);
         $list = [];
         $addonDir = self::getAddonDir($name);
         $checkDirList = self::getCheckDirs();
@@ -915,8 +965,12 @@ EOD;
                         $path = str_replace('application' . DIRECTORY_SEPARATOR, 'app' . DIRECTORY_SEPARATOR, $path);
                     }
 
+                    $path = self::normalizeGlobalFile($path);
+                    if (!$path) {
+                        continue;
+                    }
                     if ($onlyconflict) {
-                        $destPath = app()->getRootPath() . $path;
+                        $destPath = self::getGlobalFilePath($path);
                         if (is_file($destPath)) {
                             if (filesize($filePath) != filesize($destPath) || md5_file($filePath) != md5_file($destPath)) {
                                 $list[] = $path;
@@ -1042,13 +1096,95 @@ EOD;
      */
     public static function getAddonDir($name)
     {
+        self::checkAddonName($name);
         $dir = ADDON_PATH . $name . DIRECTORY_SEPARATOR;
         return $dir;
     }
 
     /**
-     * 获取插件备份目录
+     * Normalize a file path published by an addon under project root.
+     * @param string $path
+     * @return string
      */
+    protected static function normalizeGlobalFile($path)
+    {
+        $path = str_replace('\\', '/', trim((string)$path));
+        $path = ltrim($path, '/');
+        if ($path === '' || strpos($path, "\0") !== false) {
+            return '';
+        }
+        if (preg_match('#^(?:[a-z][a-z0-9+.-]*:|[a-z]:/)#i', $path)) {
+            return '';
+        }
+        if (preg_match('#(^|/)\.\.?(/|$)#', $path)) {
+            return '';
+        }
+        return str_replace('/', DIRECTORY_SEPARATOR, $path);
+    }
+
+    /**
+     * Build a safe absolute path under project root.
+     * @param string $path
+     * @return string
+     */
+    protected static function getGlobalFilePath($path)
+    {
+        $path = self::normalizeGlobalFile($path);
+        if (!$path) {
+            return '';
+        }
+        $root = realpath(app()->getRootPath());
+        if (!$root) {
+            return '';
+        }
+        $file = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $path;
+        $real = realpath($file);
+        if ($real && strpos($real, rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) !== 0) {
+            return '';
+        }
+        return $file;
+    }
+
+    /**
+     * Delete an addon global file under project root.
+     * @param string $path
+     * @return bool
+     */
+    protected static function deleteGlobalFile($path)
+    {
+        $file = self::getGlobalFilePath($path);
+        if (!$file || !is_file($file)) {
+            return false;
+        }
+        return @unlink($file);
+    }
+
+    /**
+     * Remove empty folders under project root only.
+     * @param string $dir
+     * @return void
+     */
+    protected static function removeEmptyGlobalFolder($dir)
+    {
+        $root = realpath(app()->getRootPath());
+        $dir = realpath($dir);
+        if (!$root || !$dir) {
+            return;
+        }
+        $root = rtrim($root, DIRECTORY_SEPARATOR);
+        while ($dir && $dir !== $root && strpos($dir, $root . DIRECTORY_SEPARATOR) === 0) {
+            try {
+                if ((new \FilesystemIterator($dir))->valid()) {
+                    break;
+                }
+                @rmdir($dir);
+                $dir = dirname($dir);
+            } catch (\Exception $e) {
+                break;
+            }
+        }
+    }
+
     public static function getAddonsBackupDir()
     {
         $dir = app()->getRuntimePath() . 'addons' . DIRECTORY_SEPARATOR;
@@ -1138,12 +1274,21 @@ EOD;
             $client = self::getClient();
             $options = strtoupper($method) == 'POST' ? ['form_params' => $params] : ['query' => $params];
             $response = $client->request($method, $url, $options);
+            if ($response->getStatusCode() >= 400) {
+                throw new Exception(__('Network error'));
+            }
             $body = $response->getBody();
             $content = $body->getContents();
             $json = (array)json_decode($content, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception(__('Unknown data format'));
+            }
         } catch (TransferException $e) {
             throw new Exception(__('Network error'));
         } catch (\Exception $e) {
+            if (in_array($e->getMessage(), [__('Network error'), __('Unknown data format')])) {
+                throw $e;
+            }
             throw new Exception(__('Unknown data format'));
         }
         return $json;
@@ -1161,10 +1306,45 @@ EOD;
         // 读取插件信息
         try {
             $info = $zip->getEntryContents('info.ini');
-            $config = parse_ini_string($info);
+            $config = parse_ini_string($info, false, INI_SCANNER_TYPED);
         } catch (ZipException $e) {
             throw new Exception('Unable to extract the file');
         }
         return $config;
+    }
+
+    /**
+     * 检查插件名称
+     * @param string $name
+     * @throws Exception
+     */
+    public static function checkAddonName($name)
+    {
+        if (!$name || !preg_match("/^[a-zA-Z0-9]+$/", $name)) {
+            throw new Exception('Addon name incorrect');
+        }
+        return true;
+    }
+
+    /**
+     * 检查压缩包条目，避免解压到插件目录外
+     * @param ZipFile $zip
+     * @throws Exception
+     */
+    protected static function checkZipEntries(ZipFile $zip)
+    {
+        foreach ($zip->getListFiles() as $entry) {
+            $entry = str_replace('\\', '/', (string)$entry);
+            if ($entry === '' || strpos($entry, "\0") !== false) {
+                throw new Exception('Invalid addon package');
+            }
+            if (preg_match('#^(?:/|[a-z][a-z0-9+.-]*:|[a-z]:/)#i', $entry)) {
+                throw new Exception('Invalid addon package');
+            }
+            if (preg_match('#(^|/)\.\.?(/|$)#', $entry)) {
+                throw new Exception('Invalid addon package');
+            }
+        }
+        return true;
     }
 }
