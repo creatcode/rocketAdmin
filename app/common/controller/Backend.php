@@ -176,7 +176,7 @@ class Backend extends BaseController
 
         // 设置面包屑导航数据
         $breadcrumb = [];
-        if (!IS_DIALOG && !config('fastadmin.multiplenav') && config('fastadmin.breadcrumb')) {
+        if (!IS_DIALOG && !config('rocket.multiplenav') && config('rocket.breadcrumb')) {
             $breadcrumb = $this->auth->getBreadCrumb($path);
             if (!empty($breadcrumb)) {
                 array_pop($breadcrumb);

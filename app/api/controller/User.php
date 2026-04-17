@@ -21,7 +21,7 @@ class User extends Api
     {
         parent::initialize();
 
-        if (!Config::get('fastadmin.usercenter')) {
+        if (!Config::get('rocket.usercenter')) {
             $this->error(__('User center already closed'));
         }
     }

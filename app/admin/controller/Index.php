@@ -38,7 +38,7 @@ class Index extends Backend
         foreach ($cookieArr as $key => $regex) {
             $cookieValue = $this->request->cookie($key);
             if (!is_null($cookieValue) && preg_match($regex, $cookieValue)) {
-                Config::set([$key => $cookieValue], 'fastadmin');
+                Config::set([$key => $cookieValue], 'rocket');
             }
         }
 
@@ -90,7 +90,7 @@ class Index extends Backend
                 'password'  => $password,
                 '__token__' => $token,
             ];
-            if (Config::get('fastadmin.login_captcha')) {
+            if (Config::get('rocket.login_captcha')) {
                 $rule['captcha|' . __('Captcha')] = 'require|captcha';
                 $data['captcha'] = $this->request->post('captcha');
             }
@@ -116,7 +116,7 @@ class Index extends Backend
             Session::delete("referer");
             $this->redirect($url);
         }
-        $background = Config::get('fastadmin.login_background');
+        $background = Config::get('rocket.login_background');
         $background = $background ? (stripos($background, 'http') === 0 ? $background : config('site.cdnurl') . $background) : '';
         $this->view->assign('keeyloginhours', $keeyloginhours);
         $this->view->assign('background', $background);

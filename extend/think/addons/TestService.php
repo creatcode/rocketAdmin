@@ -199,8 +199,8 @@ class TestService
             // 追加MD5和Data数据
             $extend['md5'] = md5_file($tmpFile);
             $extend['data'] = $zip->getArchiveComment();
-            $extend['unknownsources'] = Env::get('app_debug') && config('fastadmin.unknownsources');
-            $extend['faversion'] = config('fastadmin.version');
+            $extend['unknownsources'] = Env::get('app_debug') && config('rocket.unknownsources');
+            $extend['faversion'] = config('rocket.version');
 
             $params = array_merge($config, $extend);
 
@@ -577,7 +577,7 @@ EOD;
         }
 
         //备份冲突文件
-        if (config('fastadmin.backup_global_files')) {
+        if (config('rocket.backup_global_files')) {
             $conflictFiles = self::getGlobalFiles($name, true);
             if ($conflictFiles) {
                 $zip = new ZipFile();
@@ -617,7 +617,7 @@ EOD;
         }
 
         //插件纯净模式时将插件目录下的application、public和assets删除
-        if (config('fastadmin.addon_pure_mode')) {
+        if (config('rocket.addon_pure_mode')) {
             // 删除插件目录已复制到全局的文件
             @rmdirs($sourceAssetsDir);
             foreach (self::getCheckDirs() as $k => $dir) {
@@ -672,7 +672,7 @@ EOD;
             self::noconflict($name);
         }
 
-        if (config('fastadmin.backup_global_files')) {
+        if (config('rocket.backup_global_files')) {
             //仅备份修改过的文件
             $conflictFiles = self::getGlobalFiles($name, true);
             if ($conflictFiles) {
@@ -702,7 +702,7 @@ EOD;
 
         //插件纯净模式时将原有的文件复制回插件目录
         //当无法获取全局文件列表时也将列表复制回插件目录
-        if (config('fastadmin.addon_pure_mode') || !$list) {
+        if (config('rocket.addon_pure_mode') || !$list) {
             if ($config && isset($config['files']) && is_array($config['files'])) {
                 foreach ($config['files'] as $index => $item) {
                     //避免切换不同服务器后导致路径不一致
@@ -951,7 +951,7 @@ EOD;
             $addons[] = ['name' => $name, 'domains' => $config['domains'] ?? [], 'licensecodes' => $config['licensecodes'] ?? [], 'validations' => $config['validations'] ?? []];
         }
         $params = array_merge($params, [
-            'faversion' => config('fastadmin.version'),
+            'faversion' => config('rocket.version'),
             'domain'    => $domain,
             'addons'    => $addons
         ]);
@@ -1090,7 +1090,7 @@ EOD;
      */
     protected static function getServerUrl()
     {
-        return config('fastadmin.api_url');
+        return config('rocket.api_url');
     }
 
     /**

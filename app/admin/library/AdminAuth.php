@@ -50,7 +50,7 @@ class AdminAuth extends AuthService
             $this->setError('Admin is forbidden');
             return false;
         }
-        if (Config::get('fastadmin.login_failure_retry') && $admin->loginfailure >= 10 && time() - $admin->updatetime < 86400) {
+        if (Config::get('rocket.login_failure_retry') && $admin->loginfailure >= 10 && time() - $admin->updatetime < 86400) {
             $this->setError('Please try again after 1 day');
             return false;
         }
@@ -249,14 +249,14 @@ class AdminAuth extends AuthService
             return false;
         }
         //判断是否同一时间同一账号只能在一个地方登录
-        if (Config::get('fastadmin.login_unique')) {
+        if (Config::get('rocket.login_unique')) {
             if ($my['token'] != $admin['token']) {
                 $this->logout();
                 return false;
             }
         }
         //判断管理员IP是否变动
-        if (Config::get('fastadmin.loginip_check')) {
+        if (Config::get('rocket.loginip_check')) {
             if (!isset($admin['loginip']) || $admin['loginip'] != request()->ip()) {
                 $this->logout();
                 return false;
@@ -508,8 +508,8 @@ class AdminAuth extends AuthService
 
         $select_id = $referer ? $referer['id'] : ($selected ? $selected['id'] : 0);
         $menu = $nav = '';
-        $showSubmenu = config('fastadmin.show_submenu');
-        if (Config::get('fastadmin.multiplenav')) {
+        $showSubmenu = config('rocket.show_submenu');
+        if (Config::get('rocket.multiplenav')) {
             $topList = [];
             foreach ($ruleList as $index => $item) {
                 if (!$item['pid']) {

@@ -8,7 +8,7 @@ use think\facade\Config;
 use think\facade\Db;
 use think\Response;
 
-if (!function_exists('__')) {
+if (!function_exists('get_addon_list')) {
     /**
      * 获得插件列表.
      *
@@ -524,6 +524,47 @@ if (!function_exists('__')) {
     }
 }
 
+if (!function_exists('__')) {
+    /**
+     * 获取语言变量值
+     * @param string $name 语言变量名
+     * @param array  $vars 动态变量值
+     * @param string $lang 语言
+     * @return mixed
+     */
+    function __($name, $vars = [], $lang = '')
+    {
+        if (is_numeric($name) || !$name) {
+            return $name;
+        }
+        if (!is_array($vars)) {
+            $vars = func_get_args();
+            array_shift($vars);
+            $lang = '';
+        }
+        return app()->lang->get($name, $vars, $lang);
+    }
+}
+
+if (!function_exists('addon_ini_encode')) {
+    /**
+     * Encode value for addon info.ini.
+     * @param mixed $value
+     * @return string
+     */
+    function addon_ini_encode($value)
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+        if (is_numeric($value)) {
+            return (string)$value;
+        }
+        $value = str_replace(["\r", "\n"], ['\r', '\n'], (string)$value);
+        return '"' . addcslashes($value, "\\\"") . '"';
+    }
+}
+
 if (!function_exists('format_bytes')) {
 
     /**
@@ -922,9 +963,9 @@ if (!function_exists('check_cors_request')) {
      */
     function check_cors_request()
     {
-        if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] && config('fastadmin.cors_request_domain')) {
+        if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] && config('rocket.cors_request_domain')) {
             $info = parse_url($_SERVER['HTTP_ORIGIN']);
-            $domainArr = explode(',', config('fastadmin.cors_request_domain'));
+            $domainArr = explode(',', config('rocket.cors_request_domain'));
             $domainArr[] = request()->host(true);
             if (in_array("*", $domainArr) || in_array($_SERVER['HTTP_ORIGIN'], $domainArr) || (isset($info['host']) && in_array($info['host'], $domainArr))) {
                 header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);

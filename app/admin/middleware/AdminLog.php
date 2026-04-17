@@ -19,7 +19,7 @@ class AdminLog
     public function handle($request, \Closure $next)
     {
         $response = $next($request);
-        if (($request->isPost()) && Config::get('fastadmin.auto_record_log')) {
+        if (($request->isPost()) && Config::get('rocket.auto_record_log')) {
             AdminLogModel::record();
         }
         return $response;

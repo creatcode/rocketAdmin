@@ -25,7 +25,7 @@ class User extends Frontend
         parent::initialize();
         $auth = $this->auth;
 
-        if (!Config::get('fastadmin.usercenter')) {
+        if (!Config::get('rocket.usercenter')) {
             $this->error(__('User center already closed'), '/');
         }
 
@@ -76,7 +76,7 @@ class User extends Frontend
             $token = $this->request->post('__token__');
             //验证码
             $captchaResult = true;
-            $captchaType = config("fastadmin.user_register_captcha");
+            $captchaType = config('rocket.user_register_captcha');
             if ($captchaType) {
                 if ($captchaType == 'mobile') {
                     $captchaResult = Sms::check($mobile, $captcha, 'register');
@@ -116,7 +116,7 @@ class User extends Frontend
         if (!$url && $referer && !preg_match("/(user\/login|user\/register|user\/logout)/i", $referer)) {
             $url = $referer;
         }
-        $this->view->assign('captchaType', config('fastadmin.user_register_captcha'));
+        $this->view->assign('captchaType', config('rocket.user_register_captcha'));
         $this->view->assign('url', $url);
         $this->view->assign('title', __('Register'));
         return $this->view->fetch();

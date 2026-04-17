@@ -41,7 +41,7 @@ class Addon extends Backend
             $v['config'] = $config ? 1 : 0;
             $v['url'] = str_replace($this->request->server('SCRIPT_NAME'), '', $v['url']);
         }
-        $this->assignconfig(['addons' => $addons, 'api_url' => config('fastadmin.api_url'), 'faversion' => config('fastadmin.version'), 'domain' => request()->host(true)]);
+        $this->assignconfig(['addons' => $addons, 'api_url' => config('rocket.api_url'), 'faversion' => config('rocket.version'), 'domain' => request()->host(true)]);
         return $this->view->fetch();
     }
 
@@ -420,13 +420,13 @@ class Addon extends Backend
     protected function getAddonList()
     {
         $onlineaddons = Cache::get("onlineaddons");
-        if (!is_array($onlineaddons) && config('fastadmin.api_url')) {
+        if (!is_array($onlineaddons) && config('rocket.api_url')) {
             $onlineaddons = [];
             $params = [
                 'uid'       => $this->request->post('uid'),
                 'token'     => $this->request->post('token'),
-                'version'   => config('fastadmin.version'),
-                'faversion' => config('fastadmin.version'),
+                'version'   => config('rocket.version'),
+                'faversion' => config('rocket.version'),
             ];
             $json = [];
             try {

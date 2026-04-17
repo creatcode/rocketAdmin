@@ -41,7 +41,7 @@ class Ems extends Api
         }
 
         //发送前验证码
-        if (config('fastadmin.user_api_captcha')) {
+        if (config('rocket.user_api_captcha')) {
 
             if (!preg_match("/^[a-z0-9]{4,6}\$/i", $captcha)) {
                 $this->error(__('验证码格式错误'));
