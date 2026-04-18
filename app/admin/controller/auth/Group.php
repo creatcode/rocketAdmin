@@ -3,6 +3,8 @@
 namespace app\admin\controller\auth;
 
 use app\admin\model\AuthGroup;
+use app\admin\model\AuthGroupAccess;
+use app\admin\model\AuthRule;
 use app\common\controller\Backend;
 use Exception;
 use think\facade\Db;
@@ -201,7 +203,7 @@ class Group extends Backend
 
             // 循环判断每一个组别是否可删除
             $grouplist = $this->model->where('id', 'in', $ids)->select();
-            $groupaccessmodel = model('AuthGroupAccess');
+            $groupaccessmodel = new AuthGroupAccess();
             foreach ($grouplist as $k => $v) {
                 // 当前组别下有管理员
                 $groupone = $groupaccessmodel->where(['group_id' => $v['id']])->find();
@@ -255,7 +257,7 @@ class Group extends Backend
         }
         if (($pid || $parentGroupModel) && (!$id || $currentGroupModel)) {
             $id = $id ? $id : null;
-            $ruleList = collect(model('AuthRule')->order('weigh', 'desc')->order('id', 'asc')->select())->toArray();
+            $ruleList = collect((new AuthRule())->order('weigh', 'desc')->order('id', 'asc')->select())->toArray();
             //读取父类角色所有节点列表
             $parentRuleList = [];
             if (in_array('*', explode(',', $parentGroupModel->rules))) {
@@ -274,7 +276,7 @@ class Group extends Backend
             //当前所有正常规则列表
             $ruleTree->init($parentRuleList);
             //角色组列表
-            $groupTree->init(collect(model('AuthGroup')->where('id', 'in', $this->childrenGroupIds)->select())->toArray());
+            $groupTree->init(collect((new AuthGroup())->where('id', 'in', $this->childrenGroupIds)->select())->toArray());
 
             //读取当前角色下规则ID集合
             $adminRuleIds = $this->auth->getRuleIds();

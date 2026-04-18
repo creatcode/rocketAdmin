@@ -2,6 +2,7 @@
 
 namespace app\admin\controller\user;
 
+use app\admin\model\UserRule;
 use app\common\controller\Backend;
 use util\Tree;
 
@@ -23,7 +24,7 @@ class Rule extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('UserRule');
+        $this->model = new UserRule();
         $this->view->assign("statusList", $this->model->getStatusList());
         // 必须将结果集转换为数组
         $ruleList = collect($this->model->order('weigh', 'desc')->select())->toArray();

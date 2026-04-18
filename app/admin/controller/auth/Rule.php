@@ -28,7 +28,7 @@ class Rule extends Backend
         if (!$this->auth->isSuperAdmin()) {
             $this->error(__('Access is allowed only to the super management group'));
         }
-        $this->model = model('AuthRule');
+        $this->model = new AuthRule();
         // 必须将结果集转换为数组
         $ruleList = $this->model->withoutField('type,condition,remark,createtime,updatetime')->order('weigh DESC,id ASC')->select();
         foreach ($ruleList as $k => &$v) {

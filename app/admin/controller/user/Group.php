@@ -2,6 +2,7 @@
 
 namespace app\admin\controller\user;
 
+use app\admin\model\UserGroup;
 use app\common\controller\Backend;
 
 /**
@@ -20,7 +21,7 @@ class Group extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('UserGroup');
+        $this->model = new UserGroup();
         $this->view->assign("statusList", $this->model->getStatusList());
     }
 

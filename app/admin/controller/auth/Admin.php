@@ -2,6 +2,7 @@
 
 namespace app\admin\controller\auth;
 
+use app\admin\model\Admin as AdminModel;
 use app\admin\model\AuthGroup;
 use app\admin\model\AuthGroupAccess;
 use app\common\controller\Backend;
@@ -23,6 +24,15 @@ class Admin extends Backend
      * @var \app\admin\model\Admin
      */
     protected $model = null;
+    /**
+     * @var \app\admin\model\AuthGroup
+     */
+    protected $authGroupModel = null;
+    /**
+     * @var \app\admin\model\AuthGroupAccess
+     */
+    protected $authGroupAccessModel = null;
+
     protected $selectpageFields = 'id,username,nickname,avatar';
     protected $searchFields = 'id,username,nickname';
     protected $childrenGroupIds = [];
@@ -31,12 +41,14 @@ class Admin extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('Admin');
+        $this->model = new AdminModel();
+        $this->authGroupModel = new AuthGroup();
+        $this->authGroupAccessModel = new AuthGroupAccess();
 
         $this->childrenAdminIds = $this->auth->getChildrenAdminIds($this->auth->isSuperAdmin());
         $this->childrenGroupIds = $this->auth->getChildrenGroupIds($this->auth->isSuperAdmin());
 
-        $groupList = collect(AuthGroup::where('id', 'in', $this->childrenGroupIds)->select())->toArray();
+        $groupList = collect($this->authGroupModel->where('id', 'in', $this->childrenGroupIds)->select())->toArray();
 
         Tree::instance()->init($groupList);
         $groupdata = [];
@@ -76,9 +88,9 @@ class Admin extends Backend
                 return $this->selectpage();
             }
             $childrenGroupIds = $this->childrenGroupIds;
-            $groupName = AuthGroup::where('id', 'in', $childrenGroupIds)
+            $groupName = $this->authGroupModel->where('id', 'in', $childrenGroupIds)
                 ->column('name', 'id');
-            $authGroupList = AuthGroupAccess::where('group_id', 'in', $childrenGroupIds)
+            $authGroupList = $this->authGroupAccessModel->where('group_id', 'in', $childrenGroupIds)
                 ->field('uid,group_id')
                 ->select();
 
@@ -149,7 +161,7 @@ class Admin extends Backend
                     foreach ($group as $value) {
                         $dataset[] = ['uid' => $this->model->id, 'group_id' => $value];
                     }
-                    model('AuthGroupAccess')->saveAll($dataset);
+                    $this->authGroupAccessModel->saveAll($dataset);
                     Db::commit();
                 } catch (\Exception $e) {
                     Db::rollback();
@@ -206,7 +218,7 @@ class Admin extends Backend
                     }
 
                     // 先移除所有权限
-                    model('AuthGroupAccess')->where('uid', $row->id)->delete();
+                    $this->authGroupAccessModel->where('uid', $row->id)->delete();
 
                     $group = $this->request->post("group/a");
 
@@ -220,7 +232,7 @@ class Admin extends Backend
                     foreach ($group as $value) {
                         $dataset[] = ['uid' => $row->id, 'group_id' => $value];
                     }
-                    model('AuthGroupAccess')->saveAll($dataset);
+                    $this->authGroupAccessModel->saveAll($dataset);
                     Db::commit();
                 } catch (\Exception $e) {
                     Db::rollback();
@@ -266,7 +278,7 @@ class Admin extends Backend
                     Db::startTrans();
                     try {
                         $this->model->destroy($deleteIds);
-                        model('AuthGroupAccess')->where('uid', 'in', $deleteIds)->delete();
+                        $this->authGroupAccessModel->where('uid', 'in', $deleteIds)->delete();
                         Db::commit();
                     } catch (\Exception $e) {
                         Db::rollback();

@@ -3,6 +3,7 @@
 namespace app\admin\controller\general;
 
 use app\common\controller\Backend;
+use app\common\model\Attachment as AttachmentModel;
 
 /**
  * 附件管理
@@ -24,7 +25,7 @@ class Attachment extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('Attachment');
+        $this->model = new AttachmentModel();
         $this->view->assign("mimetypeList", \app\common\model\Attachment::getMimetypeList());
         $this->view->assign("categoryList", \app\common\model\Attachment::getCategoryList());
         $this->assignconfig("categoryList", \app\common\model\Attachment::getCategoryList());

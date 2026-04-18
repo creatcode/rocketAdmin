@@ -3,6 +3,7 @@
 namespace app\admin\controller\general;
 
 use app\admin\model\Admin;
+use app\admin\model\AdminLog;
 use app\common\controller\Backend;
 use think\facade\Session;
 use think\facade\Validate;
@@ -26,7 +27,7 @@ class Profile extends Backend
         //设置过滤方法
         $this->request->filter(['strip_tags', 'trim']);
         if ($this->request->isAjax()) {
-            $this->model = model('AdminLog');
+            $this->model = new AdminLog();
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
 
             $list = $this->model

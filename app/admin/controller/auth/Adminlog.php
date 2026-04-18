@@ -2,7 +2,7 @@
 
 namespace app\admin\controller\auth;
 
-use app\admin\model\AuthGroup;
+use app\admin\model\AdminLog as AdminLogModel;
 use app\common\controller\Backend;
 
 /**
@@ -23,7 +23,7 @@ class Adminlog extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('AdminLog');
+        $this->model = new AdminLogModel();
 
         $this->childrenAdminIds = $this->auth->getChildrenAdminIds(true);
     }

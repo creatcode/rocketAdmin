@@ -25,7 +25,7 @@ class Category extends Backend
     public function initialize()
     {
         parent::initialize();
-        $this->model = model('app\common\model\Category');
+        $this->model = new CategoryModel();
 
         $tree = Tree::instance();
         $tree->init(collect($this->model->order('weigh desc,id desc')->select())->toArray(), 'pid');
@@ -34,7 +34,7 @@ class Category extends Backend
         foreach ($this->categorylist as $k => $v) {
             $categorydata[$v['id']] = $v;
         }
-        $typeList = CategoryModel::getTypeList();
+        $typeList = $this->model::getTypeList();
         $this->view->assign("flagList", $this->model->getFlagList());
         $this->view->assign("typeList", $typeList);
         $this->view->assign("parentList", $categorydata);

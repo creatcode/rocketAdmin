@@ -226,8 +226,8 @@ class Menu extends Command
         $modelRegex = preg_match($modelRegexArr[0], $classContent) ? $modelRegexArr[0] : $modelRegexArr[1];
         preg_match_all($modelRegex, $classContent, $matches);
         if (isset($matches[1]) && isset($matches[1][0]) && $matches[1][0]) {
-            $model = model($matches[1][0]);
-            if (in_array('trashed', get_class_methods($model))) {
+            $modelClass = $this->resolveModelClass($matches[1][0], $classContent);
+            if ($modelClass && in_array('trashed', get_class_methods($modelClass))) {
                 $withSofeDelete = true;
             }
         }
@@ -329,5 +329,41 @@ class Menu extends Command
                 ->value('id');
             return $id ? $id : null;
         }
+    }
+
+    protected function resolveModelClass($name, $classContent)
+    {
+        $name = trim($name, '\\');
+        if (class_exists('\\' . $name)) {
+            return '\\' . $name;
+        }
+
+        if (preg_match_all('/^use\s+([^;]+);/mi', $classContent, $uses)) {
+            foreach ($uses[1] as $use) {
+                $use = trim($use);
+                if (stripos($use, ' as ') !== false) {
+                    [$class, $alias] = preg_split('/\s+as\s+/i', $use);
+                } else {
+                    $class = $use;
+                    $parts = explode('\\', $class);
+                    $alias = end($parts);
+                }
+                if (strcasecmp($alias, $name) === 0 && class_exists('\\' . ltrim($class, '\\'))) {
+                    return '\\' . ltrim($class, '\\');
+                }
+            }
+        }
+
+        $modelClass = '\\app\\admin\\model\\' . $name;
+        if (class_exists($modelClass)) {
+            return $modelClass;
+        }
+
+        $modelClass = '\\app\\common\\model\\' . $name;
+        if (class_exists($modelClass)) {
+            return $modelClass;
+        }
+
+        return null;
     }
 }
