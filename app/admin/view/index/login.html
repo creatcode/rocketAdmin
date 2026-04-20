@@ -1,161 +1,243 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="{$config.language}">
 <head>
     {include file="common/meta" /}
-
-    <style type="text/css">
-        body {
-            color: #999;
-            background-color: #f1f4fd;
-            background-size: cover;
+    <style>
+        :root {
+            --brand-color: #1677ff;
+            --brand-bg: #f0f5ff;
+            --text-title: #1f1f1f;
+            --text-body: #595959;
+            --border-color: #d9d9d9;
+            --radius: 12px;
         }
 
-        a {
-            color: #444;
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #fff;
+            overflow: hidden;
         }
 
-
-        .login-screen {
-            max-width: 430px;
-            padding: 0;
-            margin: 100px auto 0 auto;
-
+        /* 登录页面大框架 */
+        .login-page {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            background: #f7f8fa;
         }
 
-        .login-screen .well {
-            border-radius: 3px;
-            -webkit-box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-            background: rgba(255, 255, 255, 1);
-            border: none;
-            /*overflow: hidden;*/
-            padding: 0;
-        }
-
-        @media (max-width: 767px) {
-            .login-screen {
-                padding: 0 20px;
-            }
-        }
-
-        .profile-img-card {
-            width: 100px;
-            height: 100px;
-            display: block;
-            -moz-border-radius: 50%;
-            -webkit-border-radius: 50%;
-            border-radius: 50%;
-            margin: -93px auto 30px;
-            border: 5px solid #fff;
-        }
-
-        .profile-name-card {
-            text-align: center;
-        }
-
-        .login-head {
-            background: #899fe1;
-            border-radius: 3px 3px 0 0;
-        }
-
-        .login-form {
-            padding: 40px 30px;
+        /* 左侧装饰区 - 大厂风几何图形 */
+        .login-side {
+            flex: 1.2;
+            background: linear-gradient(135deg, #1677ff 0%, #003eb3 100%);
             position: relative;
-            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            overflow: hidden;
         }
 
-        #login-form {
-            margin-top: 20px;
+        @media (max-width: 992px) { .login-side { display: none; } }
+
+        .side-content {
+            z-index: 10;
+            text-align: center;
+            animation: slideInLeft 1s ease-out;
         }
 
-        #login-form .input-group {
-            margin-bottom: 15px;
+        .side-content h1 { font-size: 42px; margin-bottom: 16px; font-weight: 800; }
+        .side-content p { font-size: 18px; opacity: 0.8; font-weight: 300; }
+
+        /* 背景几何装饰 */
+        .bg-circle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            filter: blur(40px);
         }
 
-        #login-form .form-control {
-            font-size: 13px;
+        /* 右侧表单区 */
+        .login-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            padding: 40px;
         }
+
+        .login-form-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* 元素动画 */
+        .animate-item { opacity: 0; transform: translateY(20px); }
+        .stagger-1 { animation: fadeInUp 0.6s forwards 0.1s; }
+        .stagger-2 { animation: fadeInUp 0.6s forwards 0.2s; }
+        .stagger-3 { animation: fadeInUp 0.6s forwards 0.3s; }
+        .stagger-4 { animation: fadeInUp 0.6s forwards 0.4s; }
+        .stagger-5 { animation: fadeInUp 0.6s forwards 0.5s; }
+
+        .brand-logo { width: 48px; height: 48px; background: var(--brand-color); border-radius: 12px; margin-bottom: 32px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; }
+
+        .form-header h2 { font-size: 30px; font-weight: 700; color: var(--text-title); margin: 0 0 8px 0; }
+        .form-header p { font-size: 14px; color: var(--text-body); margin-bottom: 40px; }
+
+        .form-item { margin-bottom: 24px; }
+        .form-item label { display: block; font-size: 14px; color: var(--text-title); margin-bottom: 8px; font-weight: 500; }
+
+        .input-group-custom {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group-custom i { 
+            position: absolute; 
+            left: 16px; 
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bfbfbf; 
+            transition: 0.3s; 
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px 0 44px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            outline: none;
+            background: #fafafa;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            border-color: var(--brand-color);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.1);
+        }
+
+        .form-input:focus + i { color: var(--brand-color); }
+
+        /* 验证码特别优化 */
+        .captcha-box { display: flex; gap: 12px; }
+        .captcha-img { height: 48px; border-radius: 8px; cursor: pointer; border: 1px solid #d9d9d9; transition: 0.3s; }
+        .captcha-img:hover { border-color: var(--brand-color); }
+
+        .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; font-size: 14px; }
+        .keep-login { display: flex; align-items: center; cursor: pointer; color: var(--text-body); }
+        .keep-login input { margin-right: 8px; width: 16px; height: 16px; }
+
+        .btn-login {
+            width: 100%;
+            height: 50px;
+            background: var(--brand-color);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(22, 119, 255, 0.25);
+        }
+
+        .btn-login:hover { background: #4096ff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(22, 119, 255, 0.35); }
+        .btn-login:active { transform: translateY(0); }
+
+        #errtips { background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; padding: 12px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .hide { display: none; }
     </style>
-    <!--@formatter:off-->
-    {if $background}
-    <style type="text/css">
-        body {
-            background-image: url('{$background|htmlentities}');
-        }
-    </style>
-    {/if}
-    <!--@formatter:on-->
 </head>
 
 <body>
-    <div class="container">
-        <div class="login-wrapper">
-            <div class="login-screen">
-                <div class="well">
-                    <div class="login-head">
-                        <img src="__CDN__/assets/img/login-head.png" style="width:100%;" />
-                    </div>
-                    <div class="login-form">
-                        <img id="profile-img" class="profile-img-card" src="__CDN__/assets/img/avatar.png" />
-                        <p id="profile-name" class="profile-name-card"></p>
+    <div class="login-page">
+        <!-- 左侧装饰区 -->
+        <div class="login-side">
+            <div class="bg-circle" style="width: 400px; height: 400px; top: -100px; left: -100px;"></div>
+            <div class="bg-circle" style="width: 300px; height: 300px; bottom: -50px; right: -50px; background: rgba(255,255,255,0.05);"></div>
+            <div class="side-content">
+                <h1>Rocket Admin</h1>
+                <p>极速 · 简洁 · 高效的后台管理系统</p>
+            </div>
+        </div>
 
-                        <form action="" method="post" id="login-form">
-                            <!--@AdminLoginFormBegin-->
-                            <div id="errtips" class="hide"></div>
-                            {:token_field()}
-                            <div class="input-group">
-                                <div class="input-group-addon"><span class="glyphicon glyphicon-user"
-                                        aria-hidden="true"></span></div>
-                                <input type="text" class="form-control" id="pd-form-username"
-                                    placeholder="{:__('Username')}" name="username" autocomplete="off" value=""
-                                    data-rule="{:__('Username')}:required;username" />
-                            </div>
-
-                            <div class="input-group">
-                                <div class="input-group-addon"><span class="glyphicon glyphicon-lock"
-                                        aria-hidden="true"></span></div>
-                                <input type="password" class="form-control" id="pd-form-password"
-                                    placeholder="{:__('Password')}" name="password" autocomplete="off" value=""
-                                    data-rule="{:__('Password')}:required;password" />
-                            </div>
-                            <!--@CaptchaBegin-->
-                            {if $Think.config.rocket.login_captcha}
-                            <div class="input-group">
-                                <div class="input-group-addon"><span class="glyphicon glyphicon-option-horizontal"
-                                        aria-hidden="true"></span></div>
-                                <input type="text" name="captcha" class="form-control" placeholder="{:__('Captcha')}"
-                                    data-rule="{:__('Captcha')}:required;length({$Think.config.captcha.length|htmlentities})"
-                                    autocomplete="off" />
-                                <span class="input-group-addon" style="padding:0;border:none;cursor:pointer;">
-                                    <img src="{:rtrim('__PUBLIC__', '/')}/index.php?s=/captcha" width="100" height="30"
-                                        onclick="this.src = '{:rtrim('__PUBLIC__', '/')}/index.php?s=/captcha&r=' + Math.random();"
-                                        style="cursor: pointer;" />
-                                </span>
-                            </div>
-                            {/if}
-                            <!--@CaptchaEnd-->
-                            {if $keeyloginhours>0}
-                            <div class="form-group checkbox">
-                                <label class="inline" for="keeplogin" data-toggle="tooltip"
-                                    title="{:__('The duration of the session is %s hours', $keeyloginhours)}">
-                                    <input type="checkbox" name="keeplogin" id="keeplogin" value="1" />
-                                    {:__('Keep login')}
-                                </label>
-                            </div>
-                            {/if}
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-success btn-lg btn-block"
-                                    style="background:#708eea;">{:__('Sign in')}</button>
-                            </div>
-                            <!--@AdminLoginFormEnd-->
-                        </form>
-                    </div>
+        <!-- 右侧表单区 -->
+        <div class="login-main">
+            <div class="login-form-container">
+                <div class="brand-logo animate-item stagger-1">R</div>
+                
+                <div class="form-header animate-item stagger-1">
+                    <h2>欢迎回来</h2>
+                    <p>请输入您的账号信息开始管理</p>
                 </div>
+
+                <form action="" method="post" id="login-form">
+                    <!--@AdminLoginFormBegin-->
+                    <div id="errtips" class="hide"></div>
+                    {:token_field()}
+
+                    <div class="form-item animate-item stagger-2">
+                        <label>{:__('Username')}</label>
+                        <div class="input-group-custom">
+                            <input type="text" class="form-input" id="pd-form-username" name="username" placeholder="请输入用户名" autocomplete="off" data-rule="{:__('Username')}:required;username">
+                            <i class="glyphicon glyphicon-user"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-item animate-item stagger-3">
+                        <label>{:__('Password')}</label>
+                        <div class="input-group-custom">
+                            <input type="password" class="form-input" id="pd-form-password" name="password" placeholder="请输入密码" autocomplete="off" data-rule="{:__('Password')}:required;password">
+                            <i class="glyphicon glyphicon-lock"></i>
+                        </div>
+                    </div>
+
+                    <!--@CaptchaBegin-->
+                    {if $Think.config.rocket.login_captcha}
+                    <div class="form-item animate-item stagger-4">
+                        <label>{:__('Captcha')}</label>
+                        <div class="captcha-box">
+                            <div class="input-group-custom" style="flex: 1;">
+                                <input type="text" name="captcha" class="form-input" style="padding-left: 16px;" placeholder="验证码" autocomplete="off" data-rule="{:__('Captcha')}:required;length({$Think.config.captcha.length|htmlentities})">
+                            </div>
+                            <img src="{:rtrim('__PUBLIC__', '/')}/index.php?s=/captcha" class="captcha-img" onclick="this.src = '{:rtrim('__PUBLIC__', '/')}/index.php?s=/captcha&r=' + Math.random();" alt="captcha">
+                        </div>
+                    </div>
+                    {/if}
+                    <!--@CaptchaEnd-->
+
+                    <div class="form-options animate-item stagger-5">
+                        {if $keeyloginhours>0}
+                        <label class="keep-login">
+                            <input type="checkbox" name="keeplogin" value="1">
+                            <span>{:__('Keep login')}</span>
+                        </label>
+                        {/if}
+                        <a href="javascript:;" style="color: var(--brand-color); text-decoration: none;">忘记密码？</a>
+                    </div>
+
+                    <div class="animate-item stagger-5">
+                        <button type="submit" class="btn-login">{:__('Sign in')}</button>
+                    </div>
+                    <!--@AdminLoginFormEnd-->
+                </form>
             </div>
         </div>
     </div>
     {include file="common/script" /}
 </body>
-
 </html>

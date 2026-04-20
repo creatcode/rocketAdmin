@@ -1,597 +1,226 @@
 <style type="text/css">
+    :root {
+        --bg-main: #f5f7fa;
+        --card-bg: #ffffff;
+        --accent-blue: #0061ff;
+        --accent-indigo: #667eea;
+        --success: #00ba69;
+        --warning: #ff9900;
+        --text-primary: #1a1d23;
+        --text-secondary: #64748b;
+        --radius-lg: 24px;
+        --radius-md: 18px;
+    }
+
+    /* 容器：弹性高度锁定 */
     .dashboard-page {
-        --dash-bg: #f6f8fb;
-        --dash-card: #ffffff;
-        --dash-line: #e8eef5;
-        --dash-text: #24364b;
-        --dash-muted: #7b8a9b;
-        --dash-blue: #4d8df7;
-        --dash-green: #27b778;
-        --dash-cyan: #20a6c7;
-        --dash-violet: #7a77f2;
-        --dash-amber: #e7a72f;
-        --dash-rose: #ef6f7a;
+        height: calc(100vh - 65px);
         margin: -15px;
-        padding: 18px;
-        min-height: calc(100vh - 120px);
-        background: var(--dash-bg);
-    }
-
-    .dashboard-page * {
-        box-sizing: border-box;
-    }
-
-    .dashboard-hero {
+        padding: 20px;
+        background: var(--bg-main) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="1" fill="rgba(0,0,0,0.03)"/></svg>');
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: column;
         gap: 16px;
-        margin-bottom: 18px;
-        padding: 20px 22px;
-        border: 1px solid var(--dash-line);
-        border-radius: 8px;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 56%, #f2fbf8 100%);
-    }
-
-    .dashboard-title {
-        margin: 0;
-        color: var(--dash-text);
-        font-size: 22px;
-        font-weight: 700;
-        line-height: 1.35;
-    }
-
-    .dashboard-subtitle {
-        margin: 8px 0 0;
-        color: var(--dash-muted);
-        font-size: 13px;
-    }
-
-    .dashboard-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        min-height: 32px;
-        padding: 0 12px;
-        border: 1px solid rgba(77, 141, 247, 0.18);
-        border-radius: 8px;
-        color: #316bd7;
-        background: #eef5ff;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .metric-card,
-    .chart-card,
-    .activity-card,
-    .mini-card,
-    .custom-card {
-        border: 1px solid var(--dash-line);
-        border-radius: 8px;
-        background: var(--dash-card);
-        box-shadow: 0 10px 28px rgba(36, 54, 75, 0.06);
-    }
-
-    .metric-card {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        min-height: 108px;
-        margin-bottom: 16px;
-        padding: 18px;
-    }
-
-    .metric-icon,
-    .activity-icon,
-    .mini-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        border-radius: 8px;
-    }
-
-    .metric-icon {
-        width: 52px;
-        height: 52px;
-        font-size: 22px;
-    }
-
-    .metric-blue {
-        color: var(--dash-blue);
-        background: rgba(77, 141, 247, 0.12);
-    }
-
-    .metric-violet {
-        color: var(--dash-violet);
-        background: rgba(122, 119, 242, 0.12);
-    }
-
-    .metric-cyan {
-        color: var(--dash-cyan);
-        background: rgba(32, 166, 199, 0.12);
-    }
-
-    .metric-green {
-        color: var(--dash-green);
-        background: rgba(39, 183, 120, 0.12);
-    }
-
-    .metric-value {
-        margin: 0;
-        color: var(--dash-text);
-        font-size: 28px;
-        font-weight: 700;
-        line-height: 1.1;
-        word-break: break-all;
-    }
-
-    .metric-label,
-    .activity-label,
-    .mini-label {
-        margin: 7px 0 0;
-        color: var(--dash-muted);
-        font-size: 13px;
-        line-height: 1.4;
-    }
-
-    .dashboard-section {
-        margin-top: 4px;
-    }
-
-    .chart-card,
-    .activity-card {
-        min-height: 360px;
-        margin-bottom: 16px;
-        padding: 18px;
-    }
-
-    .card-heading {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .card-heading h3 {
-        margin: 0;
-        color: var(--dash-text);
-        font-size: 16px;
-        font-weight: 700;
-    }
-
-    .card-heading small {
-        color: var(--dash-muted);
-    }
-
-    #echart {
-        width: 100%;
-        height: 292px;
-    }
-
-    .activity-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .activity-item {
-        min-height: 126px;
-        padding: 15px;
-        border: 1px solid var(--dash-line);
-        border-radius: 8px;
-        background: #fbfdff;
-    }
-
-    .activity-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-
-    .activity-icon {
-        width: 34px;
-        height: 34px;
-        color: var(--dash-blue);
-        background: rgba(77, 141, 247, 0.1);
-        font-size: 15px;
-    }
-
-    .activity-value {
-        color: var(--dash-text);
-        font-size: 22px;
-        font-weight: 700;
-        line-height: 1;
-        word-break: break-all;
-    }
-
-    .soft-progress {
-        height: 4px;
-        margin: 13px 0 0;
         overflow: hidden;
-        border-radius: 99px;
-        background: #edf2f7;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    .soft-progress span {
-        display: block;
-        width: 42%;
-        height: 100%;
-        border-radius: inherit;
-        background: linear-gradient(90deg, var(--dash-blue), var(--dash-green));
+    .dashboard-page * { box-sizing: border-box; }
+
+    /* 导航标签 */
+    .dashboard-shell.panel { border: none; background: transparent; box-shadow: none; display: flex; flex-direction: column; flex: 1; margin:0; }
+    .dashboard-shell > .panel-heading { padding: 0 0 16px 0; background: transparent; border: none; flex-shrink: 0; }
+    .dashboard-shell .nav-tabs { border: none; display: flex; gap: 12px; }
+    .dashboard-shell .nav-tabs > li > a { 
+        border: none !important; background: rgba(0,0,0,0.04) !important; color: var(--text-secondary); 
+        border-radius: 40px; padding: 8px 24px; font-weight: 600; font-size: 13px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .dashboard-shell .nav-tabs > li.active > a { 
+        background: var(--accent-blue) !important; color: #fff !important; 
+        box-shadow: 0 8px 16px rgba(0,97,255,0.25);
+    }
+    
+    .dashboard-shell > .panel-body { padding: 0; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .tab-content, .tab-pane { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+    /* 1. 顶部指标行 */
+    .top-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex-shrink: 0; }
+    
+    .stat-card-premium {
+        background: var(--card-bg); border-radius: var(--radius-md); padding: 20px;
+        border: 1px solid rgba(255,255,255,0.8);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04), 0 8px 10px -6px rgba(0,0,0,0.04);
+        display: flex; align-items: center; gap: 20px;
+        position: relative; overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .stat-card-premium:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.08); }
+
+    .icon-box-p {
+        width: 52px; height: 52px; border-radius: 16px;
+        display: flex; align-items: center; justify-content: center; font-size: 22px;
     }
 
-    .mini-card {
-        min-height: 174px;
-        margin-bottom: 16px;
-        padding: 18px;
+    .data-p .v { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; letter-spacing: -1px; }
+    .data-p .l { font-size: 11px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    /* 2. 中间可视化行 */
+    .main-grid-p { flex: 1; display: grid; grid-template-columns: 1fr 340px; gap: 16px; min-height: 0; }
+    
+    .viz-card-p {
+        background: var(--card-bg); border-radius: var(--radius-lg); padding: 24px;
+        border: 1px solid rgba(255,255,255,1); display: flex; flex-direction: column;
+        box-shadow: 0 20px 40px -12px rgba(0,0,0,0.05);
     }
+    .card-header-p { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .card-header-p h3 { font-size: 16px; font-weight: 800; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+    
+    .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,186,105, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(0,186,105, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,186,105, 0); } }
 
-    .mini-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 16px;
+    #echart { flex: 1; width: 100%; min-height: 0; }
+
+    .activity-feed-p { flex: 1; overflow-y: auto; padding-right: 8px; }
+    .feed-node-p {
+        background: #f8fafc; border-radius: 16px; padding: 14px 18px; margin-bottom: 12px;
+        display: flex; align-items: center; gap: 16px; border: 1px solid transparent;
+        transition: all 0.3s ease;
     }
+    .feed-node-p:hover { background: #fff; border-color: var(--accent-blue); box-shadow: 0 8px 20px rgba(0,0,0,0.04); transform: scale(1.02); }
+    .fn-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .fn-info { flex: 1; }
+    .fn-info .v { font-size: 18px; font-weight: 800; color: var(--text-primary); display: block; }
+    .fn-info .l { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
 
-    .mini-head h4 {
-        margin: 0;
-        color: var(--dash-text);
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 1.4;
+    /* 3. 底部固定 Dock */
+    .footer-dock-p {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex-shrink: 0;
     }
-
-    .mini-tag {
-        display: inline-flex;
-        align-items: center;
-        min-height: 24px;
-        padding: 0 9px;
-        border-radius: 6px;
-        color: #316bd7;
-        background: #eef5ff;
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
+    .dock-card-p {
+        background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);
+        border-radius: 20px; padding: 14px 22px;
+        display: flex; align-items: center; gap: 14px; border: 1px solid rgba(255,255,255,0.8);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     }
+    .dock-card-p i { font-size: 18px; color: var(--text-secondary); opacity: 0.5; }
+    .dock-content-p .l { font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .dock-content-p .v { font-size: 14px; font-weight: 800; color: var(--text-primary); }
 
-    .mini-body {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .mini-body.single {
-        grid-template-columns: 1fr;
-    }
-
-    .mini-stat {
-        display: flex;
-        gap: 10px;
-        min-width: 0;
-    }
-
-    .mini-icon {
-        width: 34px;
-        height: 34px;
-        color: var(--dash-green);
-        background: rgba(39, 183, 120, 0.11);
-    }
-
-    .mini-value {
-        color: var(--dash-text);
-        font-size: 24px;
-        font-weight: 700;
-        line-height: 1.1;
-        word-break: break-all;
-    }
-
-    .custom-card {
-        padding: 26px;
-        color: var(--dash-muted);
-    }
-
-    .panel-intro.dashboard-shell {
-        border: 0;
-        background: transparent;
-        box-shadow: none;
-    }
-
-    .dashboard-shell > .panel-heading {
-        border: 0;
-        border-radius: 0;
-        background: transparent;
-        padding: 0 0 12px;
-    }
-
-    .dashboard-shell > .panel-body {
-        border: 0;
-        border-radius: 8px;
-        background: transparent;
-        padding: 0;
-    }
-
-    .dashboard-shell .nav-tabs {
-        border-bottom: 1px solid var(--dash-line);
-    }
-
-    .dashboard-shell .nav-tabs > li > a {
-        border-radius: 8px 8px 0 0;
-        color: var(--dash-muted);
-        font-weight: 600;
-    }
-
-    .dashboard-shell .nav-tabs > li.active > a,
-    .dashboard-shell .nav-tabs > li.active > a:hover,
-    .dashboard-shell .nav-tabs > li.active > a:focus {
-        border-color: var(--dash-line) var(--dash-line) #fff;
-        color: var(--dash-blue);
-        background: #fff;
-    }
-
-    @media (max-width: 991px) {
-        .dashboard-page {
-            margin: -10px;
-            padding: 14px;
-        }
-
-        .dashboard-hero {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .chart-card,
-        .activity-card {
-            min-height: auto;
-        }
-    }
-
-    @media (max-width: 520px) {
-        .activity-grid,
-        .mini-body {
-            grid-template-columns: 1fr;
-        }
-
-        .metric-card {
-            min-height: 96px;
-        }
-
-        .metric-value {
-            font-size: 24px;
-        }
-    }
+    .activity-feed-p::-webkit-scrollbar { width: 4px; }
+    .activity-feed-p::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>
 
 <div class="dashboard-page">
-    <div class="panel panel-default panel-intro dashboard-shell">
+    <div class="panel panel-default dashboard-shell">
         <div class="panel-heading">
-            {:build_heading(null, false)}
             <ul class="nav nav-tabs">
-                <li class="active"><a href="#one" data-toggle="tab">{:__('Dashboard')}</a></li>
-                <li><a href="#two" data-toggle="tab">{:__('Custom')}</a></li>
+                <li class="active"><a href="#one" data-toggle="tab">系统概览</a></li>
+                <li><a href="#two" data-toggle="tab">设置选项</a></li>
             </ul>
         </div>
+
         <div class="panel-body">
             <div id="myTabContent" class="tab-content">
                 <div class="tab-pane fade active in" id="one">
-                    <div class="dashboard-hero">
-                        <div>
-                            <h2 class="dashboard-title">{:__('Dashboard')}</h2>
-                            <p class="dashboard-subtitle">{:__('Real time')} · {:__('Register user')}</p>
+                    <div style="display:flex; flex-direction:column; gap:16px; height:100%; min-height:0">
+                        
+                        <!-- 顶部卡片行 -->
+                        <div class="top-section">
+                            <div class="stat-card-premium">
+                                <div class="icon-box-p" style="background:rgba(0,97,255,0.08); color:var(--accent-blue)"><i class="fa fa-users"></i></div>
+                                <div class="data-p">
+                                    <div class="v">{$totaluser|htmlentities}</div>
+                                    <div class="l">累计用户</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-premium">
+                                <div class="icon-box-p" style="background:rgba(102,126,234,0.08); color:var(--accent-indigo)"><i class="fa fa-cubes"></i></div>
+                                <div class="data-p">
+                                    <div class="v">{$totaladdon|htmlentities}</div>
+                                    <div class="l">插件包</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-premium">
+                                <div class="icon-box-p" style="background:rgba(255,153,0,0.08); color:var(--warning)"><i class="fa fa-leaf"></i></div>
+                                <div class="data-p">
+                                    <div class="v">{$attachmentnums|htmlentities}</div>
+                                    <div class="l">存储统计</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-premium">
+                                <div class="icon-box-p" style="background:rgba(0,186,105,0.08); color:var(--success)"><i class="fa fa-user-circle-o"></i></div>
+                                <div class="data-p">
+                                    <div class="v">{$totaladmin|htmlentities}</div>
+                                    <div class="l">管理员</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="dashboard-badge">
-                            <i class="fa fa-line-chart"></i>
-                            <span>{:__('Seven dau')}: {$sevendau|htmlentities}</span>
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="metric-card">
-                                <span class="metric-icon metric-blue"><i class="fa fa-users"></i></span>
-                                <div>
-                                    <p class="metric-value">{$totaluser|htmlentities}</p>
-                                    <p class="metric-label">{:__('Total user')}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="metric-card">
-                                <span class="metric-icon metric-violet"><i class="fa fa-magic"></i></span>
-                                <div>
-                                    <p class="metric-value">{$totaladdon|htmlentities}</p>
-                                    <p class="metric-label">{:__('Total addon')}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="metric-card">
-                                <span class="metric-icon metric-cyan"><i class="fa fa-leaf"></i></span>
-                                <div>
-                                    <p class="metric-value">{$attachmentnums|htmlentities}</p>
-                                    <p class="metric-label">{:__('Total attachment')}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-6">
-                            <div class="metric-card">
-                                <span class="metric-icon metric-green"><i class="fa fa-user"></i></span>
-                                <div>
-                                    <p class="metric-value">{$totaladmin|htmlentities}</p>
-                                    <p class="metric-label">{:__('Total admin')}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row dashboard-section">
-                        <div class="col-lg-8">
-                            <div class="chart-card">
-                                <div class="card-heading">
-                                    <h3>{:__('Register user')}</h3>
-                                    <small>{:__('Real time')}</small>
+                        <!-- 中间展示行 -->
+                        <div class="main-grid-p">
+                            <div class="viz-card-p">
+                                <div class="card-header-p">
+                                    <h3>用户增长分析</h3>
+                                    <div style="display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-secondary); font-weight:700">
+                                        <div class="status-dot"></div> 实时态势
+                                    </div>
                                 </div>
                                 <div id="echart" class="btn-refresh"></div>
                             </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="activity-card">
-                                <div class="card-heading">
-                                    <h3>{:__('User')}</h3>
-                                    <small>{:__('Real time')}</small>
+                            
+                            <div class="viz-card-p">
+                                <div class="card-header-p">
+                                    <h3>活跃动态监测</h3>
                                 </div>
-                                <div class="activity-grid">
-                                    <div class="activity-item">
-                                        <div class="activity-top">
-                                            <span class="activity-icon"><i class="fa fa-rocket"></i></span>
-                                            <span class="activity-value">{$todayusersignup|htmlentities}</span>
-                                        </div>
-                                        <div class="activity-label">{:__('Today user signup')}</div>
-                                        <div class="soft-progress"><span></span></div>
+                                <div class="activity-feed-p">
+                                    <div class="feed-node-p">
+                                        <div class="fn-icon" style="color:var(--accent-blue)"><i class="fa fa-user-plus"></i></div>
+                                        <div class="fn-info"><span class="v">{$todayusersignup|htmlentities}</span><span class="l">今日新注册</span></div>
                                     </div>
-                                    <div class="activity-item">
-                                        <div class="activity-top">
-                                            <span class="activity-icon"><i class="fa fa-vcard"></i></span>
-                                            <span class="activity-value">{$todayuserlogin|htmlentities}</span>
-                                        </div>
-                                        <div class="activity-label">{:__('Today user login')}</div>
-                                        <div class="soft-progress"><span></span></div>
+                                    <div class="feed-node-p">
+                                        <div class="fn-icon" style="color:var(--success)"><i class="fa fa-sign-in"></i></div>
+                                        <div class="fn-info"><span class="v">{$todayuserlogin|htmlentities}</span><span class="l">今日实时登录</span></div>
                                     </div>
-                                    <div class="activity-item">
-                                        <div class="activity-top">
-                                            <span class="activity-icon"><i class="fa fa-calendar"></i></span>
-                                            <span class="activity-value">{$threednu|htmlentities}</span>
-                                        </div>
-                                        <div class="activity-label">{:__('Three dnu')}</div>
-                                        <div class="soft-progress"><span></span></div>
+                                    <div class="feed-node-p">
+                                        <div class="fn-icon" style="color:var(--warning)"><i class="fa fa-bolt"></i></div>
+                                        <div class="fn-info"><span class="v">{$threednu|htmlentities}</span><span class="l">三日留存指标</span></div>
                                     </div>
-                                    <div class="activity-item">
-                                        <div class="activity-top">
-                                            <span class="activity-icon"><i class="fa fa-calendar-plus-o"></i></span>
-                                            <span class="activity-value">{$sevendnu|htmlentities}</span>
-                                        </div>
-                                        <div class="activity-label">{:__('Seven dnu')}</div>
-                                        <div class="soft-progress"><span></span></div>
+                                    <div class="feed-node-p">
+                                        <div class="fn-icon" style="color:var(--accent-indigo)"><i class="fa fa-area-chart"></i></div>
+                                        <div class="fn-info"><span class="v">{$sevendnu|htmlentities}</span><span class="l">七日趋势新增</span></div>
                                     </div>
-                                    <div class="activity-item">
-                                        <div class="activity-top">
-                                            <span class="activity-icon"><i class="fa fa-user-circle"></i></span>
-                                            <span class="activity-value">{$sevendau|htmlentities}</span>
-                                        </div>
-                                        <div class="activity-label">{:__('Seven dau')}</div>
-                                        <div class="soft-progress"><span></span></div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-top">
-                                            <span class="activity-icon"><i class="fa fa-user-circle-o"></i></span>
-                                            <span class="activity-value">{$thirtydau|htmlentities}</span>
-                                        </div>
-                                        <div class="activity-label">{:__('Thirty dau')}</div>
-                                        <div class="soft-progress"><span></span></div>
+                                    <div class="feed-node-p">
+                                        <div class="fn-icon" style="color:var(--accent-blue)"><i class="fa fa-compass"></i></div>
+                                        <div class="fn-info"><span class="v">{$sevendau|htmlentities}</span><span class="l">七日均值活跃</span></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row dashboard-section" id="statistics">
-                        <div class="col-xs-6 col-md-3">
-                            <div class="mini-card">
-                                <div class="mini-head">
-                                    <h4>{:__('Working addon count')}</h4>
-                                    <span class="mini-tag">{:__('Real time')}</span>
-                                </div>
-                                <div class="mini-body single">
-                                    <div class="mini-stat">
-                                        <span class="mini-icon"><i class="fa fa-magic"></i></span>
-                                        <div>
-                                            <div class="mini-value">{$totalworkingaddon|htmlentities}</div>
-                                            <div class="mini-label">{:__('Working addon count tips')}</div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- 底部固定 Dock -->
+                        <div class="footer-dock-p">
+                            <div class="dock-card-p">
+                                <i class="fa fa-rocket"></i>
+                                <div class="dock-content-p"><div class="l">核心引擎</div><div class="v">{$totalworkingaddon|htmlentities} 正常运行</div></div>
                             </div>
-                        </div>
-                        <div class="col-xs-6 col-md-3">
-                            <div class="mini-card">
-                                <div class="mini-head">
-                                    <h4>{:__('Database count')}</h4>
-                                    <span class="mini-tag">{:__('Real time')}</span>
-                                </div>
-                                <div class="mini-body">
-                                    <div class="mini-stat">
-                                        <span class="mini-icon"><i class="fa fa-database"></i></span>
-                                        <div>
-                                            <div class="mini-value">{$dbtablenums|htmlentities}</div>
-                                            <div class="mini-label">{:__('Database table nums')}</div>
-                                        </div>
-                                    </div>
-                                    <div class="mini-stat">
-                                        <span class="mini-icon"><i class="fa fa-filter"></i></span>
-                                        <div>
-                                            <div class="mini-value">{$dbsize|format_bytes=###,'',0}</div>
-                                            <div class="mini-label">{:__('Database size')}</div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="dock-card-p">
+                                <i class="fa fa-database"></i>
+                                <div class="dock-content-p"><div class="l">数据库占用</div><div class="v">{$dbsize|format_bytes=###,'',0}</div></div>
                             </div>
-                        </div>
-                        <div class="col-xs-6 col-md-3">
-                            <div class="mini-card">
-                                <div class="mini-head">
-                                    <h4>{:__('Attachment count')}</h4>
-                                    <span class="mini-tag">{:__('Real time')}</span>
-                                </div>
-                                <div class="mini-body">
-                                    <div class="mini-stat">
-                                        <span class="mini-icon"><i class="fa fa-files-o"></i></span>
-                                        <div>
-                                            <div class="mini-value">{$attachmentnums|htmlentities}</div>
-                                            <div class="mini-label">{:__('Attachment nums')}</div>
-                                        </div>
-                                    </div>
-                                    <div class="mini-stat">
-                                        <span class="mini-icon"><i class="fa fa-filter"></i></span>
-                                        <div>
-                                            <div class="mini-value">{$attachmentsize|format_bytes=###,'',0}</div>
-                                            <div class="mini-label">{:__('Attachment size')}</div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="dock-card-p">
+                                <i class="fa fa-hdd-o"></i>
+                                <div class="dock-content-p"><div class="l">云端文件</div><div class="v">{$attachmentsize|format_bytes=###,'',0}</div></div>
                             </div>
-                        </div>
-                        <div class="col-xs-6 col-md-3">
-                            <div class="mini-card">
-                                <div class="mini-head">
-                                    <h4>{:__('Picture count')}</h4>
-                                    <span class="mini-tag">{:__('Real time')}</span>
-                                </div>
-                                <div class="mini-body">
-                                    <div class="mini-stat">
-                                        <span class="mini-icon"><i class="fa fa-picture-o"></i></span>
-                                        <div>
-                                            <div class="mini-value">{$picturenums|htmlentities}</div>
-                                            <div class="mini-label">{:__('Picture nums')}</div>
-                                        </div>
-                                    </div>
-                                    <div class="mini-stat">
-                                        <span class="mini-icon"><i class="fa fa-filter"></i></span>
-                                        <div>
-                                            <div class="mini-value">{$picturesize|format_bytes=###,'',0}</div>
-                                            <div class="mini-label">{:__('Picture size')}</div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="dock-card-p">
+                                <i class="fa fa-picture-o"></i>
+                                <div class="dock-content-p"><div class="l">媒体资源</div><div class="v">{$picturenums|htmlentities} 张图片</div></div>
                             </div>
                         </div>
                     </div>
                 </div>
+                
                 <div class="tab-pane fade" id="two">
-                    <div class="custom-card">
+                    <div class="viz-card-p" style="height:100%; border:2px dashed #e2e8f0; align-items:center; justify-content:center; color:#cbd5e1">
                         {:__('Custom zone')}
                     </div>
                 </div>
