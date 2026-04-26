@@ -38,10 +38,11 @@ class Client extends BaseClient
      * @param  string  $redirectUri
      * @param  string  $userType
      * @param  string  $state
+     * @param  bool  $serviceWwlogin
      *
      * @return string
      */
-    public function getLoginUrl(string $redirectUri = '', string $userType = 'admin', string $state = '')
+    public function getLoginUrl(string $redirectUri = '', string $userType = 'admin', string $state = '', bool $serviceWwlogin = false)
     {
         $redirectUri || $redirectUri = $this->app->config['redirect_uri_single'];
         $state || $state = random_bytes(64);
@@ -51,6 +52,13 @@ class Client extends BaseClient
             'usertype' => $userType,
             'state' => $state,
         ];
+
+        // 新版企微登录
+        if ($serviceWwlogin) {
+            $params['appid'] = $this->app['config']['suite_id'];
+            $params['login_type'] = 'ServiceApp';
+            return 'https://login.work.weixin.qq.com/wwlogin/sso/login?'.http_build_query($params);
+        }
 
         return 'https://open.work.weixin.qq.com/wwopen/sso/3rd_qrConnect?'.http_build_query($params);
     }
