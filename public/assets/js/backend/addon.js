@@ -266,21 +266,21 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                 });
 
                 // 检测是否登录
-                $(document).on("mousedown", "#faupload-addon", function (e) {
-                    var userinfo = Controller.api.userinfo.get();
-                    var uid = userinfo ? userinfo.id : 0;
-                    var uploadBtn = Upload.list['faupload-addon'];
+                // $(document).on("mousedown", "#faupload-addon", function (e) {
+                //     var userinfo = Controller.api.userinfo.get();
+                //     var uid = userinfo ? userinfo.id : 0;
+                //     var uploadBtn = Upload.list['faupload-addon'];
 
-                    if (parseInt(uid) === 0) {
-                        uploadBtn.disable();
-                        $(".btn-userinfo").trigger("click");
-                        return false;
-                    } else {
-                        if (uploadBtn.disabled) {
-                            uploadBtn.enable();
-                        }
-                    }
-                });
+                //     if (parseInt(uid) === 0) {
+                //         uploadBtn.disable();
+                //         $(".btn-userinfo").trigger("click");
+                //         return false;
+                //     } else {
+                //         if (uploadBtn.disabled) {
+                //             uploadBtn.enable();
+                //         }
+                //     }
+                // });
             });
 
             // 查看插件首页

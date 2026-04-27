@@ -227,9 +227,9 @@ class Addon extends Backend
             $token = $this->request->post("token");
             $faversion = $this->request->post("faversion");
             $force = $this->request->post("force")?:1;
-            if (!$uid || !$token) {
-                throw new Exception(__('Please login and try to install'));
-            }
+            // if (!$uid || !$token) {
+            //     throw new Exception(__('Please login and try to install'));
+            // }
             $extend = [
                 'uid'       => $uid,
                 'token'     => $token,
