@@ -50,7 +50,7 @@ class Addon extends Backend
      */
     public function config($name = null)
     {
-        $name = $name ? $name : $this->request->get("name");
+        $name = $name ?: $this->request->get("name");
         if (!$name) {
             $this->error(__('Parameter %s can not be empty', 'name'));
         }

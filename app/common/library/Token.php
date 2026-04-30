@@ -31,7 +31,7 @@ class Token
      */
     public static function connect(array $options = [], $name = false)
     {
-        $type = !empty($options['type']) ? $options['type'] : 'File';
+        $type = $options['type'] ?? 'File';
 
         if (false === $name) {
             $name = md5(serialize($options));
@@ -43,7 +43,9 @@ class Token
                 $type;
 
             // 记录初始化信息
-            App::isDebug() && Log::record('[ TOKEN ] INIT ' . $type, 'info');
+            if (App::isDebug()) {
+                Log::record('[ TOKEN ] INIT ' . $type, 'info');
+            }
 
             if (true === $name) {
                 return new $class($options);
@@ -63,8 +65,8 @@ class Token
      */
     public static function init(array $options = [])
     {
-        if (is_null(self::$handler)) {
-            if (empty($options) && 'complex' == Config::get('token.type')) {
+        if (self::$handler === null) {
+            if (empty($options) && Config::get('token.type') === 'complex') {
                 $default = Config::get('token.default');
                 // 获取默认Token配置，并连接
                 $options = Config::get('token.' . $default['type']) ?: $default;

@@ -106,7 +106,7 @@ class Index extends Backend
                 $this->success(__('Login successful'), $url, ['url' => $url, 'id' => $this->auth->id, 'username' => $username, 'avatar' => $this->auth->avatar]);
             } else {
                 $msg = $this->auth->getError();
-                $msg = $msg ? $msg : __('Username or password is incorrect');
+                $msg = $msg ?: __('Username or password is incorrect');
                 $this->error($msg, $url, ['token' => $this->request->buildToken()]);
             }
         }

@@ -65,7 +65,7 @@ class User extends Frontend
     {
         $url = $this->request->request('url', '', 'url_clean');
         if ($this->auth->id) {
-            $this->success(__('You have logged in, do not login again'), $url ? $url : (string)url('user/index'));
+            $this->success(__('You have logged in, do not login again'), $url ?: (string)url('user/index'));
         }
         if ($this->request->isPost()) {
             $username = $this->request->post('username');
@@ -106,7 +106,7 @@ class User extends Frontend
             }
 
             if ($this->auth->register($username, $password, $email, $mobile)) {
-                $this->success(__('Sign up successful'), $url ? $url : (string)url('user/index'));
+                $this->success(__('Sign up successful'), $url ?: (string)url('user/index'));
             } else {
                 $this->error($this->auth->getError(), null, ['token' => $this->request->buildToken()]);
             }
@@ -150,7 +150,7 @@ class User extends Frontend
             }
 
             if ($this->auth->login($account, $password)) {
-                $this->success(__('Logged in successful'), $url ? $url : (string)url('user/index'));
+                $this->success(__('Logged in successful'), $url ?: (string)url('user/index'));
             } else {
                 $this->error($this->auth->getError(), null, ['token' => $this->request->buildToken()]);
             }

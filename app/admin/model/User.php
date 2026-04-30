@@ -32,6 +32,8 @@ class User extends Model
     public static function onBeforeUpdate($row)
     {
         $changed = $row->getChangedData();
+        $origin = $row->getOrigin();
+
         //如果有修改密码
         if (isset($changed['password'])) {
             if ($changed['password']) {
@@ -44,17 +46,23 @@ class User extends Model
             }
         }
 
-        $changedata = $row->getChangedData();
-        if (isset($changedata['money'])) {
-            $origin = $row->getOrigin();
+        if (isset($changed['money'])) {
             MoneyLog::create([
-                'user_id' => $row['id'], 'money' => $changedata['money'] - $origin['money'],
-                'before'  => $origin['money'], 'after' => $changedata['money'], 'memo' => '管理员变更金额',
+                'user_id' => $row['id'],
+                'money'   => $changed['money'] - $origin['money'],
+                'before'  => $origin['money'],
+                'after'   => $changed['money'],
+                'memo'    => '管理员变更金额',
             ]);
         }
-        if (isset($changedata['score'])) {
-            $origin = $row->getOrigin();
-            ScoreLog::create(['user_id' => $row['id'], 'score' => $changedata['score'] - $origin['score'], 'before' => $origin['score'], 'after' => $changedata['score'], 'memo' => '管理员变更积分']);
+        if (isset($changed['score'])) {
+            ScoreLog::create([
+                'user_id' => $row['id'],
+                'score'  => $changed['score'] - $origin['score'],
+                'before' => $origin['score'],
+                'after'  => $changed['score'],
+                'memo'   => '管理员变更积分',
+            ]);
         }
     }
 
@@ -70,36 +78,53 @@ class User extends Model
 
     public function getPrevtimeTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['prevtime'];
-
-        return is_numeric($value) ? date('Y-m-d H:i:s', $value) : $value;
+        return $this->formatDateTimeAttr($value, $data['prevtime'] ?? null);
     }
 
     public function getLogintimeTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['logintime'];
-
-        return is_numeric($value) ? date('Y-m-d H:i:s', $value) : $value;
+        return $this->formatDateTimeAttr($value, $data['logintime'] ?? null);
     }
 
     public function getJointimeTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['jointime'];
-
-        return is_numeric($value) ? date('Y-m-d H:i:s', $value) : $value;
+        return $this->formatDateTimeAttr($value, $data['jointime'] ?? null);
     }
 
     protected function setPrevtimeAttr($value)
     {
-        return $value && !is_numeric($value) ? strtotime($value) : $value;
+        return $this->parseDateTimeAttr($value);
     }
 
     protected function setLogintimeAttr($value)
     {
-        return $value && !is_numeric($value) ? strtotime($value) : $value;
+        return $this->parseDateTimeAttr($value);
     }
 
     protected function setJointimeAttr($value)
+    {
+        return $this->parseDateTimeAttr($value);
+    }
+
+    /**
+     * 格式化日期时间获取器
+     * @param mixed $value
+     * @param mixed $fallback
+     * @return string
+     */
+    protected function formatDateTimeAttr($value, $fallback)
+    {
+        $value = $value ?: $fallback;
+
+        return is_numeric($value) ? date('Y-m-d H:i:s', $value) : $value;
+    }
+
+    /**
+     * 解析日期时间修改器
+     * @param mixed $value
+     * @return int|mixed
+     */
+    protected function parseDateTimeAttr($value)
     {
         return $value && !is_numeric($value) ? strtotime($value) : $value;
     }

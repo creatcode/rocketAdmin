@@ -25,11 +25,8 @@ return [
     // 异常页面的模板文件
     'exception_tmpl'   => app_path() . 'common' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . 'tpl' . DIRECTORY_SEPARATOR . 'think_exception.tpl',
 
-    // 部署模式http异常模板
-    'http_exception_template' => [
-        // 404 => '',
-        // 500 => ''
-    ],
+    // 部署模式http异常模板（按需配置，如 404 => app_path().'.../404.tpl'）
+    'http_exception_template' => [],
 
     // 错误显示信息,非调试模式有效
     'error_message'    => '页面错误！请稍后再试～',

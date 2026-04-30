@@ -148,6 +148,7 @@ class Extractor
             } catch (\ReflectionException $e) {
                 $annotations = [];
             }
+            // 异常被静默处理，$annotations 已在 catch 块中设为空数组
 
             self::$annotationCache[$className . '::' . $methodName] = $annotations;
         }
@@ -212,7 +213,7 @@ class Extractor
 
         $methodAnnotations = self::parseAnnotations($docblockMethod);
         $classAnnotations = self::parseAnnotations($dockblockClass);
-        if (isset($methodAnnotations['ApiInternal']) || $methodName == 'initialize' || $methodName == '_empty') {
+        if (isset($methodAnnotations['ApiInternal']) || $methodName === 'initialize' || $methodName === '_empty') {
             return [];
         }
 
@@ -530,8 +531,6 @@ class Extractor
             } elseif (is_numeric($val)) {
                 return $val + 0;
             }
-
-            unset($tmp);
         }
 
         return $val;

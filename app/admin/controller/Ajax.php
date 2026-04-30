@@ -317,7 +317,7 @@ class Ajax extends Backend
     public function icon()
     {
         $suffix = $this->request->request("suffix");
-        $suffix = $suffix ? $suffix : "FILE";
+        $suffix = $suffix ?: "FILE";
         $data = build_suffix_image($suffix);
         $header = ['Content-Type' => 'image/svg+xml'];
         $offset = 30 * 60 * 60 * 24; // 缓存一个月

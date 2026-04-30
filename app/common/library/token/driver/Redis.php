@@ -115,7 +115,7 @@ class Redis extends Driver
         }
         //获取有效期
         $expire = $this->handler->ttl($key);
-        $expire = $expire < 0 ? 365 * 86400 : $expire;
+        $expire = $expire < 0 ? self::DEFAULT_EXPIRE : $expire;
         $expiretime = time() + $expire;
         //解决使用redis方式储存token时api接口Token刷新与检测因expires_in拼写错误报错的BUG
         $result = ['token' => $token, 'user_id' => $value, 'expiretime' => $expiretime, 'expires_in' => $expire];
@@ -150,7 +150,6 @@ class Redis extends Driver
             $this->handler->sRem($this->getUserKey($user_id), $key);
         }
         return true;
-
     }
 
     /**
@@ -162,8 +161,10 @@ class Redis extends Driver
     {
         $keys = $this->handler->sMembers($this->getUserKey($user_id));
         $this->handler->del($this->getUserKey($user_id));
-        $this->handler->del($keys);
+        // phpredis 在空数组场景下可能触发参数异常，这里做一次兜底
+        if (!empty($keys)) {
+            $this->handler->del($keys);
+        }
         return true;
     }
-
 }

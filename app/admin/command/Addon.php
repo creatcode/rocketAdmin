@@ -32,7 +32,7 @@ class Addon extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        Config::load(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.php');
+        Config::load(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config.php');
         $name = $input->getOption('name') ?: '';
         $action = $input->getOption('action') ?: '';
         if (stripos($name, 'addons' . DIRECTORY_SEPARATOR) !== false) {

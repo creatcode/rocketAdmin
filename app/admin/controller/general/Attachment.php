@@ -113,7 +113,7 @@ class Attachment extends Backend
         if (!$this->request->isPost()) {
             $this->error(__("Invalid parameters"));
         }
-        $ids = $ids ? $ids : $this->request->post("ids");
+        $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
             \think\facade\Event::listen('upload_delete', function ($params) {
                 if ($params['storage'] == 'local') {

@@ -26,8 +26,8 @@ class Version extends Model
     {
         $versionlist = self::where('status', 'normal')->cache('__version__')->order('weigh desc,id desc')->select();
         foreach ($versionlist as $k => $v) {
-            // 版本正常且新版本号不等于验证的版本号且找到匹配的旧版本
-            if ($v['status'] == 'normal' && $v['newversion'] !== $version && UtilVersion::check($version, $v['oldversion'])) {
+            // 新版本号不等于验证的版本号且找到匹配的旧版本(status已在查询中过滤)
+            if ($v['newversion'] !== $version && UtilVersion::check($version, $v['oldversion'])) {
                 $updateversion = $v;
                 break;
             }

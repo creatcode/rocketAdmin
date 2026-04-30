@@ -30,7 +30,7 @@ class Ems extends Api
     {
         $email = $this->request->post("email");
         $event = $this->request->post("event");
-        $event = $event ? $event : 'register';
+        $event = $event ?: 'register';
         $captcha = $this->request->post("captcha");
 
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -95,7 +95,7 @@ class Ems extends Api
     {
         $email = $this->request->post("email");
         $event = $this->request->post("event");
-        $event = $event ? $event : 'register';
+        $event = $event ?: 'register';
         $captcha = $this->request->post("captcha");
 
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {

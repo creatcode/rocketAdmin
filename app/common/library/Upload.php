@@ -257,11 +257,11 @@ class Upload
             $suffix = $this->fileInfo['suffix'] ?? '';
         }
         $suffix = $suffix && preg_match("/^[a-zA-Z0-9]+$/", $suffix) ? $suffix : 'file';
-        $filename = $filename ? $filename : ($this->fileInfo['name'] ?? 'unknown');
+        $filename = $filename ?: ($this->fileInfo['name'] ?? 'unknown');
         $filename = xss_clean(strip_tags(htmlspecialchars($filename)));
         $fileprefix = substr($filename, 0, strripos($filename, '.'));
-        $md5 = $md5 ? $md5 : (isset($this->fileInfo['tmp_name']) ? md5_file($this->fileInfo['tmp_name']) : '');
-        $category = $category ? $category : request()->post('category');
+        $md5 = $md5 ?: (isset($this->fileInfo['tmp_name']) ? md5_file($this->fileInfo['tmp_name']) : '');
+        $category = $category ?: request()->post('category');
         $category = $category ? xss_clean($category) : 'all';
         $replaceArr = [
             '{year}'       => date("Y"),
@@ -272,14 +272,14 @@ class Upload
             '{sec}'        => date("s"),
             '{random}'     => Random::alnum(16),
             '{random32}'   => Random::alnum(32),
-            '{category}'   => $category ? $category : '',
+            '{category}'   => $category ?: '',
             '{filename}'   => substr($filename, 0, 100),
             '{fileprefix}' => substr($fileprefix, 0, 100),
             '{suffix}'     => $suffix,
             '{.suffix}'    => $suffix ? '.' . $suffix : '',
             '{filemd5}'    => $md5,
         ];
-        $savekey = $savekey ? $savekey : $this->config['savekey'];
+        $savekey = $savekey ?: $this->config['savekey'];
         $savekey = str_replace(array_keys($replaceArr), array_values($replaceArr), $savekey);
 
         return $savekey;
@@ -421,7 +421,7 @@ class Upload
         $this->checkMimetype();
         $this->checkImage();
 
-        $savekey = $savekey ? $savekey : $this->getSavekey();
+        $savekey = $savekey ?: $this->getSavekey();
         $savekey = '/' . ltrim($savekey, '/');
         $uploadDir = substr($savekey, 0, strripos($savekey, '/') + 1);
         $fileName = substr($savekey, strripos($savekey, '/') + 1);

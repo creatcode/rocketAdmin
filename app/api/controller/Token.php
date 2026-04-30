@@ -3,6 +3,7 @@
 namespace app\api\controller;
 
 use app\common\controller\Api;
+use app\common\library\Token as TokenLib;
 use util\Random;
 
 /**
@@ -14,13 +15,18 @@ class Token extends Api
     protected $noNeedRight = '*';
 
     /**
+     * Token默认过期时间：30天（秒）
+     */
+    const TOKEN_EXPIRE = 2592000;
+
+    /**
      * 检测Token是否过期
      *
      */
     public function check()
     {
         $token = $this->auth->getToken();
-        $tokenInfo = \app\common\library\Token::get($token);
+        $tokenInfo = TokenLib::get($token);
         $this->success('', ['token' => $tokenInfo['token'], 'expires_in' => $tokenInfo['expires_in']]);
     }
 
@@ -32,11 +38,11 @@ class Token extends Api
     {
         //删除源Token
         $token = $this->auth->getToken();
-        \app\common\library\Token::delete($token);
+        TokenLib::delete($token);
         //创建新Token
         $token = Random::uuid();
-        \app\common\library\Token::set($token, $this->auth->id, 2592000);
-        $tokenInfo = \app\common\library\Token::get($token);
+        TokenLib::set($token, $this->auth->id, self::TOKEN_EXPIRE);
+        $tokenInfo = TokenLib::get($token);
         $this->success('', ['token' => $tokenInfo['token'], 'expires_in' => $tokenInfo['expires_in']]);
     }
 }

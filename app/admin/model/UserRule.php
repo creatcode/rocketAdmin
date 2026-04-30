@@ -40,14 +40,14 @@ class UserRule extends Model
 
     public function getStatusTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['status'];
+        $value = $value ?: $data['status'];
         $list = $this->getStatusList();
         return $list[$value] ?? '';
     }
 
     public static function getTreeList($selected = [])
     {
-        $ruleList = collect(self::where('status', 'normal')->order('weigh desc,id desc')->select())->toArray();
+        $ruleList = self::where('status', 'normal')->order('weigh desc,id desc')->select()->toArray();
         $nodeList = [];
         Tree::instance()->init($ruleList);
         $ruleList = Tree::instance()->getTreeList(Tree::instance()->getTreeArray(0), 'name');
@@ -57,8 +57,8 @@ class UserRule extends Model
                 $hasChildrens[] = $v['id'];
         }
         foreach ($ruleList as $k => $v) {
-            $state = array('selected' => in_array($v['id'], $selected) && !in_array($v['id'], $hasChildrens));
-            $nodeList[] = array('id' => $v['id'], 'parent' => $v['pid'] ? $v['pid'] : '#', 'text' => __($v['title']), 'type' => 'menu', 'state' => $state);
+            $state = ['selected' => in_array($v['id'], $selected) && !in_array($v['id'], $hasChildrens)];
+            $nodeList[] = ['id' => $v['id'], 'parent' => $v['pid'] ? $v['pid'] : '#', 'text' => __($v['title']), 'type' => 'menu', 'state' => $state];
         }
         return $nodeList;
     }

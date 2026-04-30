@@ -81,12 +81,17 @@ abstract class Driver
     }
 
     /**
+     * 默认过期时长：一年（秒）
+     */
+    const DEFAULT_EXPIRE = 31536000;
+
+    /**
      * 获取过期剩余时长
      * @param $expiretime
      * @return float|int|mixed
      */
     protected function getExpiredIn($expiretime)
     {
-        return $expiretime ? max(0, $expiretime - time()) : 365 * 86400;
+        return $expiretime ? max(0, $expiretime - time()) : self::DEFAULT_EXPIRE;
     }
 }

@@ -36,11 +36,6 @@ class User extends Validate
     ];
 
     /**
-     * 字段描述
-     */
-    protected $field = [];
-
-    /**
      * 提示消息
      */
     protected $message = [

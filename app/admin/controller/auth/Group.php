@@ -191,7 +191,7 @@ class Group extends Backend
         if (!$this->request->isPost()) {
             $this->error(__("Invalid parameters"));
         }
-        $ids = $ids ? $ids : $this->request->post("ids");
+        $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
             $ids = explode(',', $ids);
             $grouplist = $this->auth->getGroups();
@@ -256,7 +256,7 @@ class Group extends Backend
             $currentGroupModel = $this->model->find($id);
         }
         if (($pid || $parentGroupModel) && (!$id || $currentGroupModel)) {
-            $id = $id ? $id : null;
+            $id = $id ?: null;
             $ruleList = collect((new AuthRule())->order('weigh', 'desc')->order('id', 'asc')->select())->toArray();
             //读取父类角色所有节点列表
             $parentRuleList = [];

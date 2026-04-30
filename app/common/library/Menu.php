@@ -25,7 +25,7 @@ class Menu
         $info = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
         preg_match('/addons\\\\([a-z0-9]+)\\\\/i', $info['class'], $matches);
         if ($matches && isset($matches[1])) {
-            Menu::refresh($matches[1], $menu);
+            self::refresh($matches[1], $menu);
         }
     }
 
@@ -114,7 +114,7 @@ class Menu
             return false;
         }
 
-        Menu::refresh($name, $menu);
+        self::refresh($name, $menu);
         return true;
     }
 
@@ -127,7 +127,7 @@ class Menu
     {
         if (!$menu) {
             // $menu为空时表示首次安装，首次安装需刷新插件菜单标识缓存
-            $menuIds = Menu::getAuthRuleIdsByName($name);
+            $menuIds = self::getAuthRuleIdsByName($name);
             $menus = Db::name("auth_rule")->where('id', 'in', $menuIds)->column('name');
         } else {
             // 刷新新的菜单缓存

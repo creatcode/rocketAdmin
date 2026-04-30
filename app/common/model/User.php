@@ -114,8 +114,7 @@ class User extends Model
      */
     public static function score($score, $user_id, $memo)
     {
-        Db::startTrans();
-        try {
+        Db::transaction(function () use ($user_id, $score, $memo) {
             $user = self::lock(true)->find($user_id);
             if ($user && $score != 0) {
                 $before = $user->score;
@@ -126,10 +125,7 @@ class User extends Model
                 //写入日志
                 ScoreLog::create(['user_id' => $user_id, 'score' => $score, 'before' => $before, 'after' => $after, 'memo' => $memo]);
             }
-            Db::commit();
-        } catch (\Exception $e) {
-            Db::rollback();
-        }
+        });
     }
 
     /**
@@ -139,7 +135,7 @@ class User extends Model
      */
     public static function nextlevel($score = 0)
     {
-        $lv = array(1 => 0, 2 => 30, 3 => 100, 4 => 500, 5 => 1000, 6 => 2000, 7 => 3000, 8 => 5000, 9 => 8000, 10 => 10000);
+        $lv = [1 => 0, 2 => 30, 3 => 100, 4 => 500, 5 => 1000, 6 => 2000, 7 => 3000, 8 => 5000, 9 => 8000, 10 => 10000];
         $level = 1;
         foreach ($lv as $key => $value) {
             if ($score >= $value) {

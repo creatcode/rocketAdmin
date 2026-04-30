@@ -26,7 +26,7 @@ class UserGroup extends Model
 
     public function getStatusTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['status'];
+        $value = $value ?: $data['status'];
         $list = $this->getStatusList();
         return $list[$value] ?? '';
     }

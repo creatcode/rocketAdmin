@@ -362,7 +362,7 @@ class Auth
         foreach ($ruleList as $k => $v) {
             $rules[] = $v['name'];
         }
-        $url = ($module ? $module : app()->http->getName()) . '/' . (is_null($path) ? $this->getRequestUri() : $path);
+        $url = ($module ?: app()->http->getName()) . '/' . (is_null($path) ? $this->getRequestUri() : $path);
         $url = strtolower(str_replace('.', '/', $url));
         return in_array($url, $rules);
     }

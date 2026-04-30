@@ -35,7 +35,7 @@ if (!function_exists('build_radios')) {
     function build_radios($name, $list = [], $selected = null)
     {
         $html = [];
-        $selected = is_null($selected) ? key($list) : $selected;
+        $selected = $selected === null ? key($list) : $selected;
         $selected = is_array($selected) ? $selected : explode(',', $selected);
         foreach ($list as $k => $v) {
             $html[] = sprintf(Form::label("{$name}-{$k}", "%s " . str_replace('%', '%%', $v)), Form::radio($name, $k, in_array($k, $selected), ['id' => "{$name}-{$k}"]));
@@ -57,7 +57,7 @@ if (!function_exists('build_checkboxs')) {
     function build_checkboxs($name, $list = [], $selected = null)
     {
         $html = [];
-        $selected = is_null($selected) ? [] : $selected;
+        $selected = $selected === null ? [] : $selected;
         $selected = is_array($selected) ? $selected : explode(',', $selected);
         foreach ($list as $k => $v) {
             $html[] = sprintf(Form::label("{$name}-{$k}", "%s " . str_replace('%', '%%', $v)), Form::checkbox($name, $k, in_array($k, $selected), ['id' => "{$name}-{$k}"]));
@@ -83,7 +83,7 @@ if (!function_exists('build_category_select')) {
         $tree = Tree::instance();
         $tree->init(Category::getCategoryArray($type), 'pid');
         $categorylist = $tree->getTreeList($tree->getTreeArray(0), 'name');
-        $categorydata = $header ? $header : [];
+        $categorydata = $header ?: [];
         foreach ($categorylist as $k => $v) {
             $categorydata[$v['id']] = $v['name'];
         }
@@ -105,7 +105,7 @@ if (!function_exists('build_toolbar')) {
     {
         $auth = \app\admin\library\AdminAuth::instance();
         $controller = str_replace('.', '/', strtolower(think\facade\Request::instance()->controller()));
-        $btns = $btns ? $btns : ['refresh', 'add', 'edit', 'del', 'import'];
+        $btns = $btns ?: ['refresh', 'add', 'edit', 'del', 'import'];
         $btns = is_array($btns) ? $btns : explode(',', $btns);
         $index = array_search('delete', $btns);
         if ($index !== false) {
@@ -176,10 +176,10 @@ if (!function_exists('build_heading')) {
     function build_heading($path = null, $container = true)
     {
         $title = $content = '';
-        if (is_null($path)) {
+        if ($path === null) {
             $action = request()->action();
             $controller = str_replace('.', '/', parse_name(request()->controller()));
-            $path = strtolower($controller . ($action && $action != 'index' ? '/' . $action : ''));
+            $path = strtolower($controller . ($action && $action !== 'index' ? '/' . $action : ''));
         }
         // 根据当前的URI自动匹配父节点的标题和备注
         $data = Db::name('auth_rule')->where('name', $path)->field('title,remark')->find();

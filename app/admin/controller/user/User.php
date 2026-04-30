@@ -50,7 +50,7 @@ class User extends Backend
                 $v->avatar = $v->avatar ? cdnurl($v->avatar, true) : letter_avatar($v->nickname);
                 $v->hidden(['password', 'salt']);
             }
-            $result = array("total" => $list->total(), "rows" => $list->items());
+            $result = ["total" => $list->total(), "rows" => $list->items()];
 
             return json($result);
         }
@@ -93,7 +93,7 @@ class User extends Backend
         if (!$this->request->isPost()) {
             $this->error(__("Invalid parameters"));
         }
-        $ids = $ids ? $ids : $this->request->post("ids");
+        $ids = $ids ?: $this->request->post("ids");
         $row = $this->model->find($ids);
         $this->modelValidate = true;
         if (!$row) {

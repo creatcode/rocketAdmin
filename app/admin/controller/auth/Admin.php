@@ -260,7 +260,7 @@ class Admin extends Backend
         if (!$this->request->isPost()) {
             $this->error(__("Invalid parameters"));
         }
-        $ids = $ids ? $ids : $this->request->post("ids");
+        $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
             $ids = array_intersect($this->childrenAdminIds, array_filter(explode(',', $ids)));
             // 避免越权删除管理员

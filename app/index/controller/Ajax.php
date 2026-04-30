@@ -39,7 +39,6 @@ class Ajax extends Frontend
             return jsonp(['errmsg' => '参数错误'], 200, [], ['json_encode_param' => JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE]);
         }
 
-        $controllername = input("controllername");
         $className = $this->app->parseClass('controller', $controllername);
 
         //存在对应的类才加载
@@ -56,7 +55,7 @@ class Ajax extends Frontend
     public function icon()
     {
         $suffix = $this->request->request("suffix");
-        $suffix = $suffix ? $suffix : "FILE";
+        $suffix = $suffix ?: "FILE";
         $data = build_suffix_image($suffix);
         $header = ['Content-Type' => 'image/svg+xml'];
         $offset = 30 * 60 * 60 * 24; // 缓存一个月

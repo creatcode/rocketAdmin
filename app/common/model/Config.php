@@ -102,6 +102,7 @@ class Config extends Model
         foreach ($groupList as $k => &$v) {
             $v = __($v);
         }
+        unset($v); // 解除引用，防止后续意外修改
         return $groupList;
     }
 

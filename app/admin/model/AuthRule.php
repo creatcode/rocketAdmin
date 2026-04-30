@@ -26,9 +26,9 @@ class AuthRule extends Model
 
     protected static function onBeforeWrite($row)
     {
-        if (isset($_POST['row']) && is_array($_POST['row']) && isset($_POST['row']['condition'])) {
-            $originRow = $_POST['row'];
-            $row['condition'] = $originRow['condition'] ?? '';
+        $postRow = request()->post('row');
+        if (is_array($postRow) && isset($postRow['condition'])) {
+            $row['condition'] = $postRow['condition'] ?? '';
         }
     }
 

@@ -54,7 +54,14 @@ class Mysql extends Driver
      */
     public function set($token, $user_id, $expire = null)
     {
-        $expiretime = !is_null($expire) && $expire !== 0 ? time() + $expire : 0;
+        // 未显式传入过期时间时，使用驱动配置中的默认值
+        if ($expire === null) {
+            $expire = $this->options['expire'];
+        }
+        if ($expire instanceof \DateTime) {
+            $expire = $expire->getTimestamp() - time();
+        }
+        $expiretime = $expire !== 0 ? time() + $expire : 0;
         $token = $this->getEncryptedToken($token);
         $this->handler->insert(['token' => $token, 'user_id' => $user_id, 'createtime' => time(), 'expiretime' => $expiretime]);
         return true;

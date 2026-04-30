@@ -21,6 +21,6 @@ class Log extends AbstractLogger
      */
     public function log($level, $message, array $context = [])
     {
-        \think\facade\Log::write($message);
+        \think\facade\Log::write($message, $level);
     }
 }

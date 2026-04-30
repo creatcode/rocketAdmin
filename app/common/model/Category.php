@@ -39,17 +39,18 @@ class Category extends Model
      */
     public static function getTypeList()
     {
-        $typeList = config('site.categorytype');
+        $typeList = (array)config('site.categorytype');
         foreach ($typeList as $k => &$v) {
             $v = __($v);
         }
+        unset($v); // 解除引用，防止后续代码意外修改数组
 
         return $typeList;
     }
 
     public function getTypeTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['type'];
+        $value = $value ?: $data['type'];
         $list = $this->getTypeList();
         return $list[$value] ?? '';
     }
@@ -61,7 +62,7 @@ class Category extends Model
 
     public function getFlagTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['flag'];
+        $value = $value ?: ($data['flag'] ?? '');
         $valueArr = explode(',', $value);
         $list = $this->getFlagList();
 
@@ -79,10 +80,10 @@ class Category extends Model
     public static function getCategoryArray($type = null, $status = null)
     {
         $list = self::where(function ($query) use ($type, $status) {
-            if (!is_null($type)) {
+            if ($type !== null) {
                 $query->where('type', '=', $type);
             }
-            if (!is_null($status)) {
+            if ($status !== null) {
                 $query->where('status', '=', $status);
             }
         })->order('weigh', 'desc')->select()->toArray();

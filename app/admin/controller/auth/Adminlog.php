@@ -101,7 +101,7 @@ class Adminlog extends Backend
         if (!$this->request->isPost()) {
             $this->error(__("Invalid parameters"));
         }
-        $ids = $ids ? $ids : $this->request->post("ids");
+        $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
             $isSuperAdmin = $this->auth->isSuperAdmin();
             $childrenAdminIds = $this->childrenAdminIds;

@@ -60,7 +60,7 @@ class Email
         }
         $this->options = array_merge($this->options, $options);
         $secureArr = [0 => '', 1 => 'tls', 2 => 'ssl'];
-        $secure = isset($secureArr[$this->options['mail_verify_type']]) ? $secureArr[$this->options['mail_verify_type']] : '';
+        $secure = $secureArr[$this->options['mail_verify_type']] ?? '';
 
         $logger = isset($this->options['debug']) && $this->options['debug'] ? new Log : null;
         $this->mail = new Mailer($logger);
@@ -118,7 +118,7 @@ class Email
     public function cc($email, $name = '')
     {
         $emailArr = $this->buildAddress($email);
-        if (count($emailArr) == 1 && $name) {
+        if (count($emailArr) === 1 && $name) {
             $emailArr[key($emailArr)] = $name;
         }
         foreach ($emailArr as $address => $name) {
@@ -136,7 +136,7 @@ class Email
     public function bcc($email, $name = '')
     {
         $emailArr = $this->buildAddress($email);
-        if (count($emailArr) == 1 && $name) {
+        if (count($emailArr) === 1 && $name) {
             $emailArr[key($emailArr)] = $name;
         }
         foreach ($emailArr as $address => $name) {

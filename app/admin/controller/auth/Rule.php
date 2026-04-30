@@ -141,7 +141,7 @@ class Rule extends Backend
         if (!$this->request->isPost()) {
             $this->error(__("Invalid parameters"));
         }
-        $ids = $ids ? $ids : $this->request->post("ids");
+        $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
             $delIds = [];
             foreach (explode(',', $ids) as $k => $v) {

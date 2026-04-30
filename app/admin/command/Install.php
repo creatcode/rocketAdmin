@@ -259,8 +259,8 @@ class Install extends Command
 
         $avatar = '/assets/img/avatar.png';
         // 变更默认管理员密码
-        $adminPassword = $adminPassword ? $adminPassword : Random::alnum(8);
-        $adminEmail = $adminEmail ? $adminEmail : "admin@admin.com";
+        $adminPassword = $adminPassword ?: Random::alnum(8);
+        $adminEmail = $adminEmail ?: "admin@admin.com";
         $newSalt = substr(md5(uniqid(true)), 0, 6);
         $newPassword = md5(md5($adminPassword) . $newSalt);
         $data = ['username' => $adminUsername, 'email' => $adminEmail, 'avatar' => $avatar, 'password' => $newPassword, 'salt' => $newSalt];

@@ -40,7 +40,7 @@ class Api extends Command
         if (!preg_match("/^([a-z0-9]+)\.html\$/i", $template)) {
             throw new Exception('template file not correct');
         }
-        $language = $language ? $language : 'zh-cn';
+        $language = $language ?: 'zh-cn';
         $langFile = $apiDir . 'lang' . DIRECTORY_SEPARATOR . $language . '.php';
         if (!is_file($langFile)) {
             throw new Exception('language file not found');

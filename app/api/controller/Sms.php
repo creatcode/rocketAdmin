@@ -27,7 +27,7 @@ class Sms extends Api
     {
         $mobile = $this->request->post("mobile");
         $event = $this->request->post("event");
-        $event = $event ? $event : 'register';
+        $event = $event ?: 'register';
         if (!preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
             $this->error(__('事件名称错误'));
         }
@@ -79,7 +79,7 @@ class Sms extends Api
     {
         $mobile = $this->request->post("mobile");
         $event = $this->request->post("event");
-        $event = $event ? $event : 'register';
+        $event = $event ?: 'register';
         if (!preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
             $this->error(__('事件名称错误'));
         }

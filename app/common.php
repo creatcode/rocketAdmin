@@ -1068,7 +1068,7 @@ if (!function_exists('build_suffix_image')) {
         $hue = $total % 360;
         list($r, $g, $b) = hsv2rgb($hue / 360, 0.3, 0.9);
 
-        $background = $background ? $background : "rgb({$r},{$g},{$b})";
+        $background = $background ?: "rgb({$r},{$g},{$b})";
 
         $icon = <<<EOT
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">

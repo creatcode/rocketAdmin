@@ -24,6 +24,7 @@ class Area extends Model
         $rangearr = [1 => 15000, 2 => 1000, 3 => 200];
         $geoname = $namearr[$level] ?? $namearr[3];
         $georange = $rangearr[$level] ?? $rangearr[3];
+        $id = 3; // 默认回退到内置地区记录
         // 读取范围内的ID
         $redis = Cache::store('redis')->handler();
         $georadiuslist = [];
@@ -31,10 +32,9 @@ class Area extends Model
             $georadiuslist = $redis->georadius($geoname, $lng, $lat, $georange, 'km', ['WITHDIST', 'COUNT' => 5, 'ASC']);
         }
 
-        if ($georadiuslist) {
-            list($id, $distance) = $georadiuslist[0];
+        if (!empty($georadiuslist[0][0])) {
+            $id = $georadiuslist[0][0];
         }
-        $id = isset($id) && $id ? $id : 3;
         return self::get($id);
     }
 

@@ -198,7 +198,7 @@ class AdminAuth extends AuthService
 
     public function check($name, $uid = '', $relation = 'or', $mode = 'url')
     {
-        $uid = $uid ? $uid : $this->id;
+        $uid = $uid ?: $this->id;
         return parent::check($name, $uid, $relation, $mode);
     }
 

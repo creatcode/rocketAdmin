@@ -53,13 +53,17 @@ class AdminExceptionHandle extends Handle
      */
     public function render($request, Throwable $e): Response
     {
-        if ($e instanceof ValidateException && request()->isAjax()) {
-            return json([
+        if ($e instanceof ValidateException && $request->isAjax()) {
+            $data = [
                 'code' => 0,
                 'msg'  => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ]);
+            ];
+            // 仅在调试模式下暴露文件路径和行号，生产环境隐藏敏感信息
+            if (env('app_debug')) {
+                $data['file'] = $e->getFile();
+                $data['line'] = $e->getLine();
+            }
+            return json($data);
         }
 
         // 其他错误交给系统处理

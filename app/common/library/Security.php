@@ -24,39 +24,23 @@ class Security
      *
      * @var    array
      */
-    public $filename_bad_chars = array(
-        '../',
-        '<!--',
-        '-->',
-        '<',
-        '>',
-        "'",
-        '"',
-        '&',
-        '$',
-        '#',
-        '{',
-        '}',
-        '[',
-        ']',
-        '=',
-        ';',
-        '?',
-        '%20',
-        '%22',
+    public $filename_bad_chars = [
+        '../', '<!--', '-->', '<', '>', "'", '"', '&', '$', '#',
+        '{', '}', '[', ']', '=', ';', '?',
+        '%20', '%22',
         '%3c',        // <
-        '%253c',    // <
+        '%253c',      // <
         '%3e',        // >
         '%0e',        // >
         '%28',        // (
         '%29',        // )
-        '%2528',    // (
+        '%2528',      // (
         '%26',        // &
         '%24',        // $
         '%3f',        // ?
         '%3b',        // ;
-        '%3d'        // =
-    );
+        '%3d',        // =
+    ];
 
     /**
      * Character set
@@ -81,7 +65,7 @@ class Security
      *
      * @var    array
      */
-    protected $_never_allowed_str = array(
+    protected $_never_allowed_str = [
         'document.cookie'   => '[removed]',
         '(document).cookie' => '[removed]',
         'document.write'    => '[removed]',
@@ -93,28 +77,28 @@ class Security
         '-->'               => '--&gt;',
         '<![CDATA['         => '&lt;![CDATA[',
         '<comment>'         => '&lt;comment&gt;',
-        '<%'                => '&lt;&#37;'
-    );
+        '<%'                => '&lt;&#37;',
+    ];
 
     /**
      * List of never allowed regex replacements
      *
      * @var    array
      */
-    protected $_never_allowed_regex = array(
+    protected $_never_allowed_regex = [
         'javascript\s*:',
         '(\(?document\)?|\(?window\)?(\.document)?)\.(location|on\w*)',
         'expression\s*(\(|&\#40;)', // CSS and IE
-        'vbscript\s*:', // IE, surprise!
+        'vbscript\s*:', // IE
         'wscript\s*:', // IE
         'jscript\s*:', // IE
         'vbs\s*:', // IE
         'Redirect\s+30\d',
-        "([\"'])?data\s*:[^\\1]*?base64[^\\1]*?,[^\\1]*?\\1?"
-    );
+        "([\"'])?data\s*:[^\\1]*?base64[^\\1]*?,[^\\1]*?\\1?",
+    ];
 
     protected $options = [
-        'placeholder' => '[removed]'
+        'placeholder' => '[removed]',
     ];
 
     /**
@@ -128,6 +112,7 @@ class Security
         foreach ($this->_never_allowed_str as $index => &$item) {
             $item = str_replace('[removed]', $this->options['placeholder'], $item);
         }
+        unset($item); // 解除引用，避免后续误用同名变量时串改数组元素
     }
 
     /**
@@ -137,7 +122,7 @@ class Security
      */
     public static function instance($options = [])
     {
-        if (is_null(self::$instance)) {
+        if (self::$instance === null) {
             self::$instance = new static($options);
         }
 
@@ -177,6 +162,7 @@ class Security
             foreach ($str as $key => &$value) {
                 $str[$key] = $this->xss_clean($value);
             }
+            unset($value); // 解除引用，避免 foreach 引用泄漏
 
             return $str;
         }
@@ -255,25 +241,11 @@ class Security
          * This corrects words like:  j a v a s c r i p t
          * These words are compacted back to their correct state.
          */
-        $words = array(
-            'javascript',
-            'expression',
-            'vbscript',
-            'jscript',
-            'wscript',
-            'vbs',
-            'script',
-            'base64',
-            'applet',
-            'alert',
-            'document',
-            'write',
-            'cookie',
-            'window',
-            'confirm',
-            'prompt',
-            'eval'
-        );
+        $words = [
+            'javascript', 'expression', 'vbscript', 'jscript', 'wscript',
+            'vbs', 'script', 'base64', 'applet', 'alert', 'document',
+            'write', 'cookie', 'window', 'confirm', 'prompt', 'eval',
+        ];
 
         foreach ($words as $word) {
             $word = implode('\s*', str_split($word)) . '\s*';
@@ -607,59 +579,20 @@ class Security
      */
     protected function _sanitize_naughty_html($matches)
     {
-        static $naughty_tags = array(
-            'alert',
-            'area',
-            'prompt',
-            'confirm',
-            'applet',
-            'audio',
-            'basefont',
-            'base',
-            'behavior',
-            'bgsound',
-            'blink',
-            'body',
-            'embed',
-            'expression',
-            'form',
-            'frameset',
-            'frame',
-            'head',
-            'html',
-            'ilayer',
-            'iframe',
-            'input',
-            'button',
-            'select',
-            'isindex',
-            'layer',
-            'link',
-            'meta',
-            'keygen',
-            'object',
-            'plaintext',
-            'style',
-            'script',
-            'textarea',
-            'title',
-            'math',
-            'video',
-            'svg',
-            'xml',
-            'xss'
-        );
+        static $naughty_tags = [
+            'alert', 'area', 'prompt', 'confirm', 'applet', 'audio',
+            'basefont', 'base', 'behavior', 'bgsound', 'blink', 'body',
+            'embed', 'expression', 'form', 'frameset', 'frame', 'head',
+            'html', 'ilayer', 'iframe', 'input', 'button', 'select',
+            'isindex', 'layer', 'link', 'meta', 'keygen', 'object',
+            'plaintext', 'style', 'script', 'textarea', 'title',
+            'math', 'video', 'svg', 'xml', 'xss',
+        ];
 
-        static $evil_attributes = array(
-            'on\w+',
-            'style',
-            'xmlns',
-            'formaction',
-            'form',
-            'xlink:href',
-            'FSCommand',
-            'seekSegmentTime'
-        );
+        static $evil_attributes = [
+            'on\w+', 'style', 'xmlns', 'formaction', 'form',
+            'xlink:href', 'FSCommand', 'seekSegmentTime',
+        ];
 
         // First, escape unclosed tags
         if (empty($matches['closeTag'])) {

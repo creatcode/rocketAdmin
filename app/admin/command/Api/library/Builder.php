@@ -67,16 +67,15 @@ class Builder
             return [];
         }
 
-        $headerslist = array();
+        $headerslist = [];
         foreach ($docs['ApiHeaders'] as $params) {
-            $tr = array(
+            $headerslist[] = [
                 'name'        => $params['name'] ?? '',
                 'type'        => $params['type'] ?? 'string',
                 'sample'      => $params['sample'] ?? '',
                 'required'    => $params['required'] ?? false,
                 'description' => $params['description'] ?? '',
-            );
-            $headerslist[] = $tr;
+            ];
         }
 
         return $headerslist;
@@ -92,19 +91,18 @@ class Builder
             'integer' => 'number',
             'file'    => 'file',
         ];
-        $paramslist = array();
+        $paramslist = [];
         foreach ($docs['ApiParams'] as $params) {
             $type = strtolower($params['type'] ?? 'string');
-            $inputtype = $typeArr[$type] ?? ($params['name'] == 'password' ? 'password' : 'text');
-            $tr = array(
+            $inputtype = $typeArr[$type] ?? ($params['name'] === 'password' ? 'password' : 'text');
+            $paramslist[] = [
                 'name'        => $params['name'],
                 'type'        => $type,
                 'inputtype'   => $inputtype,
                 'sample'      => $params['sample'] ?? '',
                 'required'    => $params['required'] ?? true,
                 'description' => $params['description'] ?? '',
-            );
-            $paramslist[] = $tr;
+            ];
         }
 
         return $paramslist;
@@ -116,16 +114,15 @@ class Builder
             return [];
         }
 
-        $headerslist = array();
+        $headerslist = [];
         foreach ($docs['ApiReturnHeaders'] as $params) {
-            $tr = array(
+            $headerslist[] = [
                 'name'        => $params['name'] ?? '',
                 'type'        => 'string',
                 'sample'      => $params['sample'] ?? '',
-                'required'    => isset($params['required']) && $params['required'] ? 'Yes' : 'No',
+                'required'    => !empty($params['required']) ? 'Yes' : 'No',
                 'description' => $params['description'] ?? '',
-            );
-            $headerslist[] = $tr;
+            ];
         }
 
         return $headerslist;
@@ -137,15 +134,14 @@ class Builder
             return [];
         }
 
-        $paramslist = array();
+        $paramslist = [];
         foreach ($st_params['ApiReturnParams'] as $params) {
-            $tr = array(
+            $paramslist[] = [
                 'name'        => $params['name'] ?? '',
                 'type'        => $params['type'] ?? 'string',
                 'sample'      => $params['sample'] ?? '',
                 'description' => $params['description'] ?? '',
-            );
-            $paramslist[] = $tr;
+            ];
         }
 
         return $paramslist;
@@ -154,16 +150,16 @@ class Builder
     protected function generateBadgeForMethod($data)
     {
         $method = strtoupper(is_array($data['ApiMethod'][0]) ? $data['ApiMethod'][0]['data'] : $data['ApiMethod'][0]);
-        $labes = array(
+        $labels = [
             'POST'    => 'label-primary',
             'GET'     => 'label-success',
             'PUT'     => 'label-warning',
             'DELETE'  => 'label-danger',
             'PATCH'   => 'label-default',
-            'OPTIONS' => 'label-info'
-        );
+            'OPTIONS' => 'label-info',
+        ];
 
-        return $labes[$method] ?? $labes['GET'];
+        return $labels[$method] ?? $labels['GET'];
     }
 
     public function parse()
@@ -198,7 +194,7 @@ class Builder
                 } else {
                     $section = $class;
                 }
-                if (0 === count($docs)) {
+                if (empty($docs)) {
                     continue;
                 }
                 $route = is_array($docs['ApiRoute'][0]) ? $docs['ApiRoute'][0]['data'] : $docs['ApiRoute'][0];

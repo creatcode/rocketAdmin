@@ -15,7 +15,7 @@ class MoneyLog extends Model
     protected $autoWriteTimestamp = 'int';
     // 定义时间戳字段名
     protected $createTime = 'createtime';
-    protected $updateTime = '';
+    protected $updateTime = false;
     // 追加属性
     protected $append = [];
 }

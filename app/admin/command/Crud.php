@@ -297,7 +297,7 @@ class Crud extends Command
         $controller = $input->getOption('controller');
         //自定义模型
         $model = $input->getOption('model');
-        $model = $model ? $model : $controller;
+        $model = $model ?: $controller;
         //验证器类
         $validate = $model;
         //自定义显示字段
@@ -364,53 +364,29 @@ class Crud extends Command
         $fixedcolumns = $input->getOption('fixedcolumns');
         //编辑器Class
         $editorclass = $input->getOption('editorclass');
-        if ($setcheckboxsuffix) {
-            $this->setCheckboxSuffix = $setcheckboxsuffix;
-        }
-        if ($enumradiosuffix) {
-            $this->enumRadioSuffix = $enumradiosuffix;
-        }
-        if ($imagefield) {
-            $this->imageField = $imagefield;
-        }
-        if ($filefield) {
-            $this->fileField = $filefield;
-        }
-        if ($tagsuffix) {
-            $this->tagSuffix = $tagsuffix;
-        }
-        if ($intdatesuffix) {
-            $this->intDateSuffix = $intdatesuffix;
-        }
-        if ($switchsuffix) {
-            $this->switchSuffix = $switchsuffix;
-        }
-        if ($editorsuffix) {
-            $this->editorSuffix = $editorsuffix;
-        }
-        if ($citysuffix) {
-            $this->citySuffix = $citysuffix;
-        }
-        if ($jsonsuffix) {
-            $this->jsonSuffix = $jsonsuffix;
-        }
-        if ($selectpagesuffix) {
-            $this->selectpageSuffix = $selectpagesuffix;
-        }
-        if ($selectpagessuffix) {
-            $this->selectpagesSuffix = $selectpagessuffix;
-        }
-        if ($ignoreFields) {
-            $this->ignoreFields = $ignoreFields;
-        }
-        if ($editorclass) {
-            $this->editorClass = $editorclass;
-        }
-        if ($sortfield) {
-            $this->sortField = $sortfield;
-        }
-        if ($headingfilterfield) {
-            $this->headingFilterField = $headingfilterfield;
+        // 批量应用选项覆盖
+        $optionMap = [
+            'setcheckboxsuffix'  => 'setCheckboxSuffix',
+            'enumradiosuffix'    => 'enumRadioSuffix',
+            'imagefield'         => 'imageField',
+            'filefield'          => 'fileField',
+            'tagsuffix'          => 'tagSuffix',
+            'intdatesuffix'      => 'intDateSuffix',
+            'switchsuffix'       => 'switchSuffix',
+            'editorsuffix'       => 'editorSuffix',
+            'citysuffix'         => 'citySuffix',
+            'jsonsuffix'         => 'jsonSuffix',
+            'selectpagesuffix'   => 'selectpageSuffix',
+            'selectpagessuffix'  => 'selectpagesSuffix',
+            'ignoreFields'       => 'ignoreFields',
+            'editorclass'        => 'editorClass',
+            'sortfield'          => 'sortField',
+            'headingfilterfield' => 'headingFilterField',
+        ];
+        foreach ($optionMap as $varName => $propName) {
+            if ($$varName) {
+                $this->{$propName} = $$varName;
+            }
         }
 
         $this->reservedField = array_merge($this->reservedField, [$this->createTimeField, $this->updateTimeField, $this->deleteTimeField]);
@@ -722,6 +698,8 @@ class Crud extends Command
                 $importHtml = '<a href="javascript:;" class="btn btn-danger btn-import {:$auth->check(\'' . $controllerUrl . '/import\')?\'\':\'hide\'}" title="{:__(\'Import\')}" id="btn-import-file" data-url="ajax/upload" data-mimetype="csv,xls,xlsx" data-multiple="false"><i class="fa fa-upload"></i> {:__(\'Import\')}</a>';
             }
 
+            // 预解析显示字段列表，避免循环内重复explode
+            $fieldList = $fields ? explode(',', $fields) : [];
             //循环所有字段,开始构造视图的HTML和JS信息
             foreach ($columnList as $k => $v) {
                 $field = $v['COLUMN_NAME'];
@@ -739,7 +717,7 @@ class Crud extends Command
                     }
                 }
                 // 语言列表
-                if ($v['COLUMN_COMMENT'] != '') {
+                if ($v['COLUMN_COMMENT'] !== '') {
                     $langList[] = $this->getLangItem($field, $v['COLUMN_COMMENT']);
                 }
                 $inputType = '';
@@ -967,7 +945,7 @@ class Crud extends Command
                         }
 
                         //字段默认值判断
-                        if ('NULL' == $defaultValue || "''" == $defaultValue) {
+                        if ('NULL' === $defaultValue || "''" === $defaultValue) {
                             $defaultValue = '';
                         }
 
@@ -999,7 +977,7 @@ class Crud extends Command
                         $recyclebinHtml = $this->getReplacedStub('html/recyclebin-html', ['controllerUrl' => $controllerUrl]);
                         continue;
                     }
-                    if (!$fields || in_array($field, explode(',', $fields))) {
+                    if (!$fields || in_array($field, $fieldList, true)) {
                         //构造JS列信息
                         $javascriptList[] = $this->getJsColumn($field, $v['DATA_TYPE'], $inputType && in_array($inputType, ['select', 'checkbox', 'radio']) ? '_text' : '', $itemArr, $v);
                     }
@@ -1132,7 +1110,7 @@ class Crud extends Command
                 'multipleHtml'            => $multipleHtml,
                 'importHtml'              => $importHtml,
                 'recyclebinHtml'          => $recyclebinHtml,
-                'visibleFieldList'        => $fields ? "\$row->visible(['" . implode("','", array_filter(in_array($priKey, explode(',', $fields)) ? explode(',', $fields) : explode(',', $priKey . ',' . $fields))) . "']);" : '',
+                'visibleFieldList'        => $fields ? "\$row->visible(['" . implode("','", array_filter(in_array($priKey, $fieldList) ? $fieldList : explode(',', $priKey . ',' . $fields))) . "']);" : '',
                 'appendAttrList'          => implode(",\n", $appendAttrList),
                 'getEnumList'             => implode("\n\n", $getEnumArr),
                 'getAttrList'             => implode("\n\n", $getAttrArr),

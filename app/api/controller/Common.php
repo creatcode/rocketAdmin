@@ -21,13 +21,13 @@ class Common extends Api
     public function initialize()
     {
 
-        if (isset($_SERVER['HTTP_ORIGIN'])) {
+        if ($this->request->server('HTTP_ORIGIN')) {
             header('Access-Control-Expose-Headers: __token__'); //跨域让客户端获取到
         }
         //跨域检测
         check_cors_request();
 
-        if (!isset($_COOKIE['PHPSESSID'])) {
+        if (!$this->request->cookie('PHPSESSID')) {
             Config::set('session.id', $this->request->server("HTTP_SID"));
         }
         parent::initialize();
@@ -49,7 +49,7 @@ class Common extends Api
             //配置信息
             $upload = Config::get('upload');
             //如果非服务端中转模式需要修改为中转
-            if ($upload['storage'] != 'local' && isset($upload['uploadmode']) && $upload['uploadmode'] != 'server') {
+            if ($upload['storage'] !== 'local' && isset($upload['uploadmode']) && $upload['uploadmode'] !== 'server') {
                 //临时修改上传模式为服务端中转
                 set_addon_config($upload['storage'], ["uploadmode" => "server"], false);
 
@@ -57,10 +57,10 @@ class Common extends Api
                 // 上传信息配置后
                 Event::trigger("upload_config_init", $upload);
 
-                $upload = Config::set(array_merge(Config::get('upload'), $upload), 'upload');
+                Config::set(array_merge(Config::get('upload'), $upload), 'upload');
             }
 
-            $upload['cdnurl'] = $upload['cdnurl'] ? $upload['cdnurl'] : cdnurl('', true);
+            $upload['cdnurl'] = $upload['cdnurl'] ?: cdnurl('', true);
             $upload['uploadurl'] = preg_match("/^((?:[a-z]+:)?\/\/)(.*)/i", $upload['uploadurl']) ? $upload['uploadurl'] : (string)url($upload['storage'] == 'local' ? '/api/common/upload' : $upload['uploadurl'], [], false, true);
 
             $content = [
@@ -155,6 +155,6 @@ class Common extends Api
         //     'imageW'   => 35110,
         // ]), 'captcha');
 
-        return captcha(1);
+        return captcha($id ?: 1);
     }
 }

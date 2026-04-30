@@ -141,7 +141,7 @@ class Backend extends BaseController
             if (!$this->auth->isLogin()) {
                 Event::trigger('admin_nologin', $this);
                 $url = Session::get('referer');
-                $url = $url ? $url : $this->request->url();
+                $url = $url ?: $this->request->url();
                 if (in_array($this->request->pathinfo(), ['/', 'index/index'])) {
                     $this->redirect('index/login', [], 302, ['referer' => $url]);
                     exit;
@@ -279,7 +279,7 @@ class Backend extends BaseController
         $this->request->get([config('paginate.var_page') => $page]);
         $filter = (array)json_decode($filter, true);
         $op = (array)json_decode($op, true);
-        $filter = $filter ? $filter : [];
+        $filter = $filter ?: [];
         $where = [];
         $alias = [];
         $bind = [];

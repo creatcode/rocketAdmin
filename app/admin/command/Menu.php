@@ -269,7 +269,7 @@ class Menu extends Command
             $title = (!isset($controllerArr[$key]) ? $controllerTitle : '');
             $icon = (!isset($controllerArr[$key]) ? $controllerIcon : 'fa fa-list');
             $remark = (!isset($controllerArr[$key]) ? $controllerRemark : '');
-            $title = $title ? $title : $v;
+            $title = $title ?: $v;
             $rulemodel = $this->model->where(['name' => $name])->find();
             if (!$rulemodel) {
                 $this->model
@@ -310,7 +310,7 @@ class Menu extends Command
             //过滤掉其它字符
             $comment = preg_replace(array('/^\/\*\*(.*)[\n\r\t]/u', '/[\s]+\*\//u', '/\*\s@(.*)/u', '/[\s|\*]+/u'), '', $comment);
 
-            $title = $comment ? $comment : ucfirst($n->name);
+            $title = $comment ?: ucfirst($n->name);
 
             //获取主键，作为AuthRule更新依据
             $id = $this->getAuthRulePK($name . "/" . strtolower($n->name));
@@ -327,7 +327,7 @@ class Menu extends Command
             $id = $this->model
                 ->where('name', $name)
                 ->value('id');
-            return $id ? $id : null;
+            return $id ?: null;
         }
     }
 
