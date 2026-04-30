@@ -299,7 +299,7 @@ class Admin extends Backend
     public function multi($ids = "")
     {
         // 管理员禁止批量操作
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 
     /**

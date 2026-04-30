@@ -7,6 +7,29 @@ use think\exception\HttpResponseException;
 use think\facade\Config;
 use think\facade\Db;
 use think\Response;
+use think\Model;
+
+if (!function_exists('__')) {
+    /**
+     * 获取语言变量值
+     * @param string $name 语言变量名
+     * @param array  $vars 动态变量值
+     * @param string $lang 语言
+     * @return mixed
+     */
+    function __($name, $vars = [], $lang = '')
+    {
+        if (is_numeric($name) || !$name) {
+            return $name;
+        }
+        if (!is_array($vars)) {
+            $vars = func_get_args();
+            array_shift($vars);
+            $lang = '';
+        }
+        return app()->lang->get($name, $vars, $lang);
+    }
+}
 
 if (!function_exists('get_addon_list')) {
     /**
@@ -16,8 +39,12 @@ if (!function_exists('get_addon_list')) {
      */
     function get_addon_list()
     {
+        static $cache = null;
+        if ($cache !== null) {
+            return $cache;
+        }
         if (!defined('ADDON_PATH') || !is_dir(ADDON_PATH)) {
-            return [];
+            return $cache = [];
         }
         $results = scandir(ADDON_PATH);
         $list = [];
@@ -52,7 +79,7 @@ if (!function_exists('get_addon_list')) {
             $list[$name] = $info;
         }
 
-        return $list;
+        return $cache = $list;
     }
 
     /**
@@ -503,66 +530,6 @@ if (!function_exists('get_addon_list')) {
 
         return true;
     }
-    /**
-     * 获取语言变量值
-     * @param string $name 语言变量名
-     * @param array  $vars 动态变量值
-     * @param string $lang 语言
-     * @return mixed
-     */
-    function __($name, $vars = [], $lang = '')
-    {
-        if (is_numeric($name) || !$name) {
-            return $name;
-        }
-        if (!is_array($vars)) {
-            $vars = func_get_args();
-            array_shift($vars);
-            $lang = '';
-        }
-        return app()->lang->get($name, $vars, $lang);
-    }
-}
-
-if (!function_exists('__')) {
-    /**
-     * 获取语言变量值
-     * @param string $name 语言变量名
-     * @param array  $vars 动态变量值
-     * @param string $lang 语言
-     * @return mixed
-     */
-    function __($name, $vars = [], $lang = '')
-    {
-        if (is_numeric($name) || !$name) {
-            return $name;
-        }
-        if (!is_array($vars)) {
-            $vars = func_get_args();
-            array_shift($vars);
-            $lang = '';
-        }
-        return app()->lang->get($name, $vars, $lang);
-    }
-}
-
-if (!function_exists('addon_ini_encode')) {
-    /**
-     * Encode value for addon info.ini.
-     * @param mixed $value
-     * @return string
-     */
-    function addon_ini_encode($value)
-    {
-        if (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        }
-        if (is_numeric($value)) {
-            return (string)$value;
-        }
-        $value = str_replace(["\r", "\n"], ['\r', '\n'], (string)$value);
-        return '"' . addcslashes($value, "\\\"") . '"';
-    }
 }
 
 if (!function_exists('format_bytes')) {
@@ -704,22 +671,41 @@ if (!function_exists('copydirs')) {
      */
     function copydirs($source, $dest)
     {
-        if (!is_dir($dest)) {
-            mkdir($dest, 0755, true);
+        if (!is_dir($source)) {
+            return false;
         }
-        foreach ($iterator = new RecursiveIteratorIterator(
+
+        if (!is_dir($dest) && !mkdir($dest, 0755, true)) {
+            return false;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::SELF_FIRST
-        ) as $item) {
+        );
+
+        foreach ($iterator as $item) {
+            $target = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
+
             if ($item->isDir()) {
-                $sontDir = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName();
-                if (!is_dir($sontDir)) {
-                    mkdir($sontDir, 0755, true);
+                if (!is_dir($target) && !mkdir($target, 0755, true)) {
+                    return false;
                 }
-            } else {
-                copy($item, $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName());
+                continue;
+            }
+
+            // 确保文件所在目录存在，避免异常路径导致复制失败
+            $targetDir = dirname($target);
+            if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true)) {
+                return false;
+            }
+
+            if (!copy($item->getPathname(), $target)) {
+                return false;
             }
         }
+
+        return true;
     }
 }
 
@@ -824,7 +810,7 @@ if (!function_exists('var_export_short')) {
 
         //判断是否有特殊的键名
         $specialKey = false;
-        array_walk_recursive($data, function (&$value, &$key) use (&$specialKey) {
+        array_walk_recursive($data, function (&$value, $key) use (&$specialKey) {
             if (is_string($key) && (stripos($key, "\n") !== false || stripos($key, "array (") !== false)) {
                 $specialKey = true;
             }
@@ -832,7 +818,7 @@ if (!function_exists('var_export_short')) {
         if ($specialKey) {
             return var_export($data, $return);
         }
-        array_walk_recursive($data, function (&$value, &$key) use (&$replaced, &$count, &$stringcheck) {
+        array_walk_recursive($data, function (&$value, $key) use (&$replaced, &$count) {
             if (is_object($value) || is_resource($value)) {
                 $replaced[$count] = var_export($value, true);
                 $value = "##<{$count}>##";
@@ -982,7 +968,9 @@ if (!function_exists('check_cors_request')) {
                     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
                 }
                 if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
-                    header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+                    // 防止请求头注入攻击，过滤换行符等危险字符
+                    $requestHeaders = preg_replace('/[\r\n]/', '', $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+                    header("Access-Control-Allow-Headers: {$requestHeaders}");
                 }
                 $response = Response::create('', 'html');
                 throw new HttpResponseException($response);
@@ -1094,54 +1082,52 @@ if (!function_exists('build_suffix_image')) {
 EOT;
         return $icon;
     }
+}
 
-    if (!function_exists('sys_config')) {
-        /**
-         * 获取系统单个配置
-         * @param string $name
-         * @param string $default
-         * @return string
-         */
-        function sys_config(string $name, $default = '')
-        {
-            if (empty($name))
-                return $default;
+if (!function_exists('sys_config')) {
+    /**
+     * 获取系统单个配置
+     * @param string $name
+     * @param string $default
+     * @return string
+     */
+    function sys_config(string $name, $default = '')
+    {
+        if (empty($name))
+            return $default;
 
-            $config = trim(ModelConfig::where('name', $name)->find());
-            if (!$config || $config === false) {
-                return $default;
-            } else {
-                return $config['value'];
-            }
+        $config = ModelConfig::where('name', $name)->value('value');
+        if ($config === null || $config === false) {
+            return $default;
         }
+        return $config;
     }
+}
 
-    if (!function_exists('model')) {
-        /**
-         * 实例化Model.
-         *
-         * @param  string  $name
-         * @param  string  $layer
-         * @param  bool  $appendSuffix
-         *
-         * @throws \think\Exception
-         * @return Model
-         */
-        function model($name = '', $layer = 'model', $appendSuffix = false)
-        {
-            if (class_exists($name)) {
-                return new $name();
-            }
-            $class = app()->getNamespace() . '\\' . $layer . '\\' . $name;
-            if (class_exists($class)) {
-                return new $class();
-            }
-            $class = 'app\\common\\' . $layer . '\\' . $name;
-            if (class_exists($class)) {
-                return new $class();
-            } else {
-                throw new \think\Exception('model not found');
-            }
+if (!function_exists('model')) {
+    /**
+     * 实例化Model.
+     *
+     * @param  string  $name
+     * @param  string  $layer
+     * @param  bool    $appendSuffix
+     *
+     * @throws \think\Exception
+     * @return Model
+     */
+    function model($name = '', $layer = 'model', $appendSuffix = false)
+    {
+        if (class_exists($name)) {
+            return new $name();
         }
+        $class = app()->getNamespace() . '\\' . $layer . '\\' . $name;
+        if (class_exists($class)) {
+            return new $class();
+        }
+        $class = 'app\\common\\' . $layer . '\\' . $name;
+        if (class_exists($class)) {
+            return new $class();
+        }
+        throw new \think\Exception('model not found');
     }
 }

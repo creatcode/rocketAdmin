@@ -78,7 +78,7 @@ class Profile extends Backend
                 Session::set("admin.safecode", $this->auth->getEncryptSafecode($admin));
                 $this->success();
             }
-            $this->error();
+            $this->error(__('Operation failed'));
         }
         return;
     }

@@ -215,13 +215,15 @@ class AdminAuth extends AuthService
             return false;
         }
 
-        $arr = array_map('strtolower', $arr);
-        // 是否存在
-        if (in_array(strtolower(request()->action()), $arr) || in_array('*', $arr)) {
-            return true;
+        $action = strtolower(request()->action());
+        // 早停循环，避免对整个数组做 strtolower 映射
+        foreach ($arr as $item) {
+            $item = strtolower($item);
+            if ($item === '*' || $item === $action) {
+                return true;
+            }
         }
 
-        // 没找到匹配
         return false;
     }
 

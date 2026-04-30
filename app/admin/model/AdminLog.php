@@ -104,7 +104,7 @@ class AdminLog extends Model
             return $content;
         }
         foreach ($content as $index => &$item) {
-            if (preg_match("/(password|salt|token)/i", $index)) {
+            if (preg_match("/(password|salt|token|captcha|code|pwd|secret|key)/i", $index)) {
                 $item = "***";
             } else {
                 if (is_array($item)) {

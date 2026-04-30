@@ -7,7 +7,6 @@ use app\common\library\Sms as Smslib;
 use app\common\model\User;
 use think\facade\Event;
 use think\facade\Validate;
-use think\Hook;
 
 /**
  * 手机短信接口
@@ -29,6 +28,9 @@ class Sms extends Api
         $mobile = $this->request->post("mobile");
         $event = $this->request->post("event");
         $event = $event ? $event : 'register';
+        if (!preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
+            $this->error(__('事件名称错误'));
+        }
 
         if (!$mobile || !Validate::regex($mobile, "^1\d{10}$")) {
             $this->error(__('手机号不正确'));
@@ -78,6 +80,9 @@ class Sms extends Api
         $mobile = $this->request->post("mobile");
         $event = $this->request->post("event");
         $event = $event ? $event : 'register';
+        if (!preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
+            $this->error(__('事件名称错误'));
+        }
         $captcha = $this->request->post("captcha");
 
         if (!$mobile || !Validate::regex($mobile, "^1\d{10}$")) {

@@ -136,6 +136,9 @@ class Validate extends Api
         $mobile = $this->request->post('mobile');
         $captcha = $this->request->post('captcha');
         $event = $this->request->post('event');
+        if ($event && !preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
+            $this->error(__('事件名称错误'));
+        }
         if (!\app\common\library\Sms::check($mobile, $captcha, $event)) {
             $this->error(__('验证码不正确'));
         }
@@ -155,6 +158,9 @@ class Validate extends Api
         $email = $this->request->post('email');
         $captcha = $this->request->post('captcha');
         $event = $this->request->post('event');
+        if ($event && !preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
+            $this->error(__('事件名称错误'));
+        }
         if (!\app\common\library\Ems::check($email, $captcha, $event)) {
             $this->error(__('验证码不正确'));
         }

@@ -604,7 +604,7 @@ class Backend extends BaseController
      */
     protected function token()
     {
-        $check = $this->request->checkToken('__token__');
+        $check = $this->request->checkToken('__token__', $this->request->param());
         // 刷新token
         $token = $this->request->buildToken();
         header('__token__:' . $token);

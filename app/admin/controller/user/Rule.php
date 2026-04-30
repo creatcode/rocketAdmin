@@ -103,6 +103,6 @@ class Rule extends Backend
                 $this->success();
             }
         }
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 }

@@ -114,7 +114,7 @@ class Group extends Backend
                 $this->model->create($params);
                 $this->success();
             }
-            $this->error();
+            $this->error(__('Operation failed'));
         }
         return $this->view->fetch();
     }
@@ -176,7 +176,7 @@ class Group extends Backend
                 }
                 $this->success();
             }
-            $this->error();
+            $this->error(__('Operation failed'));
             return;
         }
         $this->view->assign("row", $row);
@@ -226,7 +226,7 @@ class Group extends Backend
                 $this->success();
             }
         }
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 
     /**
@@ -236,7 +236,7 @@ class Group extends Backend
     public function multi($ids = "")
     {
         // 组别禁止批量操作
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 
     /**

@@ -6,7 +6,6 @@ use app\BaseController;
 use app\common\library\Auth;
 use think\facade\Config;
 use think\facade\Event;
-use think\facade\Validate;
 
 /**
  * 前台控制器基类
@@ -55,8 +54,10 @@ class Frontend extends BaseController
         }
         $this->auth = Auth::instance();
 
-        // token
-        $token = $this->request->server('HTTP_TOKEN', $this->request->request('token', \think\facade\Cookie::get('token')) ?: '');
+        // token 优先从 Header 取，其次请求参数，最后 Cookie
+        $token = $this->request->server('HTTP_TOKEN',
+            $this->request->request('token', \think\facade\Cookie::get('token')) ?: ''
+        );
 
         $path = str_replace('.', '/', $controllername) . '/' . $actionname;
         // 设置当前请求的URI
@@ -104,8 +105,8 @@ class Frontend extends BaseController
             'controllername' => $controllername,
             'actionname'     => $actionname,
             'jsname'         => 'frontend/' . str_replace('.', '/', $controllername),
-            'moduleurl'      => rtrim((string)url("/{$modulename}", [], false), '/'),
-            'language'       => $lang
+            'moduleurl'      => rtrim((string) url("/{$modulename}", [], false), '/'),
+            'language'       => $lang,
         ];
         $config = array_merge($config, Config::get('view.tpl_replace_string'));
         Config::set(array_merge(Config::get('upload'), $upload), 'upload');
@@ -138,7 +139,7 @@ class Frontend extends BaseController
      */
     protected function assignconfig($name, $value = '')
     {
-        $this->view->config = array_merge($this->view->config ? $this->view->config : [], is_array($name) ? $name : [$name => $value]);
+        $this->view->config = array_merge($this->view->config ?: [], is_array($name) ? $name : [$name => $value]);
     }
 
     /**
@@ -146,13 +147,14 @@ class Frontend extends BaseController
      */
     protected function token()
     {
-        if (!$this->request->checkToken('__token__', $this->request->param())) {
-            $token = $this->request->buildToken();
-            header('__token__:' . $token);
-            $this->error(__('Token verification error'), '', ['__token__' =>  $token]);
-        }
+        $check = $this->request->checkToken('__token__', $this->request->param());
 
-        //刷新Token
-        $this->request->buildToken();
+        // 刷新token
+        $newToken = $this->request->buildToken();
+        header('__token__: ' . $newToken);
+
+        if ($check === false) {
+            $this->error(__('Token verification error'), '', ['__token__' => $newToken]);
+        }
     }
 }

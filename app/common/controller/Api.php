@@ -30,6 +30,8 @@ class Api extends BaseController
 
     /**
      * @var array 前置操作方法列表
+     *            格式：['method' => ['only'=>['action1']], 'method2' => ['except'=>['action2']]]
+     *            或简单模式：['method1', 'method2']
      */
     protected $beforeActionList = [];
 
@@ -60,19 +62,31 @@ class Api extends BaseController
     /**
      * 构造方法
      * @access public
-     * @param  App  $app  应用对象
+     * @param App $app 应用对象
      */
     public function __construct(App $app)
     {
         parent::__construct($app);
-        // 前置操作方法
-        if ($this->beforeActionList) {
-            foreach ($this->beforeActionList as $method => $options) {
-                if (is_numeric($method)) {
-                    $this->beforeAction($options);
-                } else {
-                    $this->beforeAction($method, $options);
-                }
+        $this->dispatchBeforeActions();
+    }
+
+    /**
+     * 分发前置操作
+     */
+    protected function dispatchBeforeActions(): void
+    {
+        if (!$this->beforeActionList) {
+            return;
+        }
+
+        $action = $this->request->action();
+        foreach ($this->beforeActionList as $method => $options) {
+            if (is_numeric($method)) {
+                // 简单模式：无条件执行
+                $this->beforeAction($options);
+            } else {
+                // 带限制条件
+                $this->beforeAction($method, $options);
             }
         }
     }
@@ -98,12 +112,15 @@ class Api extends BaseController
         $controllername = parse_name($this->request->controller(true));
         $actionname = strtolower($this->request->action());
 
-        // token
-        $token = $this->request->server('HTTP_TOKEN', $this->request->request('token', \think\facade\Cookie::get('token')) ?: '');
+        // token 优先从 Header 取，其次请求参数，最后 Cookie
+        $token = $this->request->server('HTTP_TOKEN',
+            $this->request->request('token', \think\facade\Cookie::get('token')) ?: ''
+        );
 
         $path = str_replace('.', '/', $controllername) . '/' . $actionname;
         // 设置当前请求的URI
         $this->auth->setRequestUri($path);
+
         // 检测是否需要验证登录
         if (!$this->auth->match($this->noNeedLogin)) {
             //初始化
@@ -184,7 +201,6 @@ class Api extends BaseController
      * @param int    $code   错误码，默认为0
      * @param string $type   输出类型，支持json/xml/jsonp
      * @param array  $header 发送的 Header 信息
-     * @return void
      * @throws HttpResponseException
      */
     protected function result($msg, $data = null, $code = 0, $type = null, array $header = [])
@@ -198,14 +214,18 @@ class Api extends BaseController
         // 如果未设置类型则使用默认类型判断
         $type = $type ?: $this->responseType;
 
+        // HTTP 状态码映射：错误码>=1000或<200用200，否则用错误码本身
+        $httpCode = 200;
         if (isset($header['statuscode'])) {
-            $code = $header['statuscode'];
+            $httpCode = (int) $header['statuscode'];
             unset($header['statuscode']);
+        } elseif ($code >= 1000 || $code < 200) {
+            $httpCode = 200;
         } else {
-            //未设置状态码,根据code值判断
-            $code = $code >= 1000 || $code < 200 ? 200 : $code;
+            $httpCode = $code;
         }
-        $response = Response::create($result, $type, $code)->header($header);
+
+        $response = Response::create($result, $type, $httpCode)->header($header);
         throw new HttpResponseException($response);
     }
 
@@ -214,24 +234,19 @@ class Api extends BaseController
      * @access protected
      * @param string $method  前置操作方法名
      * @param array  $options 调用参数 ['only'=>[...]] 或者 ['except'=>[...]]
-     * @return void
      */
     protected function beforeAction($method, $options = [])
     {
-        if (isset($options['only'])) {
-            if (is_string($options['only'])) {
-                $options['only'] = explode(',', $options['only']);
-            }
+        $action = $this->request->action();
 
-            if (!in_array($this->request->action(), $options['only'])) {
+        if (isset($options['only'])) {
+            $only = is_string($options['only']) ? explode(',', $options['only']) : $options['only'];
+            if (!in_array($action, $only, true)) {
                 return;
             }
         } elseif (isset($options['except'])) {
-            if (is_string($options['except'])) {
-                $options['except'] = explode(',', $options['except']);
-            }
-
-            if (in_array($this->request->action(), $options['except'])) {
+            $except = is_string($options['except']) ? explode(',', $options['except']) : $options['except'];
+            if (in_array($action, $except, true)) {
                 return;
             }
         }
@@ -248,7 +263,6 @@ class Api extends BaseController
     protected function validateFailException($fail = true)
     {
         $this->failException = $fail;
-
         return $this;
     }
 
@@ -269,13 +283,16 @@ class Api extends BaseController
             $v = validate($validate);
         } else {
             // 支持场景
+            $scene = '';
             if (strpos($validate, '.')) {
-                list($validate, $scene) = explode('.', $validate);
+                [$validate, $scene] = explode('.', $validate);
             }
 
             $v = validate($validate);
 
-            !empty($scene) && $v->scene($scene);
+            if ($scene) {
+                $v->scene($scene);
+            }
         }
 
         // 批量验证
@@ -303,13 +320,14 @@ class Api extends BaseController
      */
     protected function token()
     {
-        if (!$this->request->checkToken('__token__', $this->request->param())) {
-            $token = $this->request->buildToken();
-            header('__token__:' . $token);
-            $this->error(__('Token verification error'), '', ['__token__' =>  $token]);
-        }
+        $check = $this->request->checkToken('__token__', $this->request->param());
 
-        //刷新Token
-        $this->request->buildToken();
+        // 刷新token（无论验证结果如何都生成新token）
+        $newToken = $this->request->buildToken();
+        header('__token__: ' . $newToken);
+
+        if ($check === false) {
+            $this->error(__('Token verification error'), ['__token__' => $newToken]);
+        }
     }
 }

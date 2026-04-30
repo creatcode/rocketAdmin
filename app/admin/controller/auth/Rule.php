@@ -84,7 +84,7 @@ class Rule extends Backend
                 Cache::delete('__menu__');
                 $this->success();
             }
-            $this->error();
+            $this->error(__('Operation failed'));
         }
         return $this->view->fetch();
     }
@@ -127,7 +127,7 @@ class Rule extends Backend
                 Cache::delete('__menu__');
                 $this->success();
             }
-            $this->error();
+            $this->error(__('Operation failed'));
         }
         $this->view->assign("row", $row);
         return $this->view->fetch();
@@ -154,6 +154,6 @@ class Rule extends Backend
                 $this->success();
             }
         }
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 }

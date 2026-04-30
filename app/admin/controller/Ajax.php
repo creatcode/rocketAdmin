@@ -147,7 +147,7 @@ class Ajax extends Backend
         //操作的数据表
         $table = $this->request->post("table");
         if (!Validate::is($table, "alphaDash")) {
-            $this->error();
+            $this->error(__('Operation failed'));
         }
         //主键
         $pk = $this->request->post("pk");

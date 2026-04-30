@@ -19,23 +19,40 @@ use think\response\Json;
 
 trait Backend
 {
+
     /**
      * 排除前台提交过来的字段
-     * @param $params
+     * @param array $params
      * @return array
      */
     protected function preExcludeFields($params)
     {
         if (is_array($this->excludeFields)) {
             foreach ($this->excludeFields as $field) {
-                if (array_key_exists($field, $params)) {
-                    unset($params[$field]);
-                }
+                unset($params[$field]);
             }
-        } else if (array_key_exists($this->excludeFields, $params)) {
+        } elseif (array_key_exists($this->excludeFields, $params)) {
             unset($params[$this->excludeFields]);
         }
         return $params;
+    }
+
+    /**
+     * 事务包装器：统一事务+异常处理
+     * @param callable $callback 业务逻辑
+     * @param string   $failMsg  失败时的提示信息
+     */
+    private function runInTransaction(callable $callback, string $failMsg = '')
+    {
+        Db::startTrans();
+        try {
+            $result = $callback();
+            Db::commit();
+            return $result;
+        } catch (ValidateException | PDOException | Exception $e) {
+            Db::rollback();
+            $this->error($failMsg ?: $e->getMessage());
+        }
     }
 
     /**
@@ -43,7 +60,6 @@ trait Backend
      *
      * @return string|Json
      * @throws \think\Exception
-     * @throws DbException
      */
     public function index()
     {
@@ -108,9 +124,8 @@ trait Backend
         if ($this->dataLimit && $this->dataLimitFieldAutoFill) {
             $params[$this->dataLimitField] = $this->auth->id;
         }
-        $result = false;
-        Db::startTrans();
-        try {
+
+        $this->runInTransaction(function () use ($params) {
             //是否采用模型验证
             if ($this->modelValidate) {
                 $name = str_replace("\\model\\", "\\validate\\", get_class($this->model));
@@ -118,14 +133,12 @@ trait Backend
                 $this->model->validate($validate);
             }
             $result = $this->model->allowField(true)->save($params);
-            Db::commit();
-        } catch (ValidateException | PDOException | Exception $e) {
-            Db::rollback();
-            $this->error($e->getMessage());
-        }
-        if ($result === false) {
-            $this->error(__('No rows were inserted'));
-        }
+            if ($result === false) {
+                throw new \think\Exception(__('No rows were inserted'));
+            }
+            return $result;
+        });
+
         $this->success();
     }
 
@@ -156,9 +169,8 @@ trait Backend
             $this->error(__('Parameter %s can not be empty', ''));
         }
         $params = $this->preExcludeFields($params);
-        $result = false;
-        Db::startTrans();
-        try {
+
+        $this->runInTransaction(function () use ($row, $params) {
             //是否采用模型验证
             if ($this->modelValidate) {
                 $name = str_replace("\\model\\", "\\validate\\", get_class($this->model));
@@ -166,14 +178,12 @@ trait Backend
                 validate($validate)->check($params);
             }
             $result = $row->save($params);
-            Db::commit();
-        } catch (ValidateException | PDOException | Exception $e) {
-            Db::rollback();
-            $this->error($e->getMessage());
-        }
-        if (false === $result) {
-            $this->error(__('No rows were updated'));
-        }
+            if (false === $result) {
+                throw new \think\Exception(__('No rows were updated'));
+            }
+            return $result;
+        });
+
         $this->success();
     }
 
@@ -201,21 +211,18 @@ trait Backend
         if (is_array($adminIds)) {
             $where[] = [$this->dataLimitField, 'in', $adminIds];
         }
-        $list = $this->model->where($where)->select();
 
-        $count = 0;
-        Db::startTrans();
-        try {
+        $count = $this->runInTransaction(function () use ($where) {
+            $count = 0;
+            $list = $this->model->where($where)->select();
             foreach ($list as $item) {
                 if ($item->delete()) {
                     $count++;
                 }
             }
-            Db::commit();
-        } catch (PDOException | Exception $e) {
-            Db::rollback();
-            $this->error($e->getMessage());
-        }
+            return $count;
+        });
+
         if ($count > 0) {
             $this->success();
         }
@@ -243,18 +250,16 @@ trait Backend
         if ($ids) {
             $where[] = [$pk, 'in', $ids];
         }
-        $count = 0;
-        Db::startTrans();
-        try {
+
+        $count = $this->runInTransaction(function () use ($where) {
+            $count = 0;
             $list = $this->model->onlyTrashed()->where($where)->select();
             foreach ($list as $item) {
                 $count += $item->force()->delete();
             }
-            Db::commit();
-        } catch (PDOException | Exception $e) {
-            Db::rollback();
-            $this->error($e->getMessage());
-        }
+            return $count;
+        });
+
         if ($count) {
             $this->success();
         }
@@ -285,20 +290,18 @@ trait Backend
         if ($ids) {
             $where[] = [$pk, 'in', $ids];
         }
-        $count = 0;
-        Db::startTrans();
-        try {
+
+        $count = $this->runInTransaction(function () use ($where) {
+            $count = 0;
             $list = $this->model->onlyTrashed()->where($where)->select();
             foreach ($list as $item) {
                 if ($item->restore()) {
                     $count++;
                 }
             }
-            Db::commit();
-        } catch (PDOException | Exception $e) {
-            Db::rollback();
-            $this->error($e->getMessage());
-        }
+            return $count;
+        });
+
         if ($count > 0) {
             $this->success();
         }
@@ -335,20 +338,18 @@ trait Backend
         if (is_array($adminIds)) {
             $where[] = [$this->dataLimitField, 'in', $adminIds];
         }
-        $count = 0;
-        Db::startTrans();
-        try {
+
+        $count = $this->runInTransaction(function () use ($where, $values) {
+            $count = 0;
             $list = $this->model->where($where)->select();
             foreach ($list as $item) {
                 if ($item->save($values)) {
                     $count++;
                 }
             }
-            Db::commit();
-        } catch (PDOException | Exception $e) {
-            Db::rollback();
-            $this->error($e->getMessage());
-        }
+            return $count;
+        });
+
         if ($count > 0) {
             $this->success();
         }
@@ -378,6 +379,7 @@ trait Backend
             $this->error(__('Unknown data format'));
         }
 
+        $tempFilePath = null;
         // CSV文件需要转换为UTF-8编码
         if ($ext === 'csv') {
             $tempPath = tempnam(sys_get_temp_dir(), 'import_csv');
@@ -656,7 +658,7 @@ trait Backend
 
             readfile($tempFile);
             @unlink($tempFile);
-            exit;
+            return;
         } catch (Exception $e) {
             if (isset($fp) && is_resource($fp)) {
                 fclose($fp);
@@ -764,7 +766,7 @@ trait Backend
             readfile($tempFile);
             @unlink($tempFile);
             unset($spreadsheet, $writer);
-            exit;
+            return;
         } catch (Exception $e) {
             $this->error($e->getMessage());
         }
@@ -926,7 +928,7 @@ trait Backend
             readfile($tempFile);
             @unlink($tempFile);
             unset($spreadsheet, $writer);
-            exit;
+            return;
         } catch (Exception $e) {
             $this->error($e->getMessage());
         }
@@ -981,6 +983,5 @@ trait Backend
 
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save('php://output');
-        exit;
     }
 }

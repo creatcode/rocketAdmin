@@ -81,7 +81,7 @@ class Adminlog extends Backend
      */
     public function add()
     {
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 
     /**
@@ -90,7 +90,7 @@ class Adminlog extends Backend
      */
     public function edit($ids = null)
     {
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 
     /**
@@ -123,7 +123,7 @@ class Adminlog extends Backend
                 }
             }
         }
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 
     /**
@@ -133,7 +133,7 @@ class Adminlog extends Backend
     public function multi($ids = "")
     {
         // 管理员禁止批量操作
-        $this->error();
+        $this->error(__('Operation failed'));
     }
 
 }

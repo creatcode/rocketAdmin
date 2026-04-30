@@ -65,7 +65,7 @@ class Dashboard extends Backend
             'sevendnu'          => User::whereTime('jointime', '-7 days')->count(),
             'dbtablenums'       => count($dbTableList),
             'dbsize'            => array_sum(array_map(function ($item) {
-                return $item['Data_length'] + $item['Index_length'];
+                return ($item['Data_length'] ?? 0) + ($item['Index_length'] ?? 0);
             }, $dbTableList)),
             'totalworkingaddon' => $totalworkingaddon,
             'attachmentnums'    => Attachment::count(),

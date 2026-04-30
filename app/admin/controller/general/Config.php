@@ -280,7 +280,8 @@ class Config extends Backend
         $tableList = [];
         $default = \think\facade\Config::get('database.default');
         $dbname = \think\facade\Config::get('database.connections.' . $default . '.database');
-        $tableList = Db::query("SELECT `TABLE_NAME` AS `name`,`TABLE_COMMENT` AS `title` FROM `information_schema`.`TABLES` where `TABLE_SCHEMA` = '{$dbname}';");
+        // 使用参数绑定防止SQL注入
+        $tableList = Db::query("SELECT `TABLE_NAME` AS `name`,`TABLE_COMMENT` AS `title` FROM `information_schema`.`TABLES` where `TABLE_SCHEMA` = ?", [$dbname]);
         $this->success('', null, ['tableList' => $tableList]);
     }
 
@@ -291,6 +292,10 @@ class Config extends Backend
     public function get_fields_list()
     {
         $table = $this->request->request('table');
+        // 验证表名合法性，只允许字母、数字、下划线
+        if (!$table || !preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
+            $this->error(__('Invalid parameters'));
+        }
         $default = \think\facade\Config::get('database.default');
         $dbname = \think\facade\Config::get('database.connections.' . $default . '.database');
         //从数据库中获取表字段信息

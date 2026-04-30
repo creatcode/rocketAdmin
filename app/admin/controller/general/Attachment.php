@@ -99,7 +99,7 @@ class Attachment extends Backend
     public function add()
     {
         if ($this->request->isAjax()) {
-            $this->error();
+            $this->error(__('Operation failed'));
         }
         return $this->view->fetch();
     }

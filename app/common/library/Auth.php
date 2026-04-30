@@ -505,13 +505,16 @@ class Auth
         if (!$arr) {
             return false;
         }
-        $arr = array_map('strtolower', $arr);
-        // 是否存在
-        if (in_array(strtolower(request()->action()), $arr) || in_array('*', $arr)) {
-            return true;
+
+        $action = strtolower(request()->action());
+        // 使用循环早停，避免对全数组做 strtolower 映射
+        foreach ($arr as $item) {
+            $item = strtolower($item);
+            if ($item === '*' || $item === $action) {
+                return true;
+            }
         }
 
-        // 没找到匹配
         return false;
     }
 
@@ -534,27 +537,33 @@ class Auth
      */
     public function render(&$datalist, $fields = [], $fieldkey = 'user_id', $renderkey = 'userinfo')
     {
-        $fields = !$fields ? ['id', 'nickname', 'level', 'avatar'] : (is_array($fields) ? $fields : explode(',', $fields));
+        $fields = !$fields
+            ? ['id', 'nickname', 'level', 'avatar']
+            : (is_array($fields) ? $fields : explode(',', $fields));
+
+        // 收集所有用户ID
         $ids = [];
-        foreach ($datalist as $k => $v) {
-            if (!isset($v[$fieldkey])) {
-                continue;
+        foreach ($datalist as $v) {
+            if (!empty($v[$fieldkey])) {
+                $ids[] = $v[$fieldkey];
             }
-            $ids[] = $v[$fieldkey];
         }
-        $list = [];
+
+        $userMap = [];
         if ($ids) {
-            if (!in_array('id', $fields)) {
+            if (!in_array('id', $fields, true)) {
                 $fields[] = 'id';
             }
-            $ids = array_unique($ids);
-            $selectlist = User::where('id', 'in', $ids)->column($fields);
-            foreach ($selectlist as $k => $v) {
-                $list[$v['id']] = $v;
+            $uniqueIds = array_unique($ids);
+            $users = User::where('id', 'in', $uniqueIds)->column($fields);
+            foreach ($users as $user) {
+                $userMap[$user['id']] = $user;
             }
         }
-        foreach ($datalist as $k => &$v) {
-            $v[$renderkey] = $list[$v[$fieldkey]] ?? null;
+
+        // 渲染到每条数据
+        foreach ($datalist as &$v) {
+            $v[$renderkey] = $userMap[$v[$fieldkey]] ?? null;
         }
         unset($v);
         return $datalist;

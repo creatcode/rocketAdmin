@@ -59,8 +59,8 @@ class Ems
                 $obj = new Email();
                 $result = $obj
                     ->to($params->email)
-                    ->subject('请查收你的验证码！')
-                    ->message("你的验证码是：" . $params->code . "，" . ceil(self::$expire / 60) . "分钟内有效。")
+                    ->subject(__('Please check your verification code'))
+                    ->message(__('Your verification code is: %s, valid for %d minutes.', $params->code, ceil(self::$expire / 60)))
                     ->send();
                 return $result;
             });
