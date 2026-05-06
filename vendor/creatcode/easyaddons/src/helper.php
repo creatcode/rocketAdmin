@@ -3,49 +3,30 @@
 declare(strict_types=1);
 
 use think\facade\Event;
-use think\facade\Route;
-use creatcode\easyaddons\addons\Service;
 use think\facade\App;
 use think\facade\Config;
-use think\facade\Cache;
-use think\helper\{
-    Str,
-    Arr
-};
 use Symfony\Component\VarExporter\VarExporter;
 
-defined('DS') || define('DS', DIRECTORY_SEPARATOR);
-
-\think\Console::starting(function (\think\Console $console) {
-        $console->addCommands([
-        'addons:config' => '\\creatcode\\easyaddons\\addons\\command\\SendConfig'
-    ]);
-});
 
 // 插件类库自动载入
+// 插件类库自动载入
 spl_autoload_register(function ($class) {
-
     $class = ltrim($class, '\\');
 
-    $dir = defined('ADDON_PATH') ? ADDON_PATH : App::getRootPath() . 'addons' . DIRECTORY_SEPARATOR;
-    $namespace = 'addons';
-
-    if (strpos($class, $namespace) === 0) {
-        $class = substr($class, strlen($namespace));
-        $path = '';
-        if (($pos = strripos($class, '\\')) !== false) {
-            $path = str_replace('\\', '/', substr($class, 0, $pos)) . '/';
-            $class = substr($class, $pos + 1);
-        }
-        $path .= str_replace('_', '/', $class) . '.php';
-        $dir .= $path;
-
-        if (file_exists($dir)) {
-            include $dir;
-            return true;
-        }
+    $namespace = 'addons\\';
+    if (strpos($class, $namespace) !== 0) {
         return false;
     }
+
+    $dir = defined('ADDON_PATH') ? ADDON_PATH : App::getRootPath() . 'addons' . DIRECTORY_SEPARATOR;
+    $class = substr($class, strlen($namespace));
+    $file = $dir . str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $class) . '.php';
+
+    if (is_file($file)) {
+        include $file;
+        return true;
+    }
+
     return false;
 });
 
@@ -353,8 +334,8 @@ if (!function_exists('get_addon_instance')) {
 
 if (!function_exists('get_addon_tables')) {
     /**
-     * 获取插件创建的表
-     * @param string $name 插件名
+     * 获取插件创建的数据表
+     * @param string $name 插件名称
      * @return array
      */
     function get_addon_tables($name)
@@ -363,19 +344,36 @@ if (!function_exists('get_addon_tables')) {
         if (!$addonInfo) {
             return [];
         }
-        $regex = "/^CREATE\s+TABLE\s+(IF\s+NOT\s+EXISTS\s+)?`?([a-zA-Z_]+)`?/mi";
+
         $sqlFile = ADDON_PATH . $name . DIRECTORY_SEPARATOR . 'install.sql';
-        $tables = [];
-        if (is_file($sqlFile)) {
-            preg_match_all($regex, file_get_contents($sqlFile), $matches);
-            if ($matches && isset($matches[2]) && $matches[2]) {
-                $prefix = env('database.prefix');
-                $tables = array_map(function ($item) use ($prefix) {
-                    return str_replace("__PREFIX__", $prefix, $item);
-                }, $matches[2]);
-            }
+        if (!is_file($sqlFile)) {
+            return [];
         }
-        return $tables;
+
+        $sql = file_get_contents($sqlFile);
+        if ($sql === false || $sql === '') {
+            return [];
+        }
+
+        $regex = "/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:`[^`]+`\.)?`?([^`\s(]+)`?/mi";
+        preg_match_all($regex, $sql, $matches);
+
+        if (!$matches || empty($matches[1])) {
+            return [];
+        }
+
+        $default = \think\facade\Config::get('database.default');
+        $prefix = \think\facade\Config::get('database.connections.' . $default . '.prefix', '');
+
+        $tables = array_map(function ($table) use ($prefix) {
+            return str_replace('__PREFIX__', (string)$prefix, $table);
+        }, $matches[1]);
+
+        $tables = array_filter($tables, function ($table) {
+            return preg_match('/^[a-zA-Z0-9_]+$/', $table);
+        });
+
+        return array_values(array_unique($tables));
     }
 }
 

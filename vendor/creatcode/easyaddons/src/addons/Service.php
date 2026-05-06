@@ -13,8 +13,6 @@ use creatcode\easyaddons\addons\AddonException;
 use think\Exception;
 use think\facade\Cache;
 use think\facade\Db;
-use think\facade\Env;
-use think\facade\Filesystem;
 
 /**
  * 插件服务
@@ -22,6 +20,31 @@ use think\facade\Filesystem;
  */
 class Service
 {
+    /**
+     * 获取插件框架配置，优先读取独立配置，兼容旧的 rocket 配置。
+     *
+     * @param string $key
+     * @param mixed  $default
+     * @return mixed
+     */
+    public static function addonConfig($key, $default = null)
+    {
+        $value = config('easyaddons.' . $key);
+
+        return is_null($value) ? $default : $value;
+    }
+
+    /**
+     * 获取系统版本号，继续沿用系统公共配置。
+     *
+     * @param string $default
+     * @return string
+     */
+    public static function systemVersion($default = '')
+    {
+        $value = config('rocket.version');
+        return is_null($value) ? $default : (string)$value;
+    }
     /**
      * 插件列表
      */
@@ -74,7 +97,7 @@ class Service
         $tmpFile = $addonsTempDir . $name . ".zip";
         try {
             $client = self::getClient();
-            $response = $client->get('/addon/download', ['query' => array_merge(['name' => $name], $extend)]);
+            $response = $client->get('addon/download', ['query' => array_merge(['name' => $name], $extend)]);
             $body = $response->getBody();
             $content = $body->getContents();
             if (substr($content, 0, 1) === '{') {
@@ -221,13 +244,13 @@ class Service
             // 追加MD5和Data数据
             $extend['md5'] = md5_file($tmpFile);
             $extend['data'] = $zip->getArchiveComment();
-            $extend['unknownsources'] = Env::get('app_debug') && config('rocket.unknownsources');
-            $extend['faversion'] = config('rocket.version');
+            $extend['unknownsources'] = config('app.app_debug') && self::addonConfig('unknownsources', false);
+            $extend['faversion'] = self::systemVersion();
 
             $params = array_merge($config, $extend);
 
             // 压缩包验证、版本依赖判断，应用插件需要授权使用，移除或绕过授权验证，保留追究法律责任的权利
-            if (config('rocket.addon_auth_check')) {
+            if (self::addonConfig('addon_auth_check', false)) {
                 self::valid($params);
             }
 
@@ -352,6 +375,9 @@ class Service
         $fileName = is_null($fileName) ? 'install.sql' : $fileName;
         $sqlFile = self::getAddonDir($name) . $fileName;
         if (is_file($sqlFile)) {
+            $default = \think\facade\Config::get('database.default');
+            $prefix = \think\facade\Config::get('database.connections.' . $default . '.prefix', '');
+
             $lines = file($sqlFile);
             $templine = '';
             foreach ($lines as $line) {
@@ -361,7 +387,7 @@ class Service
 
                 $templine .= $line;
                 if (substr(trim($line), -1, 1) == ';') {
-                    $templine = str_ireplace('__PREFIX__', Env::get('database.prefix'), $templine);
+                    $templine = str_ireplace('__PREFIX__', (string)$prefix, $templine);
                     $templine = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $templine);
                     try {
                         Db::getPdo()->exec($templine);
@@ -577,7 +603,7 @@ EOD;
         }
 
         //备份冲突文件
-        if (config('rocket.backup_global_files')) {
+        if (self::addonConfig('backup_global_files', true)) {
             $conflictFiles = self::getGlobalFiles($name, true);
             if ($conflictFiles) {
                 $zip = new ZipFile();
@@ -617,7 +643,7 @@ EOD;
         }
 
         //插件纯净模式时将插件目录下的application、public和assets删除
-        if (config('rocket.addon_pure_mode')) {
+        if (self::addonConfig('addon_pure_mode', false)) {
             // 删除插件目录已复制到全局的文件
             @rmdirs($sourceAssetsDir);
             foreach (self::getCheckDirs() as $k => $dir) {
@@ -673,7 +699,7 @@ EOD;
             self::noconflict($name);
         }
 
-        if (config('rocket.backup_global_files')) {
+        if (self::addonConfig('backup_global_files', true)) {
             //仅备份修改过的文件
             $conflictFiles = self::getGlobalFiles($name, true);
             if ($conflictFiles) {
@@ -703,7 +729,7 @@ EOD;
 
         //插件纯净模式时将原有的文件复制回插件目录
         //当无法获取全局文件列表时也将列表复制回插件目录
-        if (config('rocket.addon_pure_mode') || !$list) {
+        if (self::addonConfig('addon_pure_mode', false) || !$list) {
             if ($config && isset($config['files']) && is_array($config['files'])) {
                 foreach ($config['files'] as $index => $item) {
                     //避免切换不同服务器后导致路径不一致
@@ -1002,7 +1028,7 @@ EOD;
             $addons[] = ['name' => $name, 'domains' => $config['domains'] ?? [], 'licensecodes' => $config['licensecodes'] ?? [], 'validations' => $config['validations'] ?? []];
         }
         $params = array_merge($params, [
-            'faversion' => config('rocket.version'),
+            'faversion' => self::systemVersion(),
             'domain'    => $domain,
             'addons'    => $addons
         ]);
@@ -1023,26 +1049,64 @@ EOD;
      * @param $name
      * @return bool
      */
+    /**
+     * 验证插件授权
+     * @param string $name 插件名称
+     * @return bool
+     */
     public static function checkAddonAuthorization($name)
     {
-        // $request = request();
-        // $config = self::config($name);
-        // $domain = self::getRootDomain($request->host(true));
-        // //应用插件需要授权使用，移除或绕过授权验证，保留追究法律责任的权利
-        // if (isset($config['domains']) && isset($config['domains']) && isset($config['validations']) && isset($config['licensecodes'])) {
-        //     $index = array_search($domain, $config['domains']);
-        //     if ((in_array($domain, $config['domains']) && in_array(md5(md5($domain) . ($config['licensecodes'][$index] ?? '')), $config['validations'])) || $request->isCli()) {
-        //         $request->bind('authorized', $domain ?: 'cli');
-        //         return true;
-        //     } elseif ($config['domains']) {
-        //         foreach ($config['domains'] as $index => $item) {
-        //             if (substr_compare($domain, "." . $item, -strlen("." . $item)) === 0 && in_array(md5(md5($item) . ($config['licensecodes'][$index] ?? '')), $config['validations'])) {
-        //                 $request->bind('authorized', $domain);
-        //                 return true;
-        //             }
-        //         }
-        //     }
-        // }
+        $request = request();
+
+        // CLI 模式下没有可靠域名，直接放行并记录授权标识
+        if ($request->isCli()) {
+            $request->setRoute(['authorized' => 'cli']);
+            return true;
+        }
+
+        $config = self::config($name);
+        $domain = self::getRootDomain($request->host(true));
+
+        // 授权配置必须是数组，避免 in_array、array_search 参数类型报错
+        $domains = isset($config['domains']) && is_array($config['domains']) ? $config['domains'] : [];
+        $validations = isset($config['validations']) && is_array($config['validations']) ? $config['validations'] : [];
+        $licensecodes = isset($config['licensecodes']) && is_array($config['licensecodes']) ? $config['licensecodes'] : [];
+
+        if (!$domain || !$domains || !$validations || !$licensecodes) {
+            return false;
+        }
+
+        // 验证当前根域名授权
+        $index = array_search($domain, $domains, true);
+        if ($index !== false) {
+            $licensecode = $licensecodes[$index] ?? '';
+            $validation = md5(md5($domain) . $licensecode);
+
+            if (in_array($validation, $validations, true)) {
+                $request->setRoute(['authorized' => $domain]);
+                return true;
+            }
+        }
+
+        // 验证子域名是否匹配已授权主域名
+        foreach ($domains as $index => $item) {
+            $item = (string)$item;
+            if ($item === '') {
+                continue;
+            }
+
+            $licensecode = $licensecodes[$index] ?? '';
+            $validation = md5(md5($item) . $licensecode);
+
+            if (
+                substr_compare($domain, '.' . $item, -strlen('.' . $item)) === 0
+                && in_array($validation, $validations, true)
+            ) {
+                $request->setRoute(['authorized' => $domain]);
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -1146,7 +1210,7 @@ EOD;
      */
     protected static function getServerUrl()
     {
-        return config('rocket.api_url');
+        return rtrim((string)self::addonConfig('api_url', ''), '/') . '/';
     }
 
     /**
@@ -1198,7 +1262,7 @@ EOD;
         try {
             $client = self::getClient();
             $options = strtoupper($method) == 'POST' ? ['form_params' => $params] : ['query' => $params];
-            $response = $client->request($method, $url, $options);
+            $response = $client->request($method, ltrim($url, '/'), $options);
             $body = $response->getBody();
             $content = $body->getContents();
             $json = (array)json_decode($content, true);

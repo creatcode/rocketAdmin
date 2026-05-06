@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "43fa806ac7b74c9cf81c90856db0a2e1",
+    "content-hash": "ebdb97b79a7082b6271c8480365ef207",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -116,11 +116,12 @@
         },
         {
             "name": "creatcode/easyaddons",
-            "version": "1.4.3",
+            "version": "v1.0.0",
             "dist": {
-                "type": "path",
-                "url": "E:/phpstudy_pro/rocket-admin/fastadmin-addons",
-                "reference": "bcf9665a88cee86d37cd1f52e72f1be99f193a4e"
+                "type": "zip",
+                "url": "https://mirrors.cloud.tencent.com/repository/composer/creatcode/easyaddons/v1.0.0/creatcode-easyaddons-v1.0.0.zip",
+                "reference": "11a243f7c4f31eac5017dff5b24ef656793d1c1f",
+                "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.0",
@@ -132,34 +133,38 @@
             "type": "library",
             "extra": {
                 "think": {
+                    "config": {
+                        "addons": "src/config.php",
+                        "easyaddons": "src/easyaddons.php"
+                    },
                     "services": [
                         "creatcode\\easyaddons\\AddonService"
-                    ],
-                    "config": {
-                        "addons": "src/config.php"
-                    }
+                    ]
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "creatcode\\easyaddons\\": "src/"
-                },
                 "files": [
                     "src/helper.php"
-                ]
+                ],
+                "psr-4": {
+                    "creatcode\\easyaddons\\": "src/"
+                }
             },
             "license": [
                 "Apache-2.0"
             ],
-            "description": "Dedicated addons development package for this TP8 project",
+            "description": "TP6+FastAdmin风格项目的专用插件包",
             "keywords": [
                 "addons",
                 "project-package",
+                "thinkphp6",
                 "thinkphp8"
             ],
-            "transport-options": {
-                "relative": false
-            }
+            "support": {
+                "issues": "https://github.com/creatcode/easyaddons/issues",
+                "source": "https://github.com/creatcode/easyaddons/tree/v1.0.0"
+            },
+            "time": "2026-05-06T08:32:43+00:00"
         },
         {
             "name": "easywechat-composer/easywechat-composer",

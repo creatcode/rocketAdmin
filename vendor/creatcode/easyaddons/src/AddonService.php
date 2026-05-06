@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace creatcode\easyaddons;
 
 use app\common\middleware\CommonInit;
+use creatcode\easyaddons\addons\command\AddonCommand;
+use creatcode\easyaddons\addons\command\TenantAddonCommand;
 use think\facade\Cache;
 use think\facade\Config;
 use think\facade\Env;
@@ -134,6 +136,10 @@ class AddonService extends \think\Service
      */
     public function boot()
     {
-        //
+        // 注册插件管理命令
+        $this->commands([
+            AddonCommand::class,
+            TenantAddonCommand::class,
+        ]);
     }
 }

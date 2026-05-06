@@ -29,9 +29,9 @@
             'dev_requirement' => false,
         ),
         'creatcode/easyaddons' => array(
-            'pretty_version' => '1.4.3',
-            'version' => '1.4.3.0',
-            'reference' => 'bcf9665a88cee86d37cd1f52e72f1be99f193a4e',
+            'pretty_version' => 'v1.0.0',
+            'version' => '1.0.0.0',
+            'reference' => '11a243f7c4f31eac5017dff5b24ef656793d1c1f',
             'type' => 'library',
             'install_path' => __DIR__ . '/../creatcode/easyaddons',
             'aliases' => array(),

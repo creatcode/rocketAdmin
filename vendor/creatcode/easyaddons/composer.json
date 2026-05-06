@@ -1,9 +1,9 @@
 {
     "name": "creatcode/easyaddons",
-    "description": "Dedicated addons development package for this TP8 project",
+    "description": "TP6+FastAdmin风格项目的专用插件包",
     "license": "Apache-2.0",
-    "version": "1.4.3",
     "keywords": [
+        "thinkphp6",
         "thinkphp8",
         "addons",
         "project-package"
@@ -29,7 +29,8 @@
                 "creatcode\\easyaddons\\AddonService"
             ],
             "config": {
-                "addons": "src/config.php"
+                "addons": "src/config.php",
+                "easyaddons": "src/easyaddons.php"
             }
         }
     }

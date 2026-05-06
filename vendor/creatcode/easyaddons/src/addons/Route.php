@@ -30,6 +30,10 @@ class Route
             if (!$info['state']) {
                 throw new HttpException(500, __('addon %s is disabled', $addon));
             }
+            // 验证插件授权
+            if (Service::addonConfig('addon_auth_check', false) && !Service::checkAddonAuthorization($addon)) {
+                throw new HttpException(403, __('addon %s is not authorized', $addon));
+            }
 
             $request->setController($controller)->setAction($action);
             Event::trigger('addon_module_init', $request);
