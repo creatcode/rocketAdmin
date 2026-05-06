@@ -6,7 +6,7 @@ use app\admin\model\Admin;
 use app\admin\model\AuthGroup;
 use app\admin\model\AuthGroupAccess;
 use app\admin\model\AuthRule;
-use service\AuthService;
+use kernel\services\AuthService;
 use think\facade\Config;
 use think\facade\Cookie;
 use think\facade\Event;
