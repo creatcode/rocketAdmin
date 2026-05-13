@@ -68,6 +68,21 @@ class Rule extends Backend
     {
         if ($this->request->isPost()) {
             $this->token();
+            $params = $this->request->post("row/a", [], 'strip_tags');
+            if ($params) {
+                if (empty($params['ismenu']) && empty($params['pid'])) {
+                    $this->error(__('The non-menu rule must have parent'));
+                }
+                if (empty($params['name']) || !preg_match('/^[a-zA-Z0-9_\/]+$/', $params['name'])) {
+                    $this->error(__('Invalid parameters'));
+                }
+                if (empty($params['title'])) {
+                    $this->error(__('Parameter %s can not be empty', __('Title')));
+                }
+                if ($this->model->where('name', $params['name'])->find()) {
+                    $this->error(__('Name already exist'));
+                }
+            }
         }
         return parent::add();
     }
@@ -79,6 +94,35 @@ class Rule extends Backend
     {
         if ($this->request->isPost()) {
             $this->token();
+            $row = $this->model->find($ids);
+            if (!$row) {
+                $this->error(__('No Results were found'));
+            }
+            $params = $this->request->post("row/a", [], 'strip_tags');
+            if ($params) {
+                if (empty($params['ismenu']) && empty($params['pid'])) {
+                    $this->error(__('The non-menu rule must have parent'));
+                }
+                $pid = $params['pid'] ?? 0;
+                if ($pid == $row['id']) {
+                    $this->error(__('Can not change the parent to self'));
+                }
+                if ($pid != $row['pid']) {
+                    $childrenIds = Tree::instance()->init(collect(UserRule::select())->toArray())->getChildrenIds($row['id']);
+                    if (in_array($pid, $childrenIds)) {
+                        $this->error(__('Can not change the parent to child'));
+                    }
+                }
+                if (empty($params['name']) || !preg_match('/^[a-zA-Z0-9_\/]+$/', $params['name'])) {
+                    $this->error(__('Invalid parameters'));
+                }
+                if (empty($params['title'])) {
+                    $this->error(__('Parameter %s can not be empty', __('Title')));
+                }
+                if ($this->model->where('name', $params['name'])->where('id', '<>', $row['id'])->find()) {
+                    $this->error(__('Name already exist'));
+                }
+            }
         }
         return parent::edit($ids);
     }
@@ -94,10 +138,16 @@ class Rule extends Backend
         $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
             $delIds = [];
-            foreach (explode(',', $ids) as $k => $v) {
+            $ids = array_filter(array_unique(explode(',', $ids)), function ($id) {
+                return preg_match('/^\d+$/', (string)$id);
+            });
+            foreach ($ids as $k => $v) {
                 $delIds = array_merge($delIds, Tree::instance()->getChildrenIds($v, true));
             }
             $delIds = array_unique($delIds);
+            if (!$delIds) {
+                $this->error(__('Operation failed'));
+            }
             $count = $this->model->where('id', 'in', $delIds)->delete();
             if ($count) {
                 $this->success();

@@ -56,18 +56,14 @@ class Category extends Backend
             $list = [];
 
             foreach ($this->categorylist as $k => $v) {
+                $typeMatched = $type == "all" || $type == null || $v['type'] == $type;
                 if ($search) {
-                    if ($v['type'] == $type && stripos($v['name'], $search) !== false || stripos($v['nickname'], $search) !== false) {
-                        if ($type == "all" || $type == null) {
-                            $list = $this->categorylist;
-                        } else {
-                            $list[] = $v;
-                        }
+                    $nameMatched = stripos($v['name'], $search) !== false || stripos($v['nickname'], $search) !== false;
+                    if ($typeMatched && $nameMatched) {
+                        $list[] = $v;
                     }
                 } else {
-                    if ($type == "all" || $type == null) {
-                        $list = $this->categorylist;
-                    } elseif ($v['type'] == $type) {
+                    if ($typeMatched) {
                         $list[] = $v;
                     }
                 }

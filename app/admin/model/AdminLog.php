@@ -51,8 +51,9 @@ class AdminLog extends Model
             $admin_id = $auth->backendlog['id'] ?? 0;
             $username = $auth->backendlog['username'] ?? __('Unknown');
         } else {
-            $admin_id = $auth->isLogin() ? $auth->id : 0;
-            $username = $auth->isLogin() ? $auth->username : __('Unknown');
+            $isLogin = $auth->isLogin();
+            $admin_id = $isLogin ? $auth->id : 0;
+            $username = $isLogin ? $auth->username : __('Unknown');
         }
 
         // 设置过滤函数

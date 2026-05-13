@@ -59,7 +59,10 @@ class Attachment extends Backend
             $this->request->get(['filter' => json_encode($filterArr)]);
 
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model->where($where)->count();
+            $total = $this->model
+                ->where($mimetypeQuery)
+                ->where($where)
+                ->count();
             $list = $this->model
                 ->where($mimetypeQuery)
                 ->where($where)
@@ -117,11 +120,16 @@ class Attachment extends Backend
         if ($ids) {
             \think\facade\Event::listen('upload_delete', function ($params) {
                 if ($params['storage'] == 'local') {
-                    $attachmentFile = root_path() . '/public' . $params['url'];
-                    if (is_file($attachmentFile)) {
+                    $publicPath = realpath(root_path() . '/public');
+                    $attachmentFile = realpath(root_path() . '/public' . $params['url']);
+                    $publicPath = $publicPath ? rtrim($publicPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '';
+                    if ($publicPath && $attachmentFile && strpos($attachmentFile, $publicPath) === 0 && is_file($attachmentFile)) {
                         @unlink($attachmentFile);
                     }
                 }
+            });
+            $ids = array_filter(array_unique(explode(',', $ids)), function ($id) {
+                return preg_match('/^\d+$/', (string)$id);
             });
             $attachmentlist = $this->model->where('id', 'in', $ids)->select();
             foreach ($attachmentlist as $attachment) {

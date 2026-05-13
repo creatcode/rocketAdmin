@@ -144,10 +144,16 @@ class Rule extends Backend
         $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
             $delIds = [];
-            foreach (explode(',', $ids) as $k => $v) {
+            $ids = array_filter(array_unique(explode(',', $ids)), function ($id) {
+                return preg_match('/^\d+$/', (string)$id);
+            });
+            foreach ($ids as $k => $v) {
                 $delIds = array_merge($delIds, Tree::instance()->getChildrenIds($v, true));
             }
             $delIds = array_unique($delIds);
+            if (!$delIds) {
+                $this->error(__('Operation failed'));
+            }
             $count = $this->model->where('id', 'in', $delIds)->delete();
             if ($count) {
                 Cache::delete('__menu__');

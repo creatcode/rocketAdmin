@@ -105,7 +105,10 @@ class Admin extends Backend
                 $adminGroupName[$this->auth->id][$n['id']] = $n['name'];
             }
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model->where($where)->count();
+            $total = $this->model
+                ->where($where)
+                ->where('id', 'in', $this->childrenAdminIds)
+                ->count();
             $list = $this->model
                 ->where($where)
                 ->where('id', 'in', $this->childrenAdminIds)

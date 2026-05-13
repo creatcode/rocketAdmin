@@ -103,6 +103,9 @@ class Adminlog extends Backend
         }
         $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
+            $ids = array_filter(array_unique(explode(',', $ids)), function ($id) {
+                return preg_match('/^\d+$/', (string)$id);
+            });
             $isSuperAdmin = $this->auth->isSuperAdmin();
             $childrenAdminIds = $this->childrenAdminIds;
             $adminList = $this->model->where('id', 'in', $ids)

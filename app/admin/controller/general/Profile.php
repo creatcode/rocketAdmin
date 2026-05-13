@@ -56,6 +56,9 @@ class Profile extends Backend
                 array_flip(array('email', 'nickname', 'password', 'avatar'))
             ));
             unset($v);
+            if (empty($params['email'])) {
+                $this->error(__('Parameter %s can not be empty', 'email'));
+            }
             if (!Validate::is($params['email'], "email")) {
                 $this->error(__("Please input correct email"));
             }

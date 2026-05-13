@@ -94,12 +94,17 @@ class User extends Backend
             $this->error(__("Invalid parameters"));
         }
         $ids = $ids ?: $this->request->post("ids");
-        $row = $this->model->find($ids);
+        $ids = array_filter(array_unique(explode(',', $ids)), function ($id) {
+            return preg_match('/^\d+$/', (string)$id);
+        });
+        $row = $ids ? $this->model->where('id', 'in', $ids)->select() : [];
         $this->modelValidate = true;
-        if (!$row) {
+        if (!$row || count($row) === 0) {
             $this->error(__('No Results were found'));
         }
-        Auth::instance()->delete($row['id']);
+        foreach ($row as $item) {
+            Auth::instance()->delete($item['id']);
+        }
         $this->success();
     }
 

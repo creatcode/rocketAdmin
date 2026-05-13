@@ -146,7 +146,7 @@ class Ajax extends Backend
         $field = $this->request->post("field");
         //操作的数据表
         $table = $this->request->post("table");
-        if (!Validate::is($table, "alphaDash")) {
+        if (!Validate::is($table, "alphaDash") || !preg_match('/^[a-zA-Z0-9_]+$/', (string)$table)) {
             $this->error(__('Operation failed'));
         }
         //主键
@@ -155,9 +155,22 @@ class Ajax extends Backend
         $orderway = strtolower($this->request->post("orderway", ""));
         $orderway = $orderway == 'asc' ? 'ASC' : 'DESC';
         $sour = $weighdata = [];
-        $ids = explode(',', $ids);
-        $prikey = $pk && preg_match("/^[a-z0-9\-_]+$/i", $pk) ? $pk : (Db::name($table)->getPk() ?: 'id');
+        $ids = array_values(array_filter(array_unique(explode(',', $ids)), function ($id) {
+            return preg_match('/^\d+$/', (string)$id);
+        }));
+        if (!$ids || !in_array($changeid, $ids)) {
+            $this->error(__('Invalid parameters'));
+        }
+        $prikey = $pk && preg_match("/^[a-zA-Z0-9_]+$/", $pk) ? $pk : (Db::name($table)->getPk() ?: 'id');
         $pid = $this->request->post("pid", "");
+        if ($pid !== '') {
+            $pid = array_values(array_filter(array_unique(explode(',', $pid)), function ($id) {
+                return preg_match('/^\d+$/', (string)$id);
+            }));
+            if (!$pid) {
+                $this->error(__('Invalid parameters'));
+            }
+        }
         //限制更新的字段
         $field = in_array($field, ['weigh']) ? $field : 'weigh';
 
@@ -270,6 +283,12 @@ class Ajax extends Backend
     {
         $type = $this->request->get('type', '');
         $pid = $this->request->get('pid', '');
+        if ($type !== '' && !preg_match('/^[a-zA-Z0-9_\-]+$/', (string)$type)) {
+            $this->error(__('Invalid parameters'));
+        }
+        if ($pid !== '' && !preg_match('/^\d+$/', (string)$pid)) {
+            $this->error(__('Invalid parameters'));
+        }
         $where = ['status' => 'normal'];
         $categorylist = null;
         if ($pid || $pid === '0') {
@@ -297,6 +316,12 @@ class Ajax extends Backend
             $province = $this->request->get('province');
             $city = $this->request->get('city');
         }
+        if ($province !== null && $province !== '' && !preg_match('/^\d+$/', (string)$province)) {
+            $this->error(__('Invalid parameters'));
+        }
+        if ($city !== null && $city !== '' && !preg_match('/^\d+$/', (string)$city)) {
+            $this->error(__('Invalid parameters'));
+        }
         $where = ['pid' => 0, 'level' => 1];
         $provincelist = null;
         if ($province !== null) {
@@ -318,6 +343,8 @@ class Ajax extends Backend
     {
         $suffix = $this->request->request("suffix");
         $suffix = $suffix ?: "FILE";
+        $suffix = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', (string)$suffix));
+        $suffix = $suffix ? substr($suffix, 0, 10) : "FILE";
         $data = build_suffix_image($suffix);
         $header = ['Content-Type' => 'image/svg+xml'];
         $offset = 30 * 60 * 60 * 24; // 缓存一个月

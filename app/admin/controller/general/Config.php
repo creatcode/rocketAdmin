@@ -262,6 +262,12 @@ class Config extends Backend
             $this->error(__('Invalid parameters'));
         }
         $setting = $config['setting'];
+        if (empty($setting['table']) || empty($setting['field']) || empty($setting['primarykey'])
+            || !preg_match('/^[a-zA-Z0-9_]+$/', $setting['table'])
+            || !preg_match('/^[a-zA-Z0-9_]+$/', $setting['field'])
+            || !preg_match('/^[a-zA-Z0-9_]+$/', $setting['primarykey'])) {
+            $this->error(__('Invalid parameters'));
+        }
         //自定义条件
         $custom = isset($setting['conditions']) ? (array)json_decode($setting['conditions'], true) : [];
         $custom = array_filter($custom);

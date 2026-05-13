@@ -193,7 +193,10 @@ class Group extends Backend
         }
         $ids = $ids ?: $this->request->post("ids");
         if ($ids) {
-            $ids = explode(',', $ids);
+            $ids = array_filter(array_unique(explode(',', $ids)), function ($id) {
+                return preg_match('/^\d+$/', (string)$id);
+            });
+            $ids = array_intersect($ids, $this->childrenGroupIds);
             $grouplist = $this->auth->getGroups();
             $group_ids = array_map(function ($group) {
                 return $group['id'];

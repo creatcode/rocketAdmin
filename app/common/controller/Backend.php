@@ -290,6 +290,10 @@ class Backend extends BaseController
             $alias[$name] = parse_name(basename(str_replace('\\', '/', get_class($this->model))));
             $aliasName = $alias[$name] . '.';
         }
+        $sort = preg_replace('/[^a-zA-Z0-9_\.,]/', '', (string)$sort);
+        $sort = trim($sort, ',');
+        $sort = $sort ?: (!empty($this->model) && $this->model->getPk() ? $this->model->getPk() : 'id');
+        $order = strtoupper((string)$order) === 'ASC' ? 'ASC' : 'DESC';
         $sortArr = explode(',', $sort);
         foreach ($sortArr as $index => &$item) {
             $item = stripos($item, ".") === false ? $aliasName . trim($item) : $item;
@@ -474,9 +478,9 @@ class Backend extends BaseController
         //搜索关键词,客户端输入以空格分开,这里接收为数组
         $word = (array)$this->request->request("q_word/a");
         //当前页
-        $page = $this->request->request("pageNumber");
+        $page = $this->request->request("pageNumber", 1);
         //分页大小
-        $pagesize = $this->request->request("pageSize");
+        $pagesize = $this->request->request("pageSize", 10);
         //搜索条件
         $andor = $this->request->request("andOr", "and", "strtoupper");
         //排序方式
@@ -494,6 +498,9 @@ class Backend extends BaseController
         //是否返回树形结构
         $istree = $this->request->request("isTree", 0);
         $ishtml = $this->request->request("isHtml", 0);
+        $primarykey = preg_match('/^[a-zA-Z0-9_]+$/', (string)$primarykey) ? $primarykey : $this->model->getPk();
+        $page = max(1, (int)$page);
+        $pagesize = max(1, min(999999, (int)$pagesize));
         if ($istree) {
             $word = [];
             $pagesize = 999999;
@@ -516,6 +523,7 @@ class Backend extends BaseController
                 $searchfield = is_array($searchfield) ? implode($logic, $searchfield) : $searchfield;
                 $searchfield = preg_replace('/[^a-zA-Z0-9_\.\,\|]/', '', $searchfield);
                 $searchfield = str_replace(',', $logic, $searchfield);
+                $searchfield = $searchfield ?: $field;
                 $word = array_filter(array_unique($word));
                 if (count($word) == 1) {
                     $query->where($searchfield, "like", "%" . reset($word) . "%");
@@ -555,7 +563,7 @@ class Backend extends BaseController
                 $primaryvalue = array_unique(is_array($primaryvalue) ? $primaryvalue : explode(',', $primaryvalue));
                 //修复自定义data-primary-key为字符串内容时，给排序字段添加上引号
                 $primaryvalue = array_map(function ($value) {
-                    return '\'' . $value . '\'';
+                    return '\'' . addslashes((string)$value) . '\'';
                 }, $primaryvalue);
 
                 $primaryvalue = implode(',', $primaryvalue);
