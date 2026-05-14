@@ -112,10 +112,8 @@ class Api extends BaseController
         $controllername = parse_name($this->request->controller(true));
         $actionname = strtolower($this->request->action());
 
-        // token 优先从 Header 取，其次请求参数，最后 Cookie
-        $token = $this->request->server('HTTP_TOKEN',
-            $this->request->request('token', \think\facade\Cookie::get('token')) ?: ''
-        );
+        // 统一解析客户端Token，兼容Bearer、常规Header、请求参数和Cookie
+        $token = $this->getRequestToken();
 
         $path = str_replace('.', '/', $controllername) . '/' . $actionname;
         // 设置当前请求的URI
@@ -165,6 +163,82 @@ class Api extends BaseController
         $lang = app()->lang->getLangSet();
         $lang = preg_match("/^([a-zA-Z\-_]{2,10})\$/i", $lang) ? $lang : 'zh-cn';
         app()->lang->load(app_path() . '/lang/' . $lang . '/' . str_replace('.', '/', $name) . '.php');
+    }
+
+    /**
+     * 获取当前请求携带的Token
+     */
+    protected function getRequestToken(): string
+    {
+        $token = '';
+        $authorization = (string) $this->request->server('HTTP_AUTHORIZATION', '');
+        if (!$authorization) {
+            $authorization = (string) $this->request->server('REDIRECT_HTTP_AUTHORIZATION', '');
+        }
+
+        if ($authorization && preg_match('/^\s*Bearer\s+(.+)\s*$/i', $authorization, $matches)) {
+            $token = $matches[1];
+        } elseif ($authorization && stripos($authorization, 'Basic ') !== 0) {
+            $token = $authorization;
+        }
+
+        if (!$token) {
+            $token = (string) $this->request->header('X-Access-Token', '');
+        }
+        if (!$token) {
+            $token = (string) $this->request->header('token', '');
+        }
+        if (!$token) {
+            $token = (string) $this->request->request('token', '');
+        }
+        if (!$token) {
+            $token = (string) \think\facade\Cookie::get('token', '');
+        }
+
+        return $this->normalizeToken($token);
+    }
+
+    /**
+     * 规范化Token内容
+     */
+    protected function normalizeToken(string $token): string
+    {
+        $token = trim($token);
+        if ($token === '' || strlen($token) > 512 || preg_match('/[\x00-\x20\x7f]/', $token)) {
+            return '';
+        }
+
+        return $token;
+    }
+
+    /**
+     * 解析本次生成Token的有效期
+     */
+    protected function getTokenExpireFromRequest(): int
+    {
+        $default = max(0, (int)Config::get('token.expire', 2592000));
+        $expire = $this->request->post('expire', null);
+        if ($expire === null || $expire === '') {
+            $expire = $this->request->post('keeptime', null);
+        }
+        if ($expire === null || $expire === '') {
+            return $default;
+        }
+        if (!is_numeric($expire)) {
+            $this->error(__('Invalid parameters'));
+        }
+
+        $expire = (int)$expire;
+        if ($expire < 0) {
+            $this->error(__('Invalid parameters'));
+        }
+
+        $maxExpire = (int)Config::get('token.max_expire', $default);
+        if ($maxExpire > 0 && ($expire === 0 || $expire > $maxExpire)) {
+            $this->error(__('Invalid parameters'));
+        }
+
+        return $expire;
     }
 
     /**

@@ -6,7 +6,7 @@ use app\admin\model\AdminLog;
 use app\common\controller\Backend;
 use app\common\exception\UploadException;
 use app\common\library\Upload;
-use think\addons\Service;
+use creatcode\easyaddons\addons\Service;
 use think\facade\Cache;
 use think\facade\Config;
 use think\facade\Db;

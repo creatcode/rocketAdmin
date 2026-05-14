@@ -3,7 +3,7 @@
 namespace addons\{%name%};
 
 use app\common\library\Menu;
-use think\Addons;
+use creatcode\easyaddons\Addons;
 
 /**
  * 插件

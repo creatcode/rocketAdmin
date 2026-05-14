@@ -2,7 +2,7 @@
 
 namespace addons\{%addon%}\controller;
 
-use think\addons\Controller;
+use creatcode\easyaddons\addons\Controller;
 
 class Index extends Controller
 {

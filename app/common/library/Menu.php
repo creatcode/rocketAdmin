@@ -3,8 +3,8 @@
 namespace app\common\library;
 
 use app\admin\model\AuthRule;
+use creatcode\easyaddons\addons\Service;
 use PDOException;
-use think\addons\Service;
 use think\facade\Db;
 use util\Tree;
 

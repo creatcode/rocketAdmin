@@ -2,8 +2,8 @@
 
 namespace app\admin\command;
 
-use think\addons\AddonException;
-use think\addons\Service;
+use creatcode\easyaddons\addons\AddonException;
+use creatcode\easyaddons\addons\Service;
 use think\Exception;
 use think\facade\Db;
 use think\console\Input;
