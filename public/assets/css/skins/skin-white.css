@@ -453,7 +453,7 @@ body.inside-header .searchit .label {
 
 .layui-layer-fast .layui-layer-setwin .layui-layer-ico::after,
 .layui-layer-fast .layui-layer-setwin .layui-layer-min::after {
-    color: #333 !important;
+    color: #000 !important;
 }
 
 .layui-layer-fast .layui-layer-btn {
