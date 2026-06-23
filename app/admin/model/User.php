@@ -46,6 +46,11 @@ class User extends Model
             }
         }
 
+        // 会员被禁用时立即清理所有登录Token，避免旧Token继续占用有效会话
+        if (isset($changed['status']) && $changed['status'] !== 'normal') {
+            Token::clear($row->id);
+        }
+
         if (isset($changed['money'])) {
             MoneyLog::create([
                 'user_id' => $row['id'],

@@ -14,7 +14,7 @@ use util\Random;
  */
 class User extends Api
 {
-    protected $noNeedLogin = ['login', 'mobilelogin', 'register', 'resetpwd', 'changeemail', 'changemobile', 'third'];
+    protected $noNeedLogin = ['login', 'mobilelogin', 'register', 'resetpwd', 'third'];
     protected $noNeedRight = '*';
 
     public function initialize()
@@ -48,6 +48,7 @@ class User extends Api
         if (!$account || !$password) {
             $this->error(__('Invalid parameters'));
         }
+        $this->auth->keeptime($this->getTokenExpireFromRequest());
         $ret = $this->auth->login($account, $password);
         if ($ret) {
             $data = ['userinfo' => $this->auth->getUserinfo()];
@@ -77,6 +78,7 @@ class User extends Api
         if (!Sms::check($mobile, $captcha, 'mobilelogin')) {
             $this->error(__('Captcha is incorrect'));
         }
+        $this->auth->keeptime($this->getTokenExpireFromRequest());
         $user = \app\common\model\User::getByMobile($mobile);
         if ($user) {
             if ($user->status != 'normal') {
@@ -126,6 +128,7 @@ class User extends Api
         if (!$ret) {
             $this->error(__('Captcha is incorrect'));
         }
+        $this->auth->keeptime($this->getTokenExpireFromRequest());
         $ret = $this->auth->register($username, $password, $email, $mobile, []);
         if ($ret) {
             $data = ['userinfo' => $this->auth->getUserinfo()];
@@ -316,6 +319,9 @@ class User extends Api
             if (!$user) {
                 $this->error(__('User not found'));
             }
+            if ($user->status != 'normal') {
+                $this->error(__('Account is locked'));
+            }
             $ret = Sms::check($mobile, $captcha, 'resetpwd');
             if (!$ret) {
                 $this->error(__('Captcha is incorrect'));
@@ -328,6 +334,9 @@ class User extends Api
             $user = \app\common\model\User::getByEmail($email);
             if (!$user) {
                 $this->error(__('User not found'));
+            }
+            if ($user->status != 'normal') {
+                $this->error(__('Account is locked'));
             }
             $ret = Ems::check($email, $captcha, 'resetpwd');
             if (!$ret) {

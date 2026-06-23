@@ -92,6 +92,6 @@ abstract class Driver
      */
     protected function getExpiredIn($expiretime)
     {
-        return $expiretime ? max(0, $expiretime - time()) : self::DEFAULT_EXPIRE;
+        return $expiretime ? max(0, $expiretime - time()) : 0;
     }
 }

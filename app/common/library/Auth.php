@@ -19,8 +19,8 @@ class Auth
     protected $_logined = false;
     protected $_user = null;
     protected $_token = '';
-    //Token默认有效时长
-    protected $keeptime = 2592000;
+    //Token默认有效时长，null表示使用配置文件
+    protected $keeptime = null;
     protected $requestUri = '';
     protected $rules = [];
     //默认配置
@@ -186,7 +186,7 @@ class Auth
 
             //设置Token
             $this->_token = Random::uuid();
-            Token::set($this->_token, $user->id, $this->keeptime);
+            Token::set($this->_token, $user->id, $this->getKeepTime());
 
             //设置登录状态
             $this->_logined = true;
@@ -304,6 +304,11 @@ class Auth
     {
         $user = User::find($user_id);
         if ($user) {
+            if ($user->status != 'normal') {
+                $this->setError('Account is locked');
+                return false;
+            }
+
             Db::startTrans();
             try {
                 $ip = request()->ip();
@@ -327,7 +332,7 @@ class Auth
                 $this->_user = $user;
 
                 $this->_token = Random::uuid();
-                Token::set($this->_token, $user->id, $this->keeptime);
+                Token::set($this->_token, $user->id, $this->getKeepTime());
 
                 $this->_logined = true;
 
@@ -524,7 +529,20 @@ class Auth
      */
     public function keeptime($keeptime = 0)
     {
-        $this->keeptime = $keeptime;
+        $this->keeptime = max(0, (int)$keeptime);
+        return $this;
+    }
+
+    /**
+     * 获取Token有效时长
+     */
+    protected function getKeepTime(): int
+    {
+        if ($this->keeptime !== null) {
+            return (int)$this->keeptime;
+        }
+
+        return max(0, (int)Config::get('token.expire', 2592000));
     }
 
     /**

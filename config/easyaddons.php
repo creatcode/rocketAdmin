@@ -11,5 +11,5 @@ return [
     // 是否启用插件授权校验
     'addon_auth_check'    => false,
     // 插件市场接口地址
-    'api_url'             => null,
+    'api_url'             => 'https://api.fastadmin.net',
 ];

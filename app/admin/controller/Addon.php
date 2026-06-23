@@ -3,9 +3,9 @@
 namespace app\admin\controller;
 
 use app\common\controller\Backend;
+use creatcode\easyaddons\addons\AddonException;
+use creatcode\easyaddons\addons\Service;
 use Exception;
-use think\addons\AddonException;
-use think\addons\Service;
 use think\facade\Cache;
 use think\facade\Config;
 use think\facade\Db;
@@ -176,7 +176,7 @@ class Addon extends Backend
                 //删除插件关联表
                 foreach ($tables as $index => $table) {
                     //忽略非插件标识的表名
-                    if (!preg_match("/^{$prefix}{$name}/", $table)) {
+                    if (!$this->isAddonTable($table, $name, $prefix)) {
                         continue;
                     }
                     Db::execute("DROP TABLE IF EXISTS `{$table}`");
@@ -226,7 +226,7 @@ class Addon extends Backend
             $uid = $this->request->post("uid");
             $token = $this->request->post("token");
             $faversion = $this->request->post("faversion");
-            $force = $this->request->post("force")?:1;
+            $force = $this->request->post("force") ?: 1;
             // if (!$uid || !$token) {
             //     throw new Exception(__('Please login and try to install'));
             // }
@@ -409,7 +409,7 @@ class Addon extends Backend
         $prefix = Config::get('database.connections.' . $default . '.prefix');
         foreach ($tables as $index => $table) {
             //忽略非插件标识的表名
-            if (!preg_match("/^{$prefix}{$name}/", $table)) {
+            if (!$this->isAddonTable($table, $name, $prefix)) {
                 unset($tables[$index]);
             }
         }
@@ -435,7 +435,7 @@ class Addon extends Backend
             }
             $rows = $json['rows'] ?? [];
             foreach ($rows as $index => $row) {
-                if (!isset($row['name'])) {
+                if (empty($row['name']) || !preg_match('/^[a-zA-Z0-9]+$/', (string)$row['name'])) {
                     continue;
                 }
                 $onlineaddons[$row['name']] = $row;
@@ -447,10 +447,21 @@ class Addon extends Backend
 
     protected function checkAddonName($name)
     {
-        try {
-            Service::checkAddonName($name);
-        } catch (Exception $e) {
+        if (!is_string($name) || !preg_match('/^[a-zA-Z0-9]+$/', $name)) {
             $this->error(__('Addon name incorrect'));
         }
+    }
+
+    /**
+     * 判断表名是否属于当前插件
+     */
+    protected function isAddonTable($table, $name, $prefix)
+    {
+        $table = (string)$table;
+        $name = (string)$name;
+        $prefix = (string)$prefix;
+
+        return (bool)preg_match('/^[a-zA-Z0-9_]+$/', $table)
+            && preg_match('/^' . preg_quote($prefix . $name, '/') . '/', $table);
     }
 }
