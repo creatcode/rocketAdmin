@@ -35,7 +35,7 @@ class Area extends Model
         if (!empty($georadiuslist[0][0])) {
             $id = $georadiuslist[0][0];
         }
-        return self::get($id);
+        return self::find($id);
     }
 
     /**
@@ -50,7 +50,7 @@ class Area extends Model
         $provincedata = null;
         $citydata = self::getCityFromLngLat($lng, $lat);
         if ($citydata) {
-            $provincedata = self::get($citydata['pid']);
+            $provincedata = self::find($citydata['pid']);
         }
         return $provincedata;
     }
@@ -67,7 +67,7 @@ class Area extends Model
         $citydata = null;
         $districtdata = self::getDistrictFromLngLat($lng, $lat);
         if ($districtdata) {
-            $citydata = self::get($districtdata['pid']);
+            $citydata = self::find($districtdata['pid']);
         }
         return $citydata;
     }

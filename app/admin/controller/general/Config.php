@@ -257,7 +257,7 @@ class Config extends Backend
     public function selectpage()
     {
         $id = $this->request->get("id/d");
-        $config = \app\common\model\Config::get($id);
+        $config = \app\common\model\Config::find($id);
         if (!$config) {
             $this->error(__('Invalid parameters'));
         }
