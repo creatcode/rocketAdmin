@@ -36,6 +36,10 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
             'think\\app\\' => 10,
             'think\\' => 6,
         ),
+        'k' => 
+        array (
+            'kernel\\' => 7,
+        ),
         'c' => 
         array (
             'creatcode\\easyaddons\\' => 21,
@@ -152,6 +156,10 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
             3 => __DIR__ . '/..' . '/topthink/think-orm/src',
             4 => __DIR__ . '/..' . '/topthink/think-queue/src',
             5 => __DIR__ . '/..' . '/topthink/think-template/src',
+        ),
+        'kernel\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/kernel',
         ),
         'creatcode\\easyaddons\\' => 
         array (

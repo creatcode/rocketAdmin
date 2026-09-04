@@ -45,7 +45,8 @@
     "autoload": {
         "psr-4": {
             "app\\": "app",
-            "addons\\": "addons"
+            "addons\\": "addons",
+            "kernel\\": "kernel"
         },
         "psr-0": {
             "": "extend/"

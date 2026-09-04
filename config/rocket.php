@@ -22,7 +22,7 @@ return [
     'multipletab'           => true,
     //是否默认展示子菜单
     'show_submenu'          => false,
-    //后台皮肤,为空时表示使用skin-black-blue
+    //后台皮肤,为空时表示使用skin-white
     'adminskin'             => '',
     //后台是否启用面包屑
     'breadcrumb'            => true,
