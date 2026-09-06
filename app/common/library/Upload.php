@@ -7,6 +7,7 @@ use app\common\model\Attachment;
 use FilesystemIterator;
 use think\facade\Config;
 use think\facade\Event;
+use think\exception\FileException;
 use think\File;
 use think\file\UploadedFile;
 use util\Random;
@@ -441,10 +442,11 @@ class Upload
             rename($sourceFile, $destFile);
             $file = new UploadedFile($destFile, $fileName);
         } else {
-            $file = $this->file->move($destDir, $fileName);
-            if (!$file) {
+            try {
+                $file = $this->file->move($destDir, $fileName);
+            } catch (FileException $e) {
                 // 上传失败获取错误信息
-                throw new UploadException($file->getErrorMessage());
+                throw new UploadException($e->getMessage());
             }
         }
         $this->file = $file;

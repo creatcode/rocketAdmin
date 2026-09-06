@@ -163,12 +163,6 @@ class Backend extends BaseController
             $url = preg_replace_callback("/([\?|&]+)ref=addtabs(&?)/i", function ($matches) {
                 return $matches[2] == '&' ? $matches[1] : '';
             }, $this->request->url());
-            if (Config::get('route.url_domain_deploy')) {
-                if (stripos($url, $this->request->server('SCRIPT_NAME')) === 0) {
-                    $url = substr($url, strlen($this->request->server('SCRIPT_NAME')));
-                }
-                $url = (string)url($url, [], false);
-            }
             $url = (string)url($url, [], false);
             $this->redirect('/admin/index/index', [], 302, ['referer' => $url]);
             exit;
@@ -515,7 +509,7 @@ class Backend extends BaseController
 
         //如果有primaryvalue,说明当前是初始化传值
         if ($primaryvalue !== null) {
-            $where = [$primarykey => ['in', $primaryvalue]];
+            $where = [$primarykey => is_array($primaryvalue) ? $primaryvalue : explode(',', $primaryvalue)];
             $pagesize = 999999;
         } else {
             $where = function ($query) use ($word, $andor, $field, $searchfield, $custom) {
