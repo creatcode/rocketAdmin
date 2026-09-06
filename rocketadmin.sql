@@ -11,7 +11,7 @@
  Target Server Version : 80012
  File Encoding         : 65001
 
- Date: 28/08/2025 00:04:55
+ Date: 06/09/2026 22:28:04
 */
 
 SET NAMES utf8mb4;
@@ -44,7 +44,7 @@ CREATE TABLE `im_admin`  (
 -- ----------------------------
 -- Records of im_admin
 -- ----------------------------
-INSERT INTO `im_admin` VALUES (1, 'admin', 'Admin', '27c04db44798cf4835ff71d58153dffb', 'eutanS', '/assets/img/avatar.png', 'admin@admin.com', '', 0, 1756298913, '127.0.0.1', 1491635035, 2025, 'cc3d5bda-844f-4092-bae4-c1b5a324cdcf', 'normal');
+INSERT INTO `im_admin` VALUES (1, 'admin', 'Admin', '27c04db44798cf4835ff71d58153dffb', 'eutanS', '/assets/img/avatar.png', 'admin@admin.com', '', 0, 1788702107, '127.0.0.1', 1491635035, 1788702107, '8dfc7eeb-8bef-47cf-b6f0-1e5f97dfecb6', 'normal');
 
 -- ----------------------------
 -- Table structure for im_admin_log
@@ -62,7 +62,7 @@ CREATE TABLE `im_admin_log`  (
   `createtime` bigint(16) NULL DEFAULT NULL COMMENT '操作时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `name`(`username`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 222 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '管理员日志表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 243 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '管理员日志表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_admin_log
@@ -72,6 +72,28 @@ INSERT INTO `im_admin_log` VALUES (218, 0, 'Unknown', '/admin/index/login.html?u
 INSERT INTO `im_admin_log` VALUES (219, 0, 'Unknown', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"12312\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0', 2025);
 INSERT INTO `im_admin_log` VALUES (220, 0, 'Unknown', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0', 2025);
 INSERT INTO `im_admin_log` VALUES (221, 1, 'admin', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0', 2025);
+INSERT INTO `im_admin_log` VALUES (222, 1, 'admin', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', 2025);
+INSERT INTO `im_admin_log` VALUES (223, 1, 'admin', '/admin/addon/install', '插件管理', '{\"name\":\"example\",\"force\":\"0\",\"uid\":\"21746\",\"token\":\"***\",\"version\":\"1.1.5\",\"faversion\":\"1.6.1.20250430\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', 2025);
+INSERT INTO `im_admin_log` VALUES (224, 1, 'admin', '/admin/addon/install', '插件管理', '{\"name\":\"example\",\"force\":\"0\",\"uid\":\"21746\",\"token\":\"***\",\"version\":\"1.1.5\",\"faversion\":\"1.6.1.20250430\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', 2025);
+INSERT INTO `im_admin_log` VALUES (225, 1, 'admin', '/admin/addon/install', '插件管理', '{\"name\":\"example\",\"force\":\"0\",\"uid\":\"21746\",\"token\":\"***\",\"version\":\"1.1.5\",\"faversion\":\"1.6.1.20250430\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', 2025);
+INSERT INTO `im_admin_log` VALUES (226, 1, 'admin', '/admin/addon/install', '插件管理', '{\"name\":\"command\",\"force\":\"0\",\"uid\":\"21746\",\"token\":\"***\",\"version\":\"1.1.2\",\"faversion\":\"1.6.1.20250430\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', 2025);
+INSERT INTO `im_admin_log` VALUES (227, 0, 'Unknown', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 2026);
+INSERT INTO `im_admin_log` VALUES (228, 1, 'admin', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 2026);
+INSERT INTO `im_admin_log` VALUES (229, 1, 'admin', '/admin/index/login.html?url=/admin/user.user?ref=addtabs', '登录', '{\"url\":\"\\/admin\\/user.user?ref=addtabs\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 2026);
+INSERT INTO `im_admin_log` VALUES (230, 1, 'admin', '/tenant/index/login.html?url=/tenant', '登录', '{\"url\":\"\\/tenant\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 2026);
+INSERT INTO `im_admin_log` VALUES (231, 0, 'Unknown', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1776355421);
+INSERT INTO `im_admin_log` VALUES (232, 1, 'admin', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1776355424);
+INSERT INTO `im_admin_log` VALUES (233, 1, 'admin', '/admin/index/logout.html', '退出', '{\"__token__\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1776356201);
+INSERT INTO `im_admin_log` VALUES (234, 1, 'admin', '/admin/index/login.html', '登录', '{\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1776425799);
+INSERT INTO `im_admin_log` VALUES (235, 1, 'admin', '/admin/index/login.html?url=/admin/addon?ref=addtabs', '登录', '{\"url\":\"\\/admin\\/addon?ref=addtabs\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\",\"keeplogin\":\"1\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1776691829);
+INSERT INTO `im_admin_log` VALUES (236, 1, 'admin', '/admin/index/logout.html', '退出', '{\"__token__\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1776695356);
+INSERT INTO `im_admin_log` VALUES (237, 1, 'admin', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1777045488);
+INSERT INTO `im_admin_log` VALUES (238, 1, 'admin', '/admin/command/get_field_list', '在线命令管理', '{\"table\":\"im_admin\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1777049482);
+INSERT INTO `im_admin_log` VALUES (239, 1, 'admin', '/admin/command/command/action/command', '在线命令管理', '{\"commandtype\":\"crud\",\"isrelation\":\"0\",\"local\":\"1\",\"delete\":\"0\",\"force\":\"0\",\"table\":\"im_admin\",\"controller\":\"\",\"model\":\"\",\"setcheckboxsuffix\":\"\",\"enumradiosuffix\":\"\",\"imagefield\":\"\",\"filefield\":\"\",\"intdatesuffix\":\"\",\"switchsuffix\":\"\",\"citysuffix\":\"\",\"selectpagesuffix\":\"\",\"selectpagessuffix\":\"\",\"ignorefields\":\"\",\"sortfield\":\"\",\"editorsuffix\":\"\",\"headingfilterfield\":\"\",\"tagsuffix\":\"\",\"jsonsuffix\":\"\",\"fixedcolumns\":\"\",\"action\":\"command\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1777049493);
+INSERT INTO `im_admin_log` VALUES (240, 1, 'admin', '/admin/command/get_field_list', '在线命令管理', '{\"table\":\"im_admin\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1777113332);
+INSERT INTO `im_admin_log` VALUES (241, 1, 'admin', '/admin/command/get_field_list', '在线命令管理', '{\"table\":\"im_admin\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0', 1777213738);
+INSERT INTO `im_admin_log` VALUES (242, 1, 'admin', '/admin/index/login', '登录', '{\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ZCode/3.11.2 Chrome/146.0.7680.80 Electron/41.0.3 Safari/537.36', 1788692994);
+INSERT INTO `im_admin_log` VALUES (243, 1, 'admin', '/admin/index/login.html?url=/admin', '登录', '{\"url\":\"\\/admin\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Edg/152.0.0.0', 1788702107);
 
 -- ----------------------------
 -- Table structure for im_area
