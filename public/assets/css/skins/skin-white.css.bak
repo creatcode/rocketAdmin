@@ -346,9 +346,20 @@ body.inside-header .pull-left #toolbar>* {
     margin-bottom: 10px;
 }
 
-/* 工具栏任意相邻子元素统一间距（含被span等包裹的按钮，如附件选择页的上传按钮） */
-.skin-white .pull-left #toolbar>*+*,
-body.inside-header .pull-left #toolbar>*+* {
+.skin-white .pull-left #toolbar>a+a,
+.skin-white .pull-left #toolbar>a+div,
+.skin-white .pull-left #toolbar>div+a,
+.skin-white .pull-left #toolbar>a+button,
+.skin-white .pull-left #toolbar>button+a,
+.skin-white .pull-left #toolbar>div+button,
+.skin-white .pull-left #toolbar>button+div,
+body.inside-header .pull-left #toolbar>a+a,
+body.inside-header .pull-left #toolbar>a+div,
+body.inside-header .pull-left #toolbar>div+a,
+body.inside-header .pull-left #toolbar>a+button,
+body.inside-header .pull-left #toolbar>button+a,
+body.inside-header .pull-left #toolbar>div+button,
+body.inside-header .pull-left #toolbar>button+div {
     margin-left: 10px !important;
 }
 
@@ -432,7 +443,7 @@ body.inside-header .searchit .label {
     line-height: 15px;
 }
 
-.layui-layer.layui-layer-fast .layui-layer-title {
+.layui-layer-fast .layui-layer-title {
     background: #f4f4f5 !important;
     color: #1d2129 !important;
     font-weight: 700 !important;
@@ -445,7 +456,7 @@ body.inside-header .searchit .label {
     color: #000 !important;
 }
 
-.layui-layer.layui-layer-fast .layui-layer-btn {
+.layui-layer-fast .layui-layer-btn {
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1) !important;
     background: transparent;
 }
@@ -474,7 +485,7 @@ body.inside-header .layui-layer-fast .layui-layer-btn .layui-layer-btn1,
 body.inside-header .layui-layer-fast .layui-layer-btn a.layui-layer-btn1 {
     background-color: #fff !important;
     color: #4e5969 !important;
-    border: 1px solid #dcdfe6 !important;
+    border-color: #dcdfe6 !important;
 }
 
 .layui-layer-fast .layui-layer-btn .layui-layer-btn1:hover,
@@ -532,7 +543,6 @@ body.inside-header .layui-layer-fast .layui-layer-footer .btn-default:focus {
 
 /* 合并弹层图标公共样式 */
 .layui-layer-ico3,
-.layui-layer-ico2,
 .layui-layer-ico1,
 .layui-layer-ico0 {
     display: inline-flex !important;
@@ -553,10 +563,6 @@ body.inside-header .layui-layer-fast .layui-layer-footer .btn-default:focus {
 
 .layui-layer-ico3::before {
     content: "\f12a" !important;
-}
-
-.layui-layer-ico2::before {
-    content: "\f00d" !important;
 }
 
 .layui-layer-ico1::before {
@@ -1144,39 +1150,4 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     .skin-white.darktheme .main-header .navbar {
         background-color: #0c0c0c;
     }
-}
-
-/* ===== 弹窗样式补充：修复白色皮肤与 layui-layer-fast 基线的混搭 ===== */
-/* 弹窗本体：统一 4px 圆角和轻阴影（选择器带 .layui-layer 提高优先级，
-   保证 skin-white 以 @import 方式先于 backend.css 基线加载时也能胜出） */
-.layui-layer.layui-layer-fast,
-.layui-layer.layui-layer-fast.layui-layer-border {
-    border-radius: 4px !important;
-    box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.1) !important;
-}
-
-.layui-layer-fast .layui-layer-title {
-    border-radius: 4px 4px 0 0;
-}
-
-.layui-layer-fast .layui-layer-btn,
-.layui-layer-fast .layui-layer-footer {
-    border-radius: 0 0 4px 4px;
-}
-
-/* 底部表单操作条：基线是灰色背景，这里固定为透明（通常已由上方 .layui-layer-btn 规则覆盖，此处兜底） */
-.layui-layer-fast .layui-layer-footer {
-    background-color: transparent !important;
-}
-
-/* 第三个及以上的按钮：基线是灰底白字，改为与次要按钮（btn1）一致 */
-.layui-layer-fast .layui-layer-btn a:not(.layui-layer-btn0):not(.layui-layer-btn1) {
-    border: 1px solid #dcdfe6 !important;
-    background-color: #fff !important;
-    color: #4e5969 !important;
-}
-
-.layui-layer-fast .layui-layer-btn a:not(.layui-layer-btn0):not(.layui-layer-btn1):hover {
-    border-color: #165dff !important;
-    color: #165dff !important;
 }
