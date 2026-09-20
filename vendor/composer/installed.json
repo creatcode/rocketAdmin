@@ -115,6 +115,66 @@
             "install-path": "./pcre"
         },
         {
+            "name": "creatcode/easyaddons",
+            "version": "v1.5.2",
+            "version_normalized": "1.5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/creatcode/easyaddons.git",
+                "reference": "4e7d2cde2421cb4a67f3245931e0240bcc73fa6d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/creatcode/easyaddons/zipball/4e7d2cde2421cb4a67f3245931e0240bcc73fa6d",
+                "reference": "4e7d2cde2421cb4a67f3245931e0240bcc73fa6d",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.0",
+                "nelexa/zip": "^3.3 || ^4.0",
+                "php": ">=7.2.5",
+                "topthink/framework": "^6.1|^7.0|^8.0"
+            },
+            "time": "2026-09-20T08:27:48+00:00",
+            "type": "library",
+            "extra": {
+                "think": {
+                    "config": {
+                        "addons": "src/config.php",
+                        "easyaddons": "src/easyaddons.php"
+                    },
+                    "services": [
+                        "creatcode\\easyaddons\\AddonService"
+                    ]
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "src/helper.php"
+                ],
+                "psr-4": {
+                    "creatcode\\easyaddons\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "TP6+FastAdmin风格项目的专用插件包",
+            "keywords": [
+                "addons",
+                "project-package",
+                "thinkphp6",
+                "thinkphp8"
+            ],
+            "support": {
+                "issues": "https://github.com/creatcode/easyaddons/issues",
+                "source": "https://github.com/creatcode/easyaddons/tree/v1.5.2"
+            },
+            "install-path": "../creatcode/easyaddons"
+        },
+        {
             "name": "easywechat-composer/easywechat-composer",
             "version": "1.4.2",
             "version_normalized": "1.4.2.0",

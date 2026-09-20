@@ -18,6 +18,7 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
         '0d59ee240a4cd96ddbb4ff164fccea4d' => __DIR__ . '/..' . '/symfony/polyfill-php73/bootstrap.php',
         'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
+        '088fd59a32edb8c3f40e422a278e15a9' => __DIR__ . '/..' . '/creatcode/easyaddons/src/helper.php',
         'dc1275c308c5b416beb314b6317daca2' => __DIR__ . '/..' . '/overtrue/pinyin/src/const.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '1cfd2761b63b0a29ed23657ea394cb2d' => __DIR__ . '/..' . '/topthink/think-captcha/src/helper.php',
@@ -39,6 +40,10 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
         'k' =>
         array (
             'kernel\\' => 7,
+        ),
+        'c' =>
+        array (
+            'creatcode\\easyaddons\\' => 21,
         ),
         'a' =>
         array (
@@ -156,6 +161,10 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
         'kernel\\' =>
         array (
             0 => __DIR__ . '/../..' . '/kernel',
+        ),
+        'creatcode\\easyaddons\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/creatcode/easyaddons/src',
         ),
         'app\\' =>
         array (

@@ -13,6 +13,7 @@ return array(
     'think\\app\\' => array($vendorDir . '/topthink/think-multi-app/src'),
     'think\\' => array($vendorDir . '/topthink/think-queue/src', $vendorDir . '/topthink/think-filesystem/src', $vendorDir . '/topthink/think-template/src', $vendorDir . '/topthink/framework/src/think', $vendorDir . '/topthink/think-orm/src', $vendorDir . '/topthink/think-helper/src'),
     'kernel\\' => array($baseDir . '/kernel'),
+    'creatcode\\easyaddons\\' => array($vendorDir . '/creatcode/easyaddons/src'),
     'app\\' => array($baseDir . '/app'),
     'addons\\' => array($baseDir . '/addons'),
     'ZipStream\\' => array($vendorDir . '/maennchen/zipstream-php/src'),
