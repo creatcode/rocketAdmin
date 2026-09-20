@@ -2,7 +2,6 @@
 
 namespace GuzzleHttp\Handler;
 
-use Closure;
 use GuzzleHttp\Promise as P;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -15,6 +14,8 @@ use Psr\Http\Message\RequestInterface;
  * When using the CurlMultiHandler, custom curl options can be specified as an
  * associative array of curl option constants mapping to values in the
  * **curl** key of the provided request options.
+ *
+ * @property resource|\CurlMultiHandle $_mh Internal use only. Lazy loaded multi-handle.
  *
  * @final
  */
@@ -54,9 +55,6 @@ class CurlMultiHandler
      */
     private $options = [];
 
-    /** @var resource|\CurlMultiHandle */
-    private $_mh;
-
     /**
      * This handler accepts the following options:
      *
@@ -80,10 +78,6 @@ class CurlMultiHandler
         }
 
         $this->options = $options['options'] ?? [];
-
-        // unsetting the property forces the first access to go through
-        // __get().
-        unset($this->_mh);
     }
 
     /**
@@ -160,9 +154,6 @@ class CurlMultiHandler
             }
         }
 
-        // Run curl_multi_exec in the queue to enable other async tasks to run
-        P\Utils::queue()->add(Closure::fromCallable([$this, 'tickInQueue']));
-
         // Step through the task queue which may add additional requests.
         P\Utils::queue()->run();
 
@@ -172,23 +163,9 @@ class CurlMultiHandler
             \usleep(250);
         }
 
-        while (\curl_multi_exec($this->_mh, $this->active) === \CURLM_CALL_MULTI_PERFORM) {
-            // Prevent busy looping for slow HTTP requests.
-            \curl_multi_select($this->_mh, $this->selectTimeout);
-        }
+        while (\curl_multi_exec($this->_mh, $this->active) === \CURLM_CALL_MULTI_PERFORM);
 
         $this->processMessages();
-    }
-
-    /**
-     * Runs \curl_multi_exec() inside the event loop, to prevent busy looping
-     */
-    private function tickInQueue(): void
-    {
-        if (\curl_multi_exec($this->_mh, $this->active) === \CURLM_CALL_MULTI_PERFORM) {
-            \curl_multi_select($this->_mh, 0);
-            P\Utils::queue()->add(Closure::fromCallable([$this, 'tickInQueue']));
-        }
     }
 
     /**
@@ -240,10 +217,7 @@ class CurlMultiHandler
         $handle = $this->handles[$id]['easy']->handle;
         unset($this->delays[$id], $this->handles[$id]);
         \curl_multi_remove_handle($this->_mh, $handle);
-
-        if (PHP_VERSION_ID < 80000) {
-            \curl_close($handle);
-        }
+        \curl_close($handle);
 
         return true;
     }

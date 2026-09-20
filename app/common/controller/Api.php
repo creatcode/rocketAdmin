@@ -144,7 +144,7 @@ class Api extends BaseController
         $upload = \app\common\model\Config::upload();
 
         // 上传信息配置后
-        Event::trigger("upload_config_init", $upload);
+        $upload = Event::trigger("upload_config_init", $upload, true) ?: $upload;
 
         Config::set(array_merge(Config::get('upload'), $upload), 'upload');
 

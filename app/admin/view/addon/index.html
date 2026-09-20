@@ -70,7 +70,7 @@
 <div class="panel panel-default panel-intro">
     <div class="panel-heading">
         {:build_heading(null,FALSE)}
-        {if $Think.config.rocket.api_url}
+        {if $Think.config.rocket.addon_market_api_url}
         <ul class="nav nav-tabs nav-category">
             <li class="active"><a href="javascript:;" data-id="">{:__('All')}</a></li>
             <li><a href="javascript:;" data-id="0">{:__('Uncategoried')}</a></li>
@@ -84,7 +84,7 @@
                 <div class="widget-body no-padding">
                     <div id="toolbar" class="toolbar">
                         <a href="javascript:;" class="btn btn-primary btn-refresh" title="{:__('Refresh')}" data-force-refresh="false"><i class="fa fa-refresh"></i> </a>
-                        {if $Think.config.rocket.api_url}
+                        {if $Think.config.rocket.addon_market_api_url}
                         <button type="button" id="faupload-addon" class="btn btn-danger faupload btn-mini-xs" data-url="addon/local" data-chunking="false" data-mimetype="zip,fastaddon" data-multiple="false"><i class="fa fa-upload"></i>
                             {:__('Local install')}
                         </button>

@@ -439,7 +439,7 @@ class AdminAuth extends AuthService
     public function getSidebar($params = [], $fixedPage = 'dashboard')
     {
         // 边栏开始
-        Event::trigger("admin_sidebar_begin", $params);
+        $params = Event::trigger("admin_sidebar_begin", $params, true) ?: $params;
         $colorArr = ['red', 'green', 'yellow', 'blue', 'teal', 'orange', 'purple'];
         $colorNums = count($colorArr);
         $badgeList = [];
