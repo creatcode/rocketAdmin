@@ -246,6 +246,9 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
             };
 
             var my_skins = [
+                "skin-white",
+                "skin-sky-light",
+                "skin-gray-light",
                 "skin-blue",
                 "skin-black",
                 "skin-red",
@@ -339,6 +342,8 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
                         $(window).trigger("resize");
                     }, 300);
                     createCookie('sidebar_collapse', value);
+                    // 同步右侧布局面板中的开关状态
+                    $("[data-layout='sidebar-collapse']").prop('checked', value === 1);
                 }, 0);
             });
 
@@ -358,16 +363,16 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
 
             // 重设选项
             if ($('body').hasClass('fixed')) {
-                $("[data-layout='fixed']").attr('checked', 'checked');
+                $("[data-layout='fixed']").prop('checked', true);
             }
             if ($('body').hasClass('layout-boxed')) {
-                $("[data-layout='layout-boxed']").attr('checked', 'checked');
+                $("[data-layout='layout-boxed']").prop('checked', true);
             }
             if ($('body').hasClass('sidebar-collapse')) {
-                $("[data-layout='sidebar-collapse']").attr('checked', 'checked');
+                $("[data-layout='sidebar-collapse']").prop('checked', true);
             }
             if ($('ul.sidebar-menu').hasClass('show-submenu')) {
-                $("[data-menu='show-submenu']").attr('checked', 'checked');
+                $("[data-menu='show-submenu']").prop('checked', true);
             }
 
             var sidebarExpandOnHover = localStorage.getItem('sidebarExpandOnHover');
@@ -378,6 +383,26 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
             $.each(my_skins, function (i, j) {
                 if ($("body").hasClass(j)) {
                     $(".skin-list li a[data-skin='" + j + "']").parent().addClass("active");
+                }
+            });
+
+            // ==================== 右侧操作栏 ====================
+            // 关闭面板：AdminLTE 在 slide 模式下把状态记在面板上，两个位置都清一遍
+            var lcClosePanel = function () {
+                $('body').removeClass('control-sidebar-open');
+                $('.lc-panel').removeClass('control-sidebar-open');
+            };
+
+            // 点击遮罩关闭面板（遮罩复用 AdminLTE 自带的 .control-sidebar-bg）
+            $(document).on('click', '.control-sidebar-bg', function () {
+                lcClosePanel();
+                return false;
+            });
+
+            // ESC 关闭面板
+            $(document).on('keyup', function (e) {
+                if (e.keyCode === 27) {
+                    lcClosePanel();
                 }
             });
 

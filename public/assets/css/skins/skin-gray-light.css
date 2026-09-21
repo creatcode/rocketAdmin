@@ -1,112 +1,112 @@
-/**
- * skin-white
+﻿/**
+ * skin-gray-light
  */
 
-.skin-white #firstnav {
+.skin-gray-light #firstnav {
     box-shadow: none !important;
 }
 
-.skin-white .main-header {
+.skin-gray-light .main-header {
     -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.05);
     box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.05);
 }
 
-.skin-white .main-header .navbar-toggle,
-.skin-white .main-header .navbar-brand {
+.skin-gray-light .main-header .navbar-toggle,
+.skin-gray-light .main-header .navbar-brand {
     color: #333;
 }
 
-.skin-white .main-header .navbar-brand {
-    border-right: 1px solid #f1f4f6;
+.skin-gray-light .main-header .navbar-brand {
+    border-right: 1px solid #e0ddd7;
 }
 
-.skin-white .main-header .navbar {
+.skin-gray-light .main-header .navbar {
     background-color: #fff;
 }
 
-.skin-white .main-header .navbar .nav>li>a,
-.skin-white .main-header .navbar .navbar-nav>li>a,
-.skin-white .main-header .navbar .sidebar-toggle {
-    color: #4e5969;
+.skin-gray-light .main-header .navbar .nav>li>a,
+.skin-gray-light .main-header .navbar .navbar-nav>li>a,
+.skin-gray-light .main-header .navbar .sidebar-toggle {
+    color: #57534e;
 }
 
-.skin-white .main-header .navbar .navbar-nav>li>a {
-    border-right: 1px solid #f1f4f6;
+.skin-gray-light .main-header .navbar .navbar-nav>li>a {
+    border-right: 1px solid #e0ddd7;
 }
 
-.skin-white .main-header .navbar .nav-addtabs li>.close-tab {
+.skin-gray-light .main-header .navbar .nav-addtabs li>.close-tab {
     color: #333;
 }
 
-.skin-white .main-header .navbar>.sidebar-toggle {
-    border-right: 1px solid #f1f4f6;
+.skin-gray-light .main-header .navbar>.sidebar-toggle {
+    border-right: 1px solid #e0ddd7;
 }
 
-.skin-white .main-header .navbar .navbar-custom-menu .navbar-nav>li>a,
-.skin-white .main-header .navbar .navbar-right>li>a {
+.skin-gray-light .main-header .navbar .navbar-custom-menu .navbar-nav>li>a,
+.skin-gray-light .main-header .navbar .navbar-right>li>a {
     border-left: none;
     border-right-width: 0;
 }
 
-.skin-white button,
+.skin-gray-light button,
 body.inside-header button,
-.skin-white .btn,
+.skin-gray-light .btn,
 body.inside-header .btn,
-.skin-white .form-control,
+.skin-gray-light .form-control,
 body.inside-header .form-control {
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
-.skin-white button,
+.skin-gray-light button,
 body.inside-header button {
     outline: none !important;
 }
 
-.skin-white .btn,
+.skin-gray-light .btn,
 body.inside-header .btn {
     padding: 6px 20px !important;
 }
 
 /* 默认按钮 */
-.skin-white .btn-default,
+.skin-gray-light .btn-default,
 body.inside-header .btn-default {
-    color: #4e5969;
+    color: #57534e;
     background-color: #fff !important;
-    border-color: #dcdfe6 !important;
+    border-color: #d0ccc6 !important;
 }
 
-.skin-white .btn-default:hover,
-.skin-white .btn-default:focus,
-.skin-white .btn-default.focus,
+.skin-gray-light .btn-default:hover,
+.skin-gray-light .btn-default:focus,
+.skin-gray-light .btn-default.focus,
 body.inside-header .btn-default:hover,
 body.inside-header .btn-default:focus,
 body.inside-header .btn-default.focus {
-    color: #165dff;
-    background-color: #f0f5ff !important;
-    border-color: #adc6ff !important;
+    color: #57534e;
+    background-color: #dedad4 !important;
+    border-color: #d6d3d1 !important;
 }
 
 /* 主按钮 */
-.skin-white .btn-primary,
-.skin-white .btn-primary:active,
-.skin-white .btn-primary.active,
-.skin-white .open>.dropdown-toggle.btn-primary,
+.skin-gray-light .btn-primary,
+.skin-gray-light .btn-primary:active,
+.skin-gray-light .btn-primary.active,
+.skin-gray-light .open>.dropdown-toggle.btn-primary,
 body.inside-header .btn-primary,
 body.inside-header .btn-primary:active,
 body.inside-header .btn-primary.active,
 body.inside-header .open>.dropdown-toggle.btn-primary {
-    background-color: #165dff !important;
-    border-color: #165dff !important;
+    background-color: #57534e !important;
+    border-color: #57534e !important;
     color: #fff !important;
 }
 
-.skin-white .btn-primary:hover,
-.skin-white .btn-primary:focus,
-.skin-white .btn-primary.focus,
-.skin-white .btn-primary:active:hover,
-.skin-white .btn-primary.active:hover,
-.skin-white .open>.dropdown-toggle.btn-primary:hover,
-.skin-white .open>.dropdown-toggle.btn-primary:focus,
+.skin-gray-light .btn-primary:hover,
+.skin-gray-light .btn-primary:focus,
+.skin-gray-light .btn-primary.focus,
+.skin-gray-light .btn-primary:active:hover,
+.skin-gray-light .btn-primary.active:hover,
+.skin-gray-light .open>.dropdown-toggle.btn-primary:hover,
+.skin-gray-light .open>.dropdown-toggle.btn-primary:focus,
 body.inside-header .btn-primary:hover,
 body.inside-header .btn-primary:focus,
 body.inside-header .btn-primary.focus,
@@ -114,40 +114,40 @@ body.inside-header .btn-primary:active:hover,
 body.inside-header .btn-primary.active:hover,
 body.inside-header .open>.dropdown-toggle.btn-primary:hover,
 body.inside-header .open>.dropdown-toggle.btn-primary:focus {
-    background-color: #0e48d8 !important;
-    border-color: #0e48d8 !important;
+    background-color: #44403c !important;
+    border-color: #44403c !important;
     color: #fff !important;
 }
 
 /* 禁用主按钮 */
-.skin-white .btn-primary.disabled,
-.skin-white .btn-primary[disabled],
-.skin-white fieldset[disabled] .btn-primary,
-.skin-white .btn-primary.disabled:hover,
-.skin-white .btn-primary[disabled]:hover,
-.skin-white fieldset[disabled] .btn-primary:hover,
+.skin-gray-light .btn-primary.disabled,
+.skin-gray-light .btn-primary[disabled],
+.skin-gray-light fieldset[disabled] .btn-primary,
+.skin-gray-light .btn-primary.disabled:hover,
+.skin-gray-light .btn-primary[disabled]:hover,
+.skin-gray-light fieldset[disabled] .btn-primary:hover,
 body.inside-header .btn-primary.disabled,
 body.inside-header .btn-primary[disabled],
 body.inside-header fieldset[disabled] .btn-primary,
 body.inside-header .btn-primary.disabled:hover,
 body.inside-header .btn-primary[disabled]:hover,
 body.inside-header fieldset[disabled] .btn-primary:hover {
-    background-color: #8fb3ff !important;
-    border-color: #8fb3ff !important;
+    background-color: #a8a29e !important;
+    border-color: #a8a29e !important;
     color: #fff !important;
 }
 
 
-.skin-white .form-control:focus,
+.skin-gray-light .form-control:focus,
 body.inside-header .form-control:focus {
-    border-color: #165dff;
-    box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+    border-color: #57534e;
+    box-shadow: 0 0 0 2px rgba(87, 83, 78, 0.1);
 }
 
-.skin-white .dropdown-menu.text-left a,
-.skin-white .dropdown-menu.text-left li,
-.skin-white #table .dropdown-toggle,
-.skin-white #table .dropdown-menu a,
+.skin-gray-light .dropdown-menu.text-left a,
+.skin-gray-light .dropdown-menu.text-left li,
+.skin-gray-light #table .dropdown-toggle,
+.skin-gray-light #table .dropdown-menu a,
 body.inside-header .dropdown-menu.text-left a,
 body.inside-header .dropdown-menu.text-left li,
 body.inside-header #table .dropdown-toggle,
@@ -155,42 +155,42 @@ body.inside-header #table .dropdown-menu a {
     border-radius: 0;
 }
 
-.skin-white .toolbar .dropdown,
+.skin-gray-light .toolbar .dropdown,
 body.inside-header .toolbar .dropdown {
     margin-left: 10px;
 }
 
 /* 未选中页码：次级文字色弱化，主色只留给 hover 与选中态（见下方 .active 规则） */
-.skin-white .pagination>li>a,
-.skin-white .pagination>li>span,
+.skin-gray-light .pagination>li>a,
+.skin-gray-light .pagination>li>span,
 body.inside-header .pagination>li>a,
 body.inside-header .pagination>li>span {
     margin-left: 4px !important;
     border-color: transparent;
     background: #fff;
-    border-radius: 6px !important;
-    color: #4e5969;
+    border-radius: 4px !important;
+    color: #57534e;
 }
 
-.skin-white .pagination>li>a:hover,
-.skin-white .pagination>li>span:hover,
-.skin-white .pagination>li>a:focus,
-.skin-white .pagination>li>span:focus,
+.skin-gray-light .pagination>li>a:hover,
+.skin-gray-light .pagination>li>span:hover,
+.skin-gray-light .pagination>li>a:focus,
+.skin-gray-light .pagination>li>span:focus,
 body.inside-header .pagination>li>a:hover,
 body.inside-header .pagination>li>span:hover,
 body.inside-header .pagination>li>a:focus,
 body.inside-header .pagination>li>span:focus {
-    color: #165dff;
-    background: #f0f5ff;
-    border-color: #adc6ff;
+    color: #57534e;
+    background: #dedad4;
+    border-color: #d6d3d1;
 }
 
-.skin-white .pagination .jumpto input,
+.skin-gray-light .pagination .jumpto input,
 body.inside-header .pagination .jumpto input {
     margin-right: 0px !important;
 }
 
-.skin-white .pagination .jumpto .btn,
+.skin-gray-light .pagination .jumpto .btn,
 body.inside-header .pagination .jumpto .btn {
     background: transparent;
     border-color: transparent;
@@ -199,19 +199,19 @@ body.inside-header .pagination .jumpto .btn {
     padding: 7px 10px !important;
 }
 
-.skin-white .pagination .jumpto .btn:focus,
-.skin-white .pagination .jumpto .btn:active,
+.skin-gray-light .pagination .jumpto .btn:focus,
+.skin-gray-light .pagination .jumpto .btn:active,
 body.inside-header .pagination .jumpto .btn:focus,
 body.inside-header .pagination .jumpto .btn:active {
-    color: #165dff !important;
+    color: #57534e !important;
 }
 
-.skin-white .pagination>.active>a,
-.skin-white .pagination>.active>span,
-.skin-white .pagination>.active>a:hover,
-.skin-white .pagination>.active>span:hover,
-.skin-white .pagination>.active>a:focus,
-.skin-white .pagination>.active>span:focus,
+.skin-gray-light .pagination>.active>a,
+.skin-gray-light .pagination>.active>span,
+.skin-gray-light .pagination>.active>a:hover,
+.skin-gray-light .pagination>.active>span:hover,
+.skin-gray-light .pagination>.active>a:focus,
+.skin-gray-light .pagination>.active>span:focus,
 body.inside-header .pagination>.active>a,
 body.inside-header .pagination>.active>span,
 body.inside-header .pagination>.active>a:hover,
@@ -219,51 +219,51 @@ body.inside-header .pagination>.active>span:hover,
 body.inside-header .pagination>.active>a:focus,
 body.inside-header .pagination>.active>span:focus {
     background: transparent;
-    border-color: #165dff;
-    color: #165dff;
-    border-radius: 6px !important;
+    border-color: #57534e;
+    color: #57534e;
+    border-radius: 4px !important;
 }
 
-.skin-white .pagination-detail .dropdown-toggle,
+.skin-gray-light .pagination-detail .dropdown-toggle,
 body.inside-header .pagination-detail .dropdown-toggle {
     background: transparent;
     padding: 3px 15px;
 }
 
-.skin-white #table .dropdown-menu a,
+.skin-gray-light #table .dropdown-menu a,
 body.inside-header #table .dropdown-menu a {
     height: 30px;
     line-height: 30px;
 }
 
-.skin-white .panel-heading,
-.skin-white .panel-heading .nav-tabs>li>a,
+.skin-gray-light .panel-heading,
+.skin-gray-light .panel-heading .nav-tabs>li>a,
 body.inside-header .panel-heading,
 body.inside-header .panel-heading .nav-tabs>li>a {
     background: #fff;
 }
 
-.skin-white .panel-heading,
+.skin-gray-light .panel-heading,
 body.inside-header .panel-heading {
-    border-radius: 6px !important;
+    border-radius: 4px !important;
     border: none !important;
 }
 
-.skin-white .panel-heading .nav-tabs>li>a,
+.skin-gray-light .panel-heading .nav-tabs>li>a,
 body.inside-header .panel-heading .nav-tabs>li>a {
     min-width: 64px !important;
     text-align: center !important;
     border: none !important;
-    color: #1d2129;
+    color: #292524;
     font-weight: 700 !important;
 }
 
-.skin-white .panel-heading .nav-tabs>li.active>a,
+.skin-gray-light .panel-heading .nav-tabs>li.active>a,
 body.inside-header .panel-heading .nav-tabs>li.active>a {
     position: relative;
 }
 
-.skin-white .panel-heading .nav-tabs>li.active>a::after,
+.skin-gray-light .panel-heading .nav-tabs>li.active>a::after,
 body.inside-header .panel-heading .nav-tabs>li.active>a::after {
     content: "";
     position: absolute;
@@ -271,16 +271,16 @@ body.inside-header .panel-heading .nav-tabs>li.active>a::after {
     left: 0;
     width: 100%;
     height: 4px;
-    background: #165dff;
-    border-radius: 4px;
+    background: #57534e;
+    border-radius: 3px;
 }
 
-.skin-white #secondnav .nav-tabs {
+.skin-gray-light #secondnav .nav-tabs {
     box-shadow: 0 4px 10px 0 rgba(78, 89, 105, 0.06);
     background: transparent;
 }
 
-.skin-white #secondnav .nav-tabs>li {
+.skin-gray-light #secondnav .nav-tabs>li {
     position: relative;
     margin: 0 !important;
     padding: 0 15px !important;
@@ -289,7 +289,7 @@ body.inside-header .panel-heading .nav-tabs>li.active>a::after {
     border-radius: 0 !important;
 }
 
-.skin-white #secondnav .nav-tabs>li::before {
+.skin-gray-light #secondnav .nav-tabs>li::before {
     content: "";
     position: absolute;
     top: 50%;
@@ -297,130 +297,130 @@ body.inside-header .panel-heading .nav-tabs>li.active>a::after {
     left: 0;
     width: 1px;
     height: 20px;
-    background: #dcdfe6;
+    background: #d0ccc6;
 }
 
-.skin-white #secondnav .nav-tabs>li:first-child::before,
-.skin-white #secondnav .nav-tabs>li:nth-child(2)::before,
-.skin-white #secondnav .nav-tabs>li.active::before,
-.skin-white #secondnav .nav-tabs>li.active+li::before {
+.skin-gray-light #secondnav .nav-tabs>li:first-child::before,
+.skin-gray-light #secondnav .nav-tabs>li:nth-child(2)::before,
+.skin-gray-light #secondnav .nav-tabs>li.active::before,
+.skin-gray-light #secondnav .nav-tabs>li.active+li::before {
     display: none;
 }
 
-.skin-white #secondnav .nav-tabs>li>a,
-.skin-white .pull-left #toolbar,
+.skin-gray-light #secondnav .nav-tabs>li>a,
+.skin-gray-light .pull-left #toolbar,
 body.inside-header .pull-left #toolbar,
-.skin-white .panel-body #toolbar,
+.skin-gray-light .panel-body #toolbar,
 body.inside-header .panel-body #toolbar {
     display: flex;
     align-items: center;
 }
 
-.skin-white #secondnav .nav-tabs>li>a {
+.skin-gray-light #secondnav .nav-tabs>li>a {
     justify-content: center;
 }
 
-.skin-white .pull-left #toolbar,
+.skin-gray-light .pull-left #toolbar,
 body.inside-header .pull-left #toolbar {
     flex-wrap: wrap;
     margin-bottom: 0;
 }
 
-.skin-white .pull-left #toolbar>*,
+.skin-gray-light .pull-left #toolbar>*,
 body.inside-header .pull-left #toolbar>* {
     margin-bottom: 10px;
 }
 
 /* 工具栏任意相邻子元素统一间距（含被span等包裹的按钮，如附件选择页的上传按钮） */
-.skin-white .pull-left #toolbar>*+*,
+.skin-gray-light .pull-left #toolbar>*+*,
 body.inside-header .pull-left #toolbar>*+* {
     margin-left: 10px !important;
 }
 
-.skin-white .pull-right.search,
+.skin-gray-light .pull-right.search,
 body.inside-header .pull-right.search {
     margin-right: 20px !important;
 }
 
-.skin-white .pull-right.columns,
-.skin-white .pull-right.columns-right,
+.skin-gray-light .pull-right.columns,
+.skin-gray-light .pull-right.columns-right,
 body.inside-header .pull-right.columns,
 body.inside-header .pull-right.columns-right {
     margin: 10px 0 !important;
 }
 
-.skin-white .pull-right.columns *,
-.skin-white .pull-right.columns-right .btn,
+.skin-gray-light .pull-right.columns *,
+.skin-gray-light .pull-right.columns-right .btn,
 body.inside-header .pull-right.columns *,
 body.inside-header .pull-right.columns-right .btn {
     border-color: transparent !important;
-    border-radius: 4px !important;
+    border-radius: 3px !important;
 }
 
-.skin-white .pull-right.columns .btn-group,
-.skin-white .pull-right.columns .btn,
+.skin-gray-light .pull-right.columns .btn-group,
+.skin-gray-light .pull-right.columns .btn,
 body.inside-header .pull-right.columns .btn-group,
 body.inside-header .pull-right.columns .btn {
     margin-left: 1px !important;
 }
 
-.skin-white .pull-right.columns .caret,
+.skin-gray-light .pull-right.columns .caret,
 body.inside-header .pull-right.columns .caret {
     border-width: 0 !important;
 }
 
-.skin-white .pull-right.columns-right,
+.skin-gray-light .pull-right.columns-right,
 body.inside-header .pull-right.columns-right {
     margin-left: 1px !important;
 }
 
-.skin-white .input-group .input-group-btn .form-control,
+.skin-gray-light .input-group .input-group-btn .form-control,
 body.inside-header .input-group .input-group-btn .form-control {
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
 }
 
-.skin-white .bootstrap-table .table,
+.skin-gray-light .bootstrap-table .table,
 body.inside-header .bootstrap-table .table {
-    color: #1d2129;
+    color: #292524;
 }
 
-.skin-white .bootstrap-table .table thead>tr>th,
+.skin-gray-light .bootstrap-table .table thead>tr>th,
 body.inside-header .bootstrap-table .table thead>tr>th {
-    color: #4e5969;
+    color: #57534e;
     font-weight: 700;
-    border-color: #f6f8fb;
-    background: #f6f8fb;
+    border-color: #f0eeea;
+    background: #f0eeea;
 }
 
-.skin-white .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd),
+.skin-gray-light .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd),
 body.inside-header .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd) {
     background: #fff;
 }
 
-.skin-white .bootstrap-table tbody tr td,
+.skin-gray-light .bootstrap-table tbody tr td,
 body.inside-header .bootstrap-table tbody tr td {
-    border-top-color: #f1f4f6;
+    border-top-color: #e0ddd7;
 }
 
-.skin-white .bootstrap-table .table-hover>tbody>tr:hover,
+.skin-gray-light .bootstrap-table .table-hover>tbody>tr:hover,
 body.inside-header .bootstrap-table .table-hover>tbody>tr:hover {
-    background: rgba(22, 93, 255, 0.05) !important;
+    background: rgba(87, 83, 78, 0.05) !important;
 }
 
-.skin-white .searchit .label,
+.skin-gray-light .searchit .label,
 body.inside-header .searchit .label {
     display: inline-block;
-    border-radius: 4px;
+    border-radius: 3px;
     line-height: 15px;
 }
 
 .layui-layer.layui-layer-fast .layui-layer-title {
-    background: #f6f8fb !important;
-    color: #1d2129 !important;
+    background: #f0eeea !important;
+    color: #292524 !important;
     font-weight: 700 !important;
     font-size: 16px !important;
-    border-bottom: 1px solid #dcdfe6 !important;
+    border-bottom: 1px solid #d0ccc6 !important;
 }
 
 .layui-layer-fast .layui-layer-setwin .layui-layer-ico::after,
@@ -437,17 +437,17 @@ body.inside-header .searchit .label {
 .layui-layer-fast .layui-layer-btn a.layui-layer-btn0,
 body.inside-header .layui-layer-fast .layui-layer-btn .layui-layer-btn0,
 body.inside-header .layui-layer-fast .layui-layer-btn a.layui-layer-btn0 {
-    background-color: #165dff !important;
+    background-color: #57534e !important;
     color: #fff !important;
-    border-color: #165dff !important;
+    border-color: #57534e !important;
 }
 
 .layui-layer-fast .layui-layer-btn .layui-layer-btn0:hover,
 .layui-layer-fast .layui-layer-btn a.layui-layer-btn0:hover,
 body.inside-header .layui-layer-fast .layui-layer-btn .layui-layer-btn0:hover,
 body.inside-header .layui-layer-fast .layui-layer-btn a.layui-layer-btn0:hover {
-    background-color: #0e48d8 !important;
-    border-color: #0e48d8 !important;
+    background-color: #44403c !important;
+    border-color: #44403c !important;
     color: #fff !important;
 }
 
@@ -455,24 +455,24 @@ body.inside-header .layui-layer-fast .layui-layer-btn a.layui-layer-btn0:hover {
 .layui-layer-fast .layui-layer-btn a.layui-layer-btn1,
 body.inside-header .layui-layer-fast .layui-layer-btn .layui-layer-btn1,
 body.inside-header .layui-layer-fast .layui-layer-btn a.layui-layer-btn1 {
-    background-color: #f6f8fb !important;
-    color: #4e5969 !important;
-    border: 1px solid #dcdfe6 !important;
+    background-color: #f0eeea !important;
+    color: #57534e !important;
+    border: 1px solid #d0ccc6 !important;
 }
 
 .layui-layer-fast .layui-layer-btn .layui-layer-btn1:hover,
 .layui-layer-fast .layui-layer-btn a.layui-layer-btn1:hover,
 body.inside-header .layui-layer-fast .layui-layer-btn .layui-layer-btn1:hover,
 body.inside-header .layui-layer-fast .layui-layer-btn a.layui-layer-btn1:hover {
-    color: #165dff !important;
-    border-color: #165dff !important;
+    color: #57534e !important;
+    border-color: #57534e !important;
 }
 
 /* 弹出层底部表单按钮 */
 .layui-layer-fast .layui-layer-footer .btn-primary,
 body.inside-header .layui-layer-fast .layui-layer-footer .btn-primary {
-    background-color: #165dff !important;
-    border-color: #165dff !important;
+    background-color: #57534e !important;
+    border-color: #57534e !important;
     color: #fff !important;
 }
 
@@ -480,35 +480,35 @@ body.inside-header .layui-layer-fast .layui-layer-footer .btn-primary {
 .layui-layer-fast .layui-layer-footer .btn-primary:focus,
 body.inside-header .layui-layer-fast .layui-layer-footer .btn-primary:hover,
 body.inside-header .layui-layer-fast .layui-layer-footer .btn-primary:focus {
-    background-color: #0e48d8 !important;
-    border-color: #0e48d8 !important;
+    background-color: #44403c !important;
+    border-color: #44403c !important;
     color: #fff !important;
 }
 
 .layui-layer-fast .layui-layer-footer .btn-default,
 body.inside-header .layui-layer-fast .layui-layer-footer .btn-default {
-    background-color: #f6f8fb !important;
-    border-color: #dcdfe6 !important;
-    color: #4e5969 !important;
+    background-color: #f0eeea !important;
+    border-color: #d0ccc6 !important;
+    color: #57534e !important;
 }
 
 .layui-layer-fast .layui-layer-footer .btn-default:hover,
 .layui-layer-fast .layui-layer-footer .btn-default:focus,
 body.inside-header .layui-layer-fast .layui-layer-footer .btn-default:hover,
 body.inside-header .layui-layer-fast .layui-layer-footer .btn-default:focus {
-    background-color: #f0f5ff !important;
-    border-color: #adc6ff !important;
-    color: #165dff !important;
+    background-color: #dedad4 !important;
+    border-color: #d6d3d1 !important;
+    color: #57534e !important;
 }
 
-.skin-white .sdtheme-hidden-userinfo .user-panel {
+.skin-gray-light .sdtheme-hidden-userinfo .user-panel {
     display: none !important;
 }
 
 @media (max-width: 767px) {
-    .skin-white .content-wrapper,
-    .skin-white .right-side,
-    .skin-white .main-footer {
+    .skin-gray-light .content-wrapper,
+    .skin-gray-light .right-side,
+    .skin-gray-light .main-footer {
         margin-left: 0px !important;
     }
 }
@@ -525,7 +525,7 @@ body.inside-header .layui-layer-fast .layui-layer-footer .btn-default:focus {
     color: #fff !important;
     font: normal normal normal 12px/1 FontAwesome !important;
     background: none !important;
-    background: #165dff !important;
+    background: #57534e !important;
 }
 
 .layui-layer-ico3::before,
@@ -550,29 +550,29 @@ body.inside-header .layui-layer-fast .layui-layer-footer .btn-default:focus {
     content: "\f058" !important;
 }
 
-.skin-white .bootstrap-table .form-commonsearch .row>.form-group:last-child,
+.skin-gray-light .bootstrap-table .form-commonsearch .row>.form-group:last-child,
 body.inside-header .bootstrap-table .form-commonsearch .row>.form-group:last-child {
     float: right;
 }
 
-.skin-white .btn.btn-xs,
+.skin-gray-light .btn.btn-xs,
 body.inside-header .btn.btn-xs {
     padding: 1px 5px !important;
 }
 
-.skin-white .panel-intro>.panel-heading .nav-tabs,
+.skin-gray-light .panel-intro>.panel-heading .nav-tabs,
 body.inside-header .panel-intro>.panel-heading .nav-tabs {
     padding-bottom: 10px;
 }
 
-.skin-white .panel-intro .panel-heading,
+.skin-gray-light .panel-intro .panel-heading,
 body.inside-header .panel-intro .panel-heading {
-    border-radius: 6px 6px 0px 0px !important;
+    border-radius: 4px 6px 0px 0px !important;
     padding-top: 10px;
 }
 
 .layui-layer-fast.layui-layer-dialog {
-    border-radius: 6px;
+    border-radius: 4px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
     min-width: 330px;
 }
@@ -585,101 +585,101 @@ body.inside-header .panel-intro .panel-heading {
     padding: 15px 30px;
     text-align: center;
     line-height: 5px;
-    border-radius: 8px;
+    border-radius: 6px;
 }
 
 .layui-layer-fast.layui-layer-dialog .layui-layer-btn0 button,
 .layui-layer-fast.layui-layer-prompt .layui-layer-btn0 button,
 .layui-layer-fast.layui-layer-dialog .layui-layer-btn1 button,
 .layui-layer-fast.layui-layer-prompt .layui-layer-btn1 button {
-    border-radius: 8px;
+    border-radius: 6px;
 }
 
 /* 语义色：成功态保持绿色，不随主色改为蓝色 */
-.skin-white .text-success,
+.skin-gray-light .text-success,
 body.inside-header .text-success,
-.skin-white .text-success a,
+.skin-gray-light .text-success a,
 body.inside-header .text-success a {
     color: #18bc9c;
 }
 
-.skin-white .panel-body #toolbar>.btn,
-.skin-white .panel-body #toolbar .btn-group,
+.skin-gray-light .panel-body #toolbar>.btn,
+.skin-gray-light .panel-body #toolbar .btn-group,
 body.inside-header .panel-body #toolbar>.btn,
 body.inside-header .panel-body #toolbar .btn-group {
     margin-left: 10px;
 }
 
 @media (max-width: 767px) {
-    .skin-white .main-header .navbar {
+    .skin-gray-light .main-header .navbar {
         margin: 0;
     }
 }
 
-.skin-white .label-primary,
+.skin-gray-light .label-primary,
 body.inside-header .label-primary {
-    color: #165dff;
-    background-color: rgba(22, 93, 255, 0.1);
+    color: #57534e;
+    background-color: rgba(87, 83, 78, 0.1);
 }
 
-.skin-white .label-success,
+.skin-gray-light .label-success,
 body.inside-header .label-success {
     color: #18bc9c;
     background-color: rgba(24, 188, 156, 0.1);
 }
 
-.skin-white .label-warning,
+.skin-gray-light .label-warning,
 body.inside-header .label-warning {
     color: #f39c12;
     background-color: rgba(243, 156, 18, 0.1);
 }
 
-.skin-white .label-danger,
+.skin-gray-light .label-danger,
 body.inside-header .label-danger {
     color: #f75444;
     background-color: rgba(247, 84, 68, 0.1);
 }
 
-.skin-white form .form-group .input-group-addon.no-border.no-padding,
+.skin-gray-light form .form-group .input-group-addon.no-border.no-padding,
 body.inside-header form .form-group .input-group-addon.no-border.no-padding {
     position: relative;
     left: 3px;
 }
 
 .layui-layer-btn.layui-layer-footer {
-    border-top: 1px solid #f6f8fb;
+    border-top: 1px solid #f0eeea;
 }
 
-.skin-white .panel-intro>.panel-heading .nav-tabs>li>a:hover,
+.skin-gray-light .panel-intro>.panel-heading .nav-tabs>li>a:hover,
 body.inside-header .panel-intro>.panel-heading .nav-tabs>li>a:hover {
-    color: #323639;
-    background-color: #f4f4f5;
-    border-radius: 6px;
+    color: #1c1917;
+    background-color: #dedad4;
+    border-radius: 4px;
 }
 
-.skin-white .panel-intro>.panel-heading .nav-tabs>li.active>a,
+.skin-gray-light .panel-intro>.panel-heading .nav-tabs>li.active>a,
 body.inside-header .panel-intro>.panel-heading .nav-tabs>li.active>a {
-    color: #165dff;
+    color: #57534e;
 }
 
-.skin-white.darktheme .sidebar a,
-.skin-white.darktheme .sidebar-menu li.treeview.treeview-open>a {
+.skin-gray-light.darktheme .sidebar a,
+.skin-gray-light.darktheme .sidebar-menu li.treeview.treeview-open>a {
     color: #fff;
     background: #070707;
 }
 
-.skin-white.darktheme .panel-heading .nav-tabs>li>a,
+.skin-gray-light.darktheme .panel-heading .nav-tabs>li>a,
 body.inside-header.darktheme .panel-heading .nav-tabs>li>a {
     color: #fff !important;
     background: #404040 !important;
 }
 
-.skin-white.darktheme .panel-heading .nav-tabs>li.active>a,
+.skin-gray-light.darktheme .panel-heading .nav-tabs>li.active>a,
 body.inside-header.darktheme .panel-heading .nav-tabs>li.active>a {
     position: relative;
 }
 
-.skin-white.darktheme .panel-heading .nav-tabs>li.active>a::after,
+.skin-gray-light.darktheme .panel-heading .nav-tabs>li.active>a::after,
 body.inside-header.darktheme .panel-heading .nav-tabs>li.active>a::after {
     content: "";
     position: absolute;
@@ -687,322 +687,322 @@ body.inside-header.darktheme .panel-heading .nav-tabs>li.active>a::after {
     left: 0;
     width: 100%;
     height: 4px;
-    background: #165dff;
-    border-radius: 4px;
+    background: #57534e;
+    border-radius: 3px;
 }
 
-.skin-white.darktheme .btn-default,
+.skin-gray-light.darktheme .btn-default,
 body.inside-header.darktheme .btn-default {
     color: #fff;
 }
 
-.skin-white.darktheme .bootstrap-table .table thead>tr>th,
+.skin-gray-light.darktheme .bootstrap-table .table thead>tr>th,
 body.inside-header.darktheme .bootstrap-table .table thead>tr>th {
     border-color: #262626;
     background: #262626;
 }
 
-.skin-white.darktheme .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd),
+.skin-gray-light.darktheme .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd),
 body.inside-header.darktheme .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd) {
     background: #404040;
 }
 
-.skin-white.darktheme .bootstrap-table tbody tr td,
+.skin-gray-light.darktheme .bootstrap-table tbody tr td,
 body.inside-header.darktheme .bootstrap-table tbody tr td {
     border-left-width: 0 !important;
     border-right-width: 0 !important;
 }
 
-.skin-white.darktheme .bootstrap-table .table-hover>tbody>tr:hover,
+.skin-gray-light.darktheme .bootstrap-table .table-hover>tbody>tr:hover,
 body.inside-header.darktheme .bootstrap-table .table-hover>tbody>tr:hover {
     background: rgba(255, 255, 255, 0.06) !important;
 }
 
-.skin-white.darktheme .form-commonsearch>div,
+.skin-gray-light.darktheme .form-commonsearch>div,
 body.inside-header.darktheme .form-commonsearch>div {
     background: #262626 !important;
 }
 
-.skin-white.darktheme .panel-intro .panel-heading,
+.skin-gray-light.darktheme .panel-intro .panel-heading,
 body.inside-header.darktheme .panel-intro .panel-heading {
     border-bottom: 12px solid #262626 !important;
 }
 
-.skin-white.darktheme .panel,
+.skin-gray-light.darktheme .panel,
 body.inside-header.darktheme .panel {
     background-color: #333333 !important;
 }
 
-.skin-white.darktheme .panel-heading,
+.skin-gray-light.darktheme .panel-heading,
 body.inside-header.darktheme .panel-heading {
     background: #3a3a3a;
 }
 
-.skin-white .main-header li.user-header {
+.skin-gray-light .main-header li.user-header {
     background: #fff !important;
 }
 
-.skin-white .main-header li.user-header p {
+.skin-gray-light .main-header li.user-header p {
     color: #000 !important;
 }
 
-.skin-white .main-header li.user-menu>a:hover,
-.skin-white .main-header li.user-menu>a:active,
-.skin-white .main-header li.user-menu.open>a {
+.skin-gray-light .main-header li.user-menu>a:hover,
+.skin-gray-light .main-header li.user-menu>a:active,
+.skin-gray-light .main-header li.user-menu.open>a {
     color: #666 !important;
 }
 
-.skin-white .content-header {
+.skin-gray-light .content-header {
     background: transparent;
     box-shadow: none;
 }
 
-.skin-white .table-bordered.fixed-table-fast-contaner td,
+.skin-gray-light .table-bordered.fixed-table-fast-contaner td,
 body.inside-header .table-bordered.fixed-table-fast-contaner td {
     position: static;
     left: auto;
     bottom: auto;
 }
 
-.skin-white .wrapper,
-.skin-white .main-header,
-.skin-white .left-side,
-.skin-white .main-sidebar,
-.skin-white .main-header .logo {
+.skin-gray-light .wrapper,
+.skin-gray-light .main-header,
+.skin-gray-light .left-side,
+.skin-gray-light .main-sidebar,
+.skin-gray-light .main-header .logo {
     background: #fff;
 }
 
-.skin-white .main-sidebar,
-.skin-white .left-side,
-.skin-white .main-header .logo,
-.skin-white .main-sidebar:hover,
-.skin-white .left-side:hover,
-.skin-white .main-header .logo:hover {
+.skin-gray-light .main-sidebar,
+.skin-gray-light .left-side,
+.skin-gray-light .main-header .logo,
+.skin-gray-light .main-sidebar:hover,
+.skin-gray-light .left-side:hover,
+.skin-gray-light .main-header .logo:hover {
     color: #222;
     border-color: transparent !important;
 }
 
-.skin-white .sidebar-collapse ul.treeview-menu {
-    background: #f4f4f5 !important;
+.skin-gray-light .sidebar-collapse ul.treeview-menu {
+    background: #dedad4 !important;
 }
 
-.skin-white .sidebar-menu li.treeview.active>a,
-.skin-white .sidebar-menu li.treeview.treeview-open>a,
-.skin-white .sidebar-menu>li>.treeview-menu {
+.skin-gray-light .sidebar-menu li.treeview.active>a,
+.skin-gray-light .sidebar-menu li.treeview.treeview-open>a,
+.skin-gray-light .sidebar-menu>li>.treeview-menu {
     background: #fff;
     border-left-color: #fff;
 }
 
-.skin-white.sidebar-collapse .sidebar-menu>li>.treeview-menu {
+.skin-gray-light.sidebar-collapse .sidebar-menu>li>.treeview-menu {
     margin-left: 5px !important;
     left: 45px !important;
 }
 
-.skin-white .treeview-menu>li>a,
-.skin-white .sidebar a {
-    color: #4e5969;
+.skin-gray-light .treeview-menu>li>a,
+.skin-gray-light .sidebar a {
+    color: #57534e;
 }
 
-.skin-white .sidebar a:hover {
+.skin-gray-light .sidebar a:hover {
     text-decoration: none;
 }
 
-.skin-white .sidebar-menu>li {
+.skin-gray-light .sidebar-menu>li {
     -webkit-transition: border-left-color 0.3s ease;
     -o-transition: border-left-color 0.3s ease;
     transition: border-left-color 0.3s ease;
 }
 
-.skin-white .sidebar-menu>li.header {
-    color: #86909c;
+.skin-gray-light .sidebar-menu>li.header {
+    color: #a8a29e;
     background: #fff;
 }
 
-.skin-white .sidebar-menu>li:hover>a,
-.skin-white .sidebar-menu>li.active>a {
+.skin-gray-light .sidebar-menu>li:hover>a,
+.skin-gray-light .sidebar-menu>li.active>a {
     padding-left: 5px;
     margin: 0 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     border-left-color: transparent;
 }
 
-.skin-white .sidebar-menu>li.active {
-    border-left-color: #165dff;
+.skin-gray-light .sidebar-menu>li.active {
+    border-left-color: #57534e;
 }
 
-.skin-white.sidebar-collapse .sidebar-menu>li.active>a {
+.skin-gray-light.sidebar-collapse .sidebar-menu>li.active>a {
     margin: 5px;
     padding-left: 10px;
 }
 
-.skin-white .sidebar-menu>li:hover>a {
-    color: #323639 !important;
-    background: #f4f4f5 !important;
+.skin-gray-light .sidebar-menu>li:hover>a {
+    color: #1c1917 !important;
+    background: #dedad4 !important;
 }
 
-.skin-white.sidebar-collapse .sidebar-menu li:hover>a {
-    color: #323639;
-    background: #f4f4f5;
+.skin-gray-light.sidebar-collapse .sidebar-menu li:hover>a {
+    color: #1c1917;
+    background: #dedad4;
 }
 
-.skin-white .sidebar-menu>li.active>a {
-    color: #165dff !important;
-    background: #f0f5ff !important;
+.skin-gray-light .sidebar-menu>li.active>a {
+    color: #57534e !important;
+    background: #dedad4 !important;
 }
 
-.skin-white .treeview-menu>li.active>a:hover {
-    color: #165dff !important;
+.skin-gray-light .treeview-menu>li.active>a:hover {
+    color: #57534e !important;
 }
 
-.skin-white .treeview-menu>li>a {
+.skin-gray-light .treeview-menu>li>a {
     padding-left: 25px;
 }
 
-.skin-white .treeview-menu>li>a:hover {
-    color: #323639 !important;
-    background: #f4f4f5;
+.skin-gray-light .treeview-menu>li>a:hover {
+    color: #1c1917 !important;
+    background: #dedad4;
     margin: 0 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     padding-left: 15px;
 }
 
-.skin-white .treeview-menu>li.active>a {
-    color: #165dff;
-    background: #f0f5ff;
+.skin-gray-light .treeview-menu>li.active>a {
+    color: #57534e;
+    background: #dedad4;
     margin: 0 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     padding-left: 15px;
 }
 
-.skin-white .sidebar-menu .treeview-menu .treeview-menu>li>a {
+.skin-gray-light .sidebar-menu .treeview-menu .treeview-menu>li>a {
     margin: 0 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     padding-left: 20px;
 }
 
-.skin-white .sidebar-menu .treeview-menu .treeview-menu>li.active>a {
+.skin-gray-light .sidebar-menu .treeview-menu .treeview-menu>li.active>a {
     padding-left: 20px;
 }
 
-.skin-white .sidebar-menu .treeview-menu .treeview-menu>li>a:hover {
+.skin-gray-light .sidebar-menu .treeview-menu .treeview-menu>li>a:hover {
     padding-left: 20px;
 }
 
-.skin-white.sidebar-collapse .sidebar-menu .treeview-menu li.active>a {
-    color: #165dff !important;
-    background: #f0f5ff !important;
+.skin-gray-light.sidebar-collapse .sidebar-menu .treeview-menu li.active>a {
+    color: #57534e !important;
+    background: #dedad4 !important;
 }
 
-.skin-white .main-header .navbar .nav>li>a:hover,
-.skin-white .main-header .navbar .nav>li>a:active,
-.skin-white .main-header .navbar .nav>li>a:focus,
-.skin-white .main-header .navbar .nav .open>a,
-.skin-white .main-header .navbar .nav .open>a:hover,
-.skin-white .main-header .navbar .nav .open>a:focus,
-.skin-white .main-header .navbar .nav>.active>a,
-.skin-white .main-header .navbar .sidebar-toggle:hover {
-    color: #165dff;
-    background: #f0f5ff;
+.skin-gray-light .main-header .navbar .nav>li>a:hover,
+.skin-gray-light .main-header .navbar .nav>li>a:active,
+.skin-gray-light .main-header .navbar .nav>li>a:focus,
+.skin-gray-light .main-header .navbar .nav .open>a,
+.skin-gray-light .main-header .navbar .nav .open>a:hover,
+.skin-gray-light .main-header .navbar .nav .open>a:focus,
+.skin-gray-light .main-header .navbar .nav>.active>a,
+.skin-gray-light .main-header .navbar .sidebar-toggle:hover {
+    color: #57534e;
+    background: #dedad4;
 }
 
-.skin-white .main-header .logo:hover {
+.skin-gray-light .main-header .logo:hover {
     background: #fff;
 }
 
-.skin-white .main-header .nav-addtabs>li>a,
-.skin-white .main-header .nav-addtabs>li.active>a {
+.skin-gray-light .main-header .nav-addtabs>li>a,
+.skin-gray-light .main-header .nav-addtabs>li.active>a {
     border-right-color: transparent;
 }
 
 @media (max-width: 767px) {
     /* 移动端多导航状态 */
-    .skin-white.multiplenav .main-header .navbar .nav>li>a {
+    .skin-gray-light.multiplenav .main-header .navbar .nav>li>a {
         color: #666;
     }
-    .skin-white.multiplenav .main-header .navbar .nav>li>a:hover,
-    .skin-white.multiplenav .main-header .navbar .nav>li>a:active,
-    .skin-white.multiplenav .main-header .navbar .nav>li>a:focus,
-    .skin-white.multiplenav .main-header .navbar .nav .open>a,
-    .skin-white.multiplenav .main-header .navbar .nav .open>a:hover,
-    .skin-white.multiplenav .main-header .navbar .nav .open>a:focus,
-    .skin-white.multiplenav .main-header .navbar .nav>.active>a {
-        color: #165dff;
-        background: #f0f5ff;
+    .skin-gray-light.multiplenav .main-header .navbar .nav>li>a:hover,
+    .skin-gray-light.multiplenav .main-header .navbar .nav>li>a:active,
+    .skin-gray-light.multiplenav .main-header .navbar .nav>li>a:focus,
+    .skin-gray-light.multiplenav .main-header .navbar .nav .open>a,
+    .skin-gray-light.multiplenav .main-header .navbar .nav .open>a:hover,
+    .skin-gray-light.multiplenav .main-header .navbar .nav .open>a:focus,
+    .skin-gray-light.multiplenav .main-header .navbar .nav>.active>a {
+        color: #57534e;
+        background: #dedad4;
     }
-    .skin-white.multiplenav .main-header .navbar .nav-addtabs li>.close-tab {
+    .skin-gray-light.multiplenav .main-header .navbar .nav-addtabs li>.close-tab {
         color: #666;
     }
-    .skin-white .main-header .logo {
+    .skin-gray-light .main-header .logo {
         width: 100% !important;
         border-right: none;
     }
-    .skin-white .main-header .navbar {
+    .skin-gray-light .main-header .navbar {
         margin-left: 0px !important;
     }
-    .skin-white.multiplenav .sidebar .mobilenav a.btn-app {
-        background: #f4f4f5;
-        color: #4e5969;
+    .skin-gray-light.multiplenav .sidebar .mobilenav a.btn-app {
+        background: #dedad4;
+        color: #57534e;
     }
-    .skin-white.multiplenav .sidebar .mobilenav a.btn-app.active {
-        background: #165dff;
+    .skin-gray-light.multiplenav .sidebar .mobilenav a.btn-app.active {
+        background: #57534e;
         color: #fff;
     }
 }
 
-.skin-white .logo {
+.skin-gray-light .logo {
     font-size: 22px !important;
     font-weight: 600 !important;
     color: #222;
 }
 
-.skin-white .main-sidebar,
-.skin-white .left-side,
-.skin-white .logo {
+.skin-gray-light .main-sidebar,
+.skin-gray-light .left-side,
+.skin-gray-light .logo {
     width: 200px;
     border-color: transparent;
 }
 
-.skin-white .content-wrapper,
-.skin-white .right-side,
-.skin-white .main-footer,
-.skin-white .main-header .navbar {
+.skin-gray-light .content-wrapper,
+.skin-gray-light .right-side,
+.skin-gray-light .main-footer,
+.skin-gray-light .main-header .navbar {
     margin-left: 200px;
-    border-left: 1px solid #f1f4f6;
+    border-left: 1px solid #e0ddd7;
 }
 
-.skin-white .user-panel>.info,
-.skin-white .user-panel>.info>a {
+.skin-gray-light .user-panel>.info,
+.skin-gray-light .user-panel>.info>a {
     color: #222;
 }
 
-.skin-white .sidebar-menu>li>a {
+.skin-gray-light .sidebar-menu>li>a {
     border-left: 3px solid transparent;
     padding-left: 12px;
     font-weight: 700 !important;
 }
 
-.skin-white .sidebar-form {
-    border-radius: 6px !important;
+.skin-gray-light .sidebar-form {
+    border-radius: 4px !important;
     overflow: hidden !important;
-    border-color: #e4e4e4 !important;
+    border-color: #e0ddd7 !important;
     background: #fff !important;
 }
 
-.skin-white .sidebar-form input[type="text"],
-.skin-white .sidebar-form .btn {
+.skin-gray-light .sidebar-form input[type="text"],
+.skin-gray-light .sidebar-form .btn {
     box-shadow: none;
     border: 1px solid transparent;
     height: 35px;
     background: #fff !important;
 }
 
-.skin-white .sidebar-form input[type="text"]:focus,
-.skin-white .sidebar-form input[type="text"]:focus+.input-group-btn .btn {
+.skin-gray-light .sidebar-form input[type="text"]:focus,
+.skin-gray-light .sidebar-form input[type="text"]:focus+.input-group-btn .btn {
     background-color: #fff;
     color: #666;
 }
 
-.skin-white .sidebar-form input[type="text"]:focus+.input-group-btn {
+.skin-gray-light .sidebar-form input[type="text"]:focus+.input-group-btn {
     background: #fff;
     border-top-left-radius: 0;
     border-top-right-radius: 6px;
@@ -1010,11 +1010,11 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     border-bottom-left-radius: 0;
 }
 
-.skin-white .sidebar-form input[type="text"]:focus+.input-group-btn .btn {
+.skin-gray-light .sidebar-form input[type="text"]:focus+.input-group-btn .btn {
     border-left-color: #fff;
 }
 
-.skin-white .sidebar-form .btn {
+.skin-gray-light .sidebar-form .btn {
     color: #999;
     border-top-left-radius: 0;
     border-top-right-radius: 6px;
@@ -1022,98 +1022,98 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     border-bottom-left-radius: 0;
 }
 
-.skin-white .sidebar-form input[type="text"]::-moz-placeholder {
-    color: #86909c;
+.skin-gray-light .sidebar-form input[type="text"]::-moz-placeholder {
+    color: #a8a29e;
     opacity: 1;
 }
 
-.skin-white .sidebar-form input[type="text"]:-ms-input-placeholder {
-    color: #86909c;
+.skin-gray-light .sidebar-form input[type="text"]:-ms-input-placeholder {
+    color: #a8a29e;
 }
 
-.skin-white .sidebar-form input[type="text"]::-webkit-input-placeholder {
-    color: #86909c;
+.skin-gray-light .sidebar-form input[type="text"]::-webkit-input-placeholder {
+    color: #a8a29e;
 }
 
 @media (min-width: 768px) {
-    .skin-white.sidebar-mini.sidebar-collapse .sidebar-menu>li>.treeview-menu {
-        border-left: 1px solid #f1f4f6;
+    .skin-gray-light.sidebar-mini.sidebar-collapse .sidebar-menu>li>.treeview-menu {
+        border-left: 1px solid #e0ddd7;
     }
-    .skin-white.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>a>span:not(.pull-right) {
+    .skin-gray-light.sidebar-mini.sidebar-collapse .sidebar-menu>li:hover>a>span:not(.pull-right) {
         margin-left: -3px;
     }
 }
 
-.skin-white .nav-addtabs>li .close-tab {
+.skin-gray-light .nav-addtabs>li .close-tab {
     top: 50%;
     transform: translateY(-50%);
     right: 2px !important;
     margin-top: 0 !important;
 }
 
-.skin-white .nav-addtabs>li .close-tab:hover {
-    color: #165dff !important;
+.skin-gray-light .nav-addtabs>li .close-tab:hover {
+    color: #57534e !important;
 }
 
-.skin-white .nav-addtabs>li>a {
-    color: #4e5969;
+.skin-gray-light .nav-addtabs>li>a {
+    color: #57534e;
     padding: 0 20px !important;
 }
 
-.skin-white .nav-addtabs>li.active>a {
-    color: #165dff;
-    background: #f0f5ff;
+.skin-gray-light .nav-addtabs>li.active>a {
+    color: #57534e;
+    background: #dedad4;
 }
 
-.skin-white .nav-addtabs>li:hover>a {
-    color: #165dff;
+.skin-gray-light .nav-addtabs>li:hover>a {
+    color: #57534e;
 }
 
-.skin-white .sidebar-menu li>a>.pull-right-container {
+.skin-gray-light .sidebar-menu li>a>.pull-right-container {
     margin-top: -10px;
 }
 
-.skin-white.darktheme .main-header .logo:hover {
+.skin-gray-light.darktheme .main-header .logo:hover {
     background: #000;
     color: #fff;
 }
 
-.skin-white.darktheme .treeview-menu>li.active>a {
-    color: #165dff !important;
-    background: #f0f5ff;
+.skin-gray-light.darktheme .treeview-menu>li.active>a {
+    color: #57534e !important;
+    background: #dedad4;
 }
 
-.skin-white.darktheme.sidebar-collapse .sidebar-menu li:hover>a,
-.skin-white.darktheme.sidebar-collapse .sidebar-menu li.active>a {
-    color: #165dff !important;
-    background: #f0f5ff;
+.skin-gray-light.darktheme.sidebar-collapse .sidebar-menu li:hover>a,
+.skin-gray-light.darktheme.sidebar-collapse .sidebar-menu li.active>a {
+    color: #57534e !important;
+    background: #dedad4;
 }
 
-.skin-white .main-sidebar form.sidebar-form {
+.skin-gray-light .main-sidebar form.sidebar-form {
     overflow: visible !important;
 }
 
-.skin-white .main-sidebar form.sidebar-form .menuresult {
+.skin-gray-light .main-sidebar form.sidebar-form .menuresult {
     overflow: auto !important;
 }
 
 @media (max-width: 767px) {
-    .skin-white.darktheme .main-header .navbar {
+    .skin-gray-light.darktheme .main-header .navbar {
         background-color: #0c0c0c;
     }
 }
 
 /* ===== 弹窗样式补充：修复白色皮肤与 layui-layer-fast 基线的混搭 ===== */
 /* 弹窗本体：统一 4px 圆角和轻阴影（选择器带 .layui-layer 提高优先级，
-   保证 skin-white 以 @import 方式先于 backend.css 基线加载时也能胜出） */
+   保证本皮肤以 @import 方式先于 backend.css 基线加载时也能胜出） */
 .layui-layer.layui-layer-fast,
 .layui-layer.layui-layer-fast.layui-layer-border {
-    border-radius: 4px !important;
+    border-radius: 3px !important;
     box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.1) !important;
 }
 
 .layui-layer-fast .layui-layer-title {
-    border-radius: 4px 4px 0 0;
+    border-radius: 3px 4px 0 0;
 }
 
 .layui-layer-fast .layui-layer-btn,
@@ -1128,110 +1128,110 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
 
 /* 第三个及以上的按钮：基线是灰底白字，改为与次要按钮（btn1）一致 */
 .layui-layer-fast .layui-layer-btn a:not(.layui-layer-btn0):not(.layui-layer-btn1) {
-    border: 1px solid #dcdfe6 !important;
-    background-color: #f6f8fb !important;
-    color: #4e5969 !important;
+    border: 1px solid #d0ccc6 !important;
+    background-color: #f0eeea !important;
+    color: #57534e !important;
 }
 
 .layui-layer-fast .layui-layer-btn a:not(.layui-layer-btn0):not(.layui-layer-btn1):hover {
-    border-color: #165dff !important;
-    color: #165dff !important;
+    border-color: #57534e !important;
+    color: #57534e !important;
 }
 
 /* ==========================================================================
-   色调统一补充：将公共基线的遗留配色收敛到 skin-white 的蓝 + 中性灰体系
+   色调统一补充：将公共基线的遗留配色收敛到本皮肤的主色 + 中性灰体系
    ========================================================================== */
 
 /* --- 1. 全局链接色：基线 fastadmin.css:171 为 #4397fd，统一为主色。
        权重须为 0,1,1；须排除 .btn 与 .text-* 语义色类（均为 0,1,0），
        否则二者都会被本条压过。 --- */
-.skin-white a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
+.skin-gray-light a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
 .inside-header a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)) {
-    color: #165dff;
+    color: #57534e;
 }
 
-.skin-white a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)):hover,
-.skin-white a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)):focus,
+.skin-gray-light a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)):hover,
+.skin-gray-light a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)):focus,
 .inside-header a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)):hover,
 .inside-header a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)):focus {
-    color: #0e48d8;
+    color: #44403c;
 }
 
-/* --- 2. 内容区底色：基线为 #ecf0f5（灰蓝），与 body 的 #f1f4f6 对齐 --- */
-.skin-white .content-wrapper,
-.skin-white .right-side,
+/* --- 2. 内容区底色：基线为 #f4f3f1（灰蓝），与 body 的 #e0ddd7 对齐 --- */
+.skin-gray-light .content-wrapper,
+.skin-gray-light .right-side,
 body.inside-header .content-wrapper,
 body.inside-header .right-side {
-    background-color: #f1f4f6;
+    background-color: #e0ddd7;
 }
 
 /* --- 3. 右侧控制栏：基线为 #222d32 深色，改为白色调 --- */
-.skin-white .control-sidebar-dark,
-.skin-white .control-sidebar-dark + .control-sidebar-bg,
+.skin-gray-light .control-sidebar-dark,
+.skin-gray-light .control-sidebar-dark + .control-sidebar-bg,
 body.inside-header .control-sidebar-dark,
 body.inside-header .control-sidebar-dark + .control-sidebar-bg {
     background: #fff;
-    color: #4e5969;
+    color: #57534e;
 }
 
-.skin-white .control-sidebar-dark .nav-tabs.control-sidebar-tabs,
+.skin-gray-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs,
 body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs {
-    border-bottom-color: #f1f4f6;
+    border-bottom-color: #e0ddd7;
 }
 
-.skin-white .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a,
+.skin-gray-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a,
 body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a {
-    background: #f4f4f5;
-    color: #4e5969;
+    background: #dedad4;
+    color: #57534e;
     border-left-color: transparent;
     border-bottom-color: transparent;
 }
 
-.skin-white .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover,
-.skin-white .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a,
+.skin-gray-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover,
+.skin-gray-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a,
 body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover,
 body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a {
     background: #fff;
-    color: #165dff;
+    color: #57534e;
 }
 
 /* --- 4. 表单标签：基线继承 body 的 #333，统一为次级文字色。
        本组权重（label 为 0,1,1，.control-label 为 0,2,0）高于语义色类 .text-*（0,1,0），
        故须用 :where() 排除，否则 <label class="text-danger"> 会被压过 --- */
-.skin-white .control-label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
-.skin-white label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
+.skin-gray-light .control-label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
+.skin-gray-light label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
 body.inside-header .control-label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
 body.inside-header label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)) {
-    color: #4e5969;
+    color: #57534e;
 }
 
 /* --- 5. 表格行底色：统一为白（条纹色由基线 .bootstrap-table 规则另行处理） --- */
-.skin-white .table > tbody > tr,
+.skin-gray-light .table > tbody > tr,
 body.inside-header .table > tbody > tr {
     background-color: #fff;
 }
 
 /* --- 6. btn-info：基线为 #1688f1（与主色色差过小），对齐主色 --- */
-.skin-white .btn-info,
-.skin-white .btn-info:active,
-.skin-white .btn-info.active,
-.skin-white .open > .dropdown-toggle.btn-info,
+.skin-gray-light .btn-info,
+.skin-gray-light .btn-info:active,
+.skin-gray-light .btn-info.active,
+.skin-gray-light .open > .dropdown-toggle.btn-info,
 body.inside-header .btn-info,
 body.inside-header .btn-info:active,
 body.inside-header .btn-info.active,
 body.inside-header .open > .dropdown-toggle.btn-info {
-    background-color: #165dff !important;
-    border-color: #165dff !important;
+    background-color: #57534e !important;
+    border-color: #57534e !important;
     color: #fff !important;
 }
 
-.skin-white .btn-info:hover,
-.skin-white .btn-info:focus,
-.skin-white .btn-info.focus,
-.skin-white .btn-info:active:hover,
-.skin-white .btn-info.active:hover,
-.skin-white .open > .dropdown-toggle.btn-info:hover,
-.skin-white .open > .dropdown-toggle.btn-info:focus,
+.skin-gray-light .btn-info:hover,
+.skin-gray-light .btn-info:focus,
+.skin-gray-light .btn-info.focus,
+.skin-gray-light .btn-info:active:hover,
+.skin-gray-light .btn-info.active:hover,
+.skin-gray-light .open > .dropdown-toggle.btn-info:hover,
+.skin-gray-light .open > .dropdown-toggle.btn-info:focus,
 body.inside-header .btn-info:hover,
 body.inside-header .btn-info:focus,
 body.inside-header .btn-info.focus,
@@ -1239,64 +1239,64 @@ body.inside-header .btn-info:active:hover,
 body.inside-header .btn-info.active:hover,
 body.inside-header .open > .dropdown-toggle.btn-info:hover,
 body.inside-header .open > .dropdown-toggle.btn-info:focus {
-    background-color: #0e48d8 !important;
-    border-color: #0e48d8 !important;
+    background-color: #44403c !important;
+    border-color: #44403c !important;
     color: #fff !important;
 }
 
-.skin-white .btn-info.disabled,
-.skin-white .btn-info[disabled],
-.skin-white fieldset[disabled] .btn-info,
+.skin-gray-light .btn-info.disabled,
+.skin-gray-light .btn-info[disabled],
+.skin-gray-light fieldset[disabled] .btn-info,
 body.inside-header .btn-info.disabled,
 body.inside-header .btn-info[disabled],
 body.inside-header fieldset[disabled] .btn-info {
-    background-color: #8fb3ff !important;
-    border-color: #8fb3ff !important;
+    background-color: #a8a29e !important;
+    border-color: #a8a29e !important;
     color: #fff !important;
 }
 
 /* --- 7. label-info / badge：对齐浅底语义色风格 --- */
-.skin-white .label-info,
+.skin-gray-light .label-info,
 body.inside-header .label-info {
-    color: #165dff;
-    background-color: rgba(22, 93, 255, 0.1);
+    color: #57534e;
+    background-color: rgba(87, 83, 78, 0.1);
 }
 
-.skin-white .badge,
+.skin-gray-light .badge,
 body.inside-header .badge {
     color: #fff;
     background-color: #f75444;
 }
 
 /* --- 8. 进度条：语义色保留，仅统一 info 分支 --- */
-.skin-white .progress-bar-info,
+.skin-gray-light .progress-bar-info,
 body.inside-header .progress-bar-info {
-    background-color: #165dff;
+    background-color: #57534e;
 }
 
 /* --- 9. alert 提示条：基线为实心重色且带 !important，需同权重覆盖为浅底风格 --- */
-.skin-white .alert-success,
+.skin-gray-light .alert-success,
 body.inside-header .alert-success {
     color: #18bc9c !important;
     background-color: rgba(24, 188, 156, 0.1) !important;
     border-color: rgba(24, 188, 156, 0.2) !important;
 }
 
-.skin-white .alert-info,
+.skin-gray-light .alert-info,
 body.inside-header .alert-info {
-    color: #165dff !important;
-    background-color: rgba(22, 93, 255, 0.1) !important;
-    border-color: rgba(22, 93, 255, 0.2) !important;
+    color: #57534e !important;
+    background-color: rgba(87, 83, 78, 0.1) !important;
+    border-color: rgba(87, 83, 78, 0.2) !important;
 }
 
-.skin-white .alert-warning,
+.skin-gray-light .alert-warning,
 body.inside-header .alert-warning {
     color: #f39c12 !important;
     background-color: rgba(243, 156, 18, 0.1) !important;
     border-color: rgba(243, 156, 18, 0.2) !important;
 }
 
-.skin-white .alert-danger,
+.skin-gray-light .alert-danger,
 body.inside-header .alert-danger {
     color: #f75444 !important;
     background-color: rgba(247, 84, 68, 0.1) !important;
@@ -1306,28 +1306,28 @@ body.inside-header .alert-danger {
 /* --- 10. callout 标注框：与 alert 同源的实心重色，统一为浅底。
        基线 fastadmin.css:5342-5368 对 callout/alert/modal 整组下了 color:#fff !important，
        故文字色必须同带 !important，否则浅底配白字将不可读 --- */
-.skin-white .callout.callout-success,
+.skin-gray-light .callout.callout-success,
 body.inside-header .callout.callout-success {
     background-color: rgba(24, 188, 156, 0.1) !important;
     border-color: #18bc9c !important;
     color: #18bc9c !important;
 }
 
-.skin-white .callout.callout-info,
+.skin-gray-light .callout.callout-info,
 body.inside-header .callout.callout-info {
-    background-color: rgba(22, 93, 255, 0.1) !important;
-    border-color: #165dff !important;
-    color: #165dff !important;
+    background-color: rgba(87, 83, 78, 0.1) !important;
+    border-color: #57534e !important;
+    color: #57534e !important;
 }
 
-.skin-white .callout.callout-warning,
+.skin-gray-light .callout.callout-warning,
 body.inside-header .callout.callout-warning {
     background-color: rgba(243, 156, 18, 0.1) !important;
     border-color: #f39c12 !important;
     color: #f39c12 !important;
 }
 
-.skin-white .callout.callout-danger,
+.skin-gray-light .callout.callout-danger,
 body.inside-header .callout.callout-danger {
     background-color: rgba(247, 84, 68, 0.1) !important;
     border-color: #f75444 !important;
@@ -1336,59 +1336,59 @@ body.inside-header .callout.callout-danger {
 
 /* --- 11. bg-* 角标配色板：仅收敛 bg-blue / bg-light-blue 到主色（基线 #1688f1）；
        其余分支（red/green/yellow/teal/orange/purple）承载计数辨识，保留原色。 --- */
-.skin-white .bg-blue,
+.skin-gray-light .bg-blue,
 body.inside-header .bg-blue {
-    background-color: #165dff !important;
+    background-color: #57534e !important;
 }
 
-.skin-white .bg-light-blue,
+.skin-gray-light .bg-light-blue,
 body.inside-header .bg-light-blue {
-    background-color: #165dff !important;
+    background-color: #57534e !important;
 }
 
 /* --- 12. breadcrumb：基线为浅灰底，统一为透明 --- */
-.skin-white .breadcrumb,
+.skin-gray-light .breadcrumb,
 body.inside-header .breadcrumb {
     background-color: transparent;
 }
 
-.skin-white .breadcrumb > .active,
+.skin-gray-light .breadcrumb > .active,
 body.inside-header .breadcrumb > .active {
-    color: #86909c;
+    color: #a8a29e;
 }
 
 /* --- 13. 文字语义色：primary 基线为 #444c69、info 基线为 #1688f1，均收敛到主色；
        muted 基线为 #777777，收敛到提示灰 --- */
-.skin-white .text-primary,
+.skin-gray-light .text-primary,
 body.inside-header .text-primary,
-.skin-white .text-info,
+.skin-gray-light .text-info,
 body.inside-header .text-info {
-    color: #165dff;
+    color: #57534e;
 }
 
-.skin-white .text-muted,
+.skin-gray-light .text-muted,
 body.inside-header .text-muted {
-    color: #86909c;
+    color: #a8a29e;
 }
 
 /* 链接态语义色：基线 hover 为各自深色（#30364a / #0c6ec8），统一为主色 hover */
-.skin-white a.text-primary:hover,
-.skin-white a.text-primary:focus,
-.skin-white a.text-info:hover,
-.skin-white a.text-info:focus,
+.skin-gray-light a.text-primary:hover,
+.skin-gray-light a.text-primary:focus,
+.skin-gray-light a.text-info:hover,
+.skin-gray-light a.text-info:focus,
 body.inside-header a.text-primary:hover,
 body.inside-header a.text-primary:focus,
 body.inside-header a.text-info:hover,
 body.inside-header a.text-info:focus {
-    color: #0e48d8;
+    color: #44403c;
 }
 
 /* muted 链接保持中性灰，不随全局链接色转蓝 */
-.skin-white a.text-muted:hover,
-.skin-white a.text-muted:focus,
+.skin-gray-light a.text-muted:hover,
+.skin-gray-light a.text-muted:focus,
 body.inside-header a.text-muted:hover,
 body.inside-header a.text-muted:focus {
-    color: #86909c;
+    color: #a8a29e;
 }
 
 /* ==========================================================================
@@ -1400,38 +1400,38 @@ body.inside-header a.text-muted:focus {
        正被 require-table.js、category/add.html 使用，非空置类。 --- */
 
 /* 主色系：primary 与 info 同收敛到主色 */
-.skin-white .btn-primary-light,
-.skin-white .btn-info-light,
-.skin-white .alert-primary-light,
-.skin-white .alert-info-light,
+.skin-gray-light .btn-primary-light,
+.skin-gray-light .btn-info-light,
+.skin-gray-light .alert-primary-light,
+.skin-gray-light .alert-info-light,
 body.inside-header .btn-primary-light,
 body.inside-header .btn-info-light,
 body.inside-header .alert-primary-light,
 body.inside-header .alert-info-light {
-    background-color: rgba(22, 93, 255, 0.1) !important;
-    border-color: rgba(22, 93, 255, 0.2) !important;
-    color: #165dff !important;
+    background-color: rgba(87, 83, 78, 0.1) !important;
+    border-color: rgba(87, 83, 78, 0.2) !important;
+    color: #57534e !important;
 }
 
-.skin-white .btn-primary-light:is(:hover, :focus, :active, .hover),
-.skin-white .btn-info-light:is(:hover, :focus, :active, .hover),
+.skin-gray-light .btn-primary-light:is(:hover, :focus, :active, .hover),
+.skin-gray-light .btn-info-light:is(:hover, :focus, :active, .hover),
 body.inside-header .btn-primary-light:is(:hover, :focus, :active, .hover),
 body.inside-header .btn-info-light:is(:hover, :focus, :active, .hover) {
-    background-color: rgba(22, 93, 255, 0.18) !important;
-    border-color: rgba(22, 93, 255, 0.3) !important;
-    color: #0e48d8 !important;
+    background-color: rgba(87, 83, 78, 0.18) !important;
+    border-color: rgba(87, 83, 78, 0.3) !important;
+    color: #44403c !important;
 }
 
-.skin-white .alert-primary-light a,
-.skin-white .alert-info-light a,
+.skin-gray-light .alert-primary-light a,
+.skin-gray-light .alert-info-light a,
 body.inside-header .alert-primary-light a,
 body.inside-header .alert-info-light a {
-    color: #0e48d8;
+    color: #44403c;
 }
 
 /* 成功 */
-.skin-white .btn-success-light,
-.skin-white .alert-success-light,
+.skin-gray-light .btn-success-light,
+.skin-gray-light .alert-success-light,
 body.inside-header .btn-success-light,
 body.inside-header .alert-success-light {
     background-color: rgba(24, 188, 156, 0.1) !important;
@@ -1439,21 +1439,21 @@ body.inside-header .alert-success-light {
     color: #18bc9c !important;
 }
 
-.skin-white .btn-success-light:is(:hover, :focus, :active, .hover),
+.skin-gray-light .btn-success-light:is(:hover, :focus, :active, .hover),
 body.inside-header .btn-success-light:is(:hover, :focus, :active, .hover) {
     background-color: rgba(24, 188, 156, 0.18) !important;
     border-color: rgba(24, 188, 156, 0.3) !important;
     color: #128f76 !important;
 }
 
-.skin-white .alert-success-light a,
+.skin-gray-light .alert-success-light a,
 body.inside-header .alert-success-light a {
     color: #128f76;
 }
 
 /* 危险 */
-.skin-white .btn-danger-light,
-.skin-white .alert-danger-light,
+.skin-gray-light .btn-danger-light,
+.skin-gray-light .alert-danger-light,
 body.inside-header .btn-danger-light,
 body.inside-header .alert-danger-light {
     background-color: rgba(247, 84, 68, 0.1) !important;
@@ -1461,21 +1461,21 @@ body.inside-header .alert-danger-light {
     color: #f75444 !important;
 }
 
-.skin-white .btn-danger-light:is(:hover, :focus, :active, .hover),
+.skin-gray-light .btn-danger-light:is(:hover, :focus, :active, .hover),
 body.inside-header .btn-danger-light:is(:hover, :focus, :active, .hover) {
     background-color: rgba(247, 84, 68, 0.18) !important;
     border-color: rgba(247, 84, 68, 0.3) !important;
     color: #d93a2b !important;
 }
 
-.skin-white .alert-danger-light a,
+.skin-gray-light .alert-danger-light a,
 body.inside-header .alert-danger-light a {
     color: #d93a2b;
 }
 
 /* 警告 */
-.skin-white .btn-warning-light,
-.skin-white .alert-warning-light,
+.skin-gray-light .btn-warning-light,
+.skin-gray-light .alert-warning-light,
 body.inside-header .btn-warning-light,
 body.inside-header .alert-warning-light {
     background-color: rgba(243, 156, 18, 0.1) !important;
@@ -1483,34 +1483,34 @@ body.inside-header .alert-warning-light {
     color: #f39c12 !important;
 }
 
-.skin-white .btn-warning-light:is(:hover, :focus, :active, .hover),
+.skin-gray-light .btn-warning-light:is(:hover, :focus, :active, .hover),
 body.inside-header .btn-warning-light:is(:hover, :focus, :active, .hover) {
     background-color: rgba(243, 156, 18, 0.18) !important;
     border-color: rgba(243, 156, 18, 0.3) !important;
     color: #c87f0a !important;
 }
 
-.skin-white .alert-warning-light a,
+.skin-gray-light .alert-warning-light a,
 body.inside-header .alert-warning-light a {
     color: #c87f0a;
 }
 
 /* --- 14.2 modal：基线的 header/footer 为实心重色（active 色）、body 为实心语义色，
        且整组 color:#fff !important。统一为浅底 + 同色文字，与 alert / callout 一致 --- */
-.skin-white .modal-primary .modal-header,
-.skin-white .modal-primary .modal-body,
-.skin-white .modal-primary .modal-footer,
+.skin-gray-light .modal-primary .modal-header,
+.skin-gray-light .modal-primary .modal-body,
+.skin-gray-light .modal-primary .modal-footer,
 body.inside-header .modal-primary .modal-header,
 body.inside-header .modal-primary .modal-body,
 body.inside-header .modal-primary .modal-footer {
-    background-color: rgba(22, 93, 255, 0.1) !important;
-    border-color: rgba(22, 93, 255, 0.2) !important;
-    color: #165dff !important;
+    background-color: rgba(87, 83, 78, 0.1) !important;
+    border-color: rgba(87, 83, 78, 0.2) !important;
+    color: #57534e !important;
 }
 
-.skin-white .modal-success .modal-header,
-.skin-white .modal-success .modal-body,
-.skin-white .modal-success .modal-footer,
+.skin-gray-light .modal-success .modal-header,
+.skin-gray-light .modal-success .modal-body,
+.skin-gray-light .modal-success .modal-footer,
 body.inside-header .modal-success .modal-header,
 body.inside-header .modal-success .modal-body,
 body.inside-header .modal-success .modal-footer {
@@ -1519,20 +1519,20 @@ body.inside-header .modal-success .modal-footer {
     color: #18bc9c !important;
 }
 
-.skin-white .modal-info .modal-header,
-.skin-white .modal-info .modal-body,
-.skin-white .modal-info .modal-footer,
+.skin-gray-light .modal-info .modal-header,
+.skin-gray-light .modal-info .modal-body,
+.skin-gray-light .modal-info .modal-footer,
 body.inside-header .modal-info .modal-header,
 body.inside-header .modal-info .modal-body,
 body.inside-header .modal-info .modal-footer {
-    background-color: rgba(22, 93, 255, 0.1) !important;
-    border-color: rgba(22, 93, 255, 0.2) !important;
-    color: #165dff !important;
+    background-color: rgba(87, 83, 78, 0.1) !important;
+    border-color: rgba(87, 83, 78, 0.2) !important;
+    color: #57534e !important;
 }
 
-.skin-white .modal-warning .modal-header,
-.skin-white .modal-warning .modal-body,
-.skin-white .modal-warning .modal-footer,
+.skin-gray-light .modal-warning .modal-header,
+.skin-gray-light .modal-warning .modal-body,
+.skin-gray-light .modal-warning .modal-footer,
 body.inside-header .modal-warning .modal-header,
 body.inside-header .modal-warning .modal-body,
 body.inside-header .modal-warning .modal-footer {
@@ -1541,9 +1541,9 @@ body.inside-header .modal-warning .modal-footer {
     color: #f39c12 !important;
 }
 
-.skin-white .modal-danger .modal-header,
-.skin-white .modal-danger .modal-body,
-.skin-white .modal-danger .modal-footer,
+.skin-gray-light .modal-danger .modal-header,
+.skin-gray-light .modal-danger .modal-body,
+.skin-gray-light .modal-danger .modal-footer,
 body.inside-header .modal-danger .modal-header,
 body.inside-header .modal-danger .modal-body,
 body.inside-header .modal-danger .modal-footer {
@@ -1553,120 +1553,120 @@ body.inside-header .modal-danger .modal-footer {
 }
 
 /* --- 14.3 进度条旧主色变体：基线为 #4397fd / #1688f1，对齐主色 --- */
-.skin-white .progress-bar-light-blue,
-.skin-white .progress-bar-aqua,
+.skin-gray-light .progress-bar-light-blue,
+.skin-gray-light .progress-bar-aqua,
 body.inside-header .progress-bar-light-blue,
 body.inside-header .progress-bar-aqua {
-    background-color: #165dff;
+    background-color: #57534e;
 }
 
-/* --- 14.4 下拉菜单项：基线悬停为 #e1e3e9（旧中性色），统一为浅蓝底 + 主色字 --- */
-.skin-white .dropdown-menu > li > a:hover,
-.skin-white .dropdown-menu > li > a:focus,
-.skin-white .dropdown-menu > li.active > a,
+/* --- 14.4 下拉菜单项：基线悬停为 #dedad4（旧中性色），统一为浅蓝底 + 主色字 --- */
+.skin-gray-light .dropdown-menu > li > a:hover,
+.skin-gray-light .dropdown-menu > li > a:focus,
+.skin-gray-light .dropdown-menu > li.active > a,
 body.inside-header .dropdown-menu > li > a:hover,
 body.inside-header .dropdown-menu > li > a:focus,
 body.inside-header .dropdown-menu > li.active > a {
-    background-color: #f0f5ff;
-    color: #165dff;
+    background-color: #dedad4;
+    color: #57534e;
 }
 
-.skin-white .bootstrap-table .bs-bars .fixed-table-toolbar .dropdown-menu > li:hover > a,
+.skin-gray-light .bootstrap-table .bs-bars .fixed-table-toolbar .dropdown-menu > li:hover > a,
 body.inside-header .bootstrap-table .bs-bars .fixed-table-toolbar .dropdown-menu > li:hover > a {
-    background-color: #f0f5ff;
-    color: #165dff;
+    background-color: #dedad4;
+    color: #57534e;
 }
 
 /* ==========================================================================
    15. 补齐 FastAdmin 定制版 Bootstrap 的遗留主色与 info 色
        基线 bootstrap 的主色是 #444c69（深蓝灰）、info 是 #1688f1，
-       与皮肤主色 #165dff 不一致，且未被第 1-14 组覆盖
+       与皮肤主色 #57534e 不一致，且未被第 1-14 组覆盖
    ========================================================================== */
 
-/* --- 15.1 主色 #444c69 → #165dff --- */
-.skin-white .bg-primary,
+/* --- 15.1 主色 #444c69 → #57534e --- */
+.skin-gray-light .bg-primary,
 body.inside-header .bg-primary {
-    background-color: #165dff !important;
+    background-color: #57534e !important;
 }
 
-.skin-white .btn-link,
+.skin-gray-light .btn-link,
 body.inside-header .btn-link {
-    color: #165dff;
+    color: #57534e;
 }
 
-.skin-white .btn-link:is(:hover, :focus),
+.skin-gray-light .btn-link:is(:hover, :focus),
 body.inside-header .btn-link:is(:hover, :focus) {
-    color: #0e48d8;
+    color: #44403c;
 }
 
-.skin-white .nav-pills > li.active > a,
-.skin-white .nav-pills > li.active > a:is(:hover, :focus),
+.skin-gray-light .nav-pills > li.active > a,
+.skin-gray-light .nav-pills > li.active > a:is(:hover, :focus),
 body.inside-header .nav-pills > li.active > a,
 body.inside-header .nav-pills > li.active > a:is(:hover, :focus) {
-    background-color: #165dff;
-    border-color: #165dff;
+    background-color: #57534e;
+    border-color: #57534e;
     color: #fff;
 }
 
-.skin-white .nav .open > a,
-.skin-white .nav .open > a:is(:hover, :focus),
+.skin-gray-light .nav .open > a,
+.skin-gray-light .nav .open > a:is(:hover, :focus),
 body.inside-header .nav .open > a,
 body.inside-header .nav .open > a:is(:hover, :focus) {
-    border-color: #165dff;
+    border-color: #57534e;
 }
 
-.skin-white a.thumbnail:is(:hover, :focus),
+.skin-gray-light a.thumbnail:is(:hover, :focus),
 body.inside-header a.thumbnail:is(:hover, :focus) {
-    border-color: #165dff;
+    border-color: #57534e;
 }
 
-.skin-white .btn-primary .badge,
+.skin-gray-light .btn-primary .badge,
 body.inside-header .btn-primary .badge {
-    color: #165dff;
+    color: #57534e;
 }
 
-/* --- 15.2 info 色 #1688f1 → #165dff --- */
-.skin-white .text-aqua,
-.skin-white .text-blue,
+/* --- 15.2 info 色 #1688f1 → #57534e --- */
+.skin-gray-light .text-aqua,
+.skin-gray-light .text-blue,
 body.inside-header .text-aqua,
 body.inside-header .text-blue {
-    color: #165dff !important;
+    color: #57534e !important;
 }
 
-.skin-white .list-group-item-info,
-.skin-white a.list-group-item-info,
-.skin-white button.list-group-item-info,
-.skin-white .panel-info > .panel-heading,
+.skin-gray-light .list-group-item-info,
+.skin-gray-light a.list-group-item-info,
+.skin-gray-light button.list-group-item-info,
+.skin-gray-light .panel-info > .panel-heading,
 body.inside-header .list-group-item-info,
 body.inside-header a.list-group-item-info,
 body.inside-header button.list-group-item-info,
 body.inside-header .panel-info > .panel-heading {
-    color: #165dff;
+    color: #57534e;
 }
 
-.skin-white a.list-group-item-info.active,
-.skin-white button.list-group-item-info.active,
+.skin-gray-light a.list-group-item-info.active,
+.skin-gray-light button.list-group-item-info.active,
 body.inside-header a.list-group-item-info.active,
 body.inside-header button.list-group-item-info.active {
-    background-color: #165dff;
-    border-color: #165dff;
+    background-color: #57534e;
+    border-color: #57534e;
     color: #fff;
 }
 
-.skin-white .btn-info .badge,
-.skin-white .panel-info > .panel-heading .badge,
+.skin-gray-light .btn-info .badge,
+.skin-gray-light .panel-info > .panel-heading .badge,
 body.inside-header .btn-info .badge,
 body.inside-header .panel-info > .panel-heading .badge {
-    background-color: #165dff;
+    background-color: #57534e;
     color: #fff;
 }
 
-/* --- 15.3 标题副文本与 small：基线为 #777777，统一为提示灰 #86909c --- */
-.skin-white small,
-.skin-white .small,
+/* --- 15.3 标题副文本与 small：基线为 #777777，统一为提示灰 #a8a29e --- */
+.skin-gray-light small,
+.skin-gray-light .small,
 body.inside-header small,
 body.inside-header .small {
-    color: #86909c;
+    color: #a8a29e;
 }
 
 /* ==========================================================================
@@ -1675,27 +1675,150 @@ body.inside-header .small {
        panel-heading 使用时可见），FastAdmin 的 .nav-tabs-custom 用旧主色
        #4397fd。按"选中态用主色、未选中态弱化"的原则统一。
    ========================================================================== */
-.skin-white .nav-tabs > li.active > a,
-.skin-white .nav-tabs > li.active > a:is(:hover, :focus),
+.skin-gray-light .nav-tabs > li.active > a,
+.skin-gray-light .nav-tabs > li.active > a:is(:hover, :focus),
 body.inside-header .nav-tabs > li.active > a,
 body.inside-header .nav-tabs > li.active > a:is(:hover, :focus) {
-    color: #165dff;
+    color: #57534e;
 }
 
 /* nav-tabs-custom：基线 active 顶部边框为旧主色 #4397fd */
-.skin-white .nav-tabs-custom > .nav-tabs > li.active,
+.skin-gray-light .nav-tabs-custom > .nav-tabs > li.active,
 body.inside-header .nav-tabs-custom > .nav-tabs > li.active {
-    border-top-color: #165dff;
+    border-top-color: #57534e;
 }
 
-.skin-white .nav-tabs-custom > .nav-tabs > li.active > a,
+.skin-gray-light .nav-tabs-custom > .nav-tabs > li.active > a,
 body.inside-header .nav-tabs-custom > .nav-tabs > li.active > a {
-    color: #165dff;
+    color: #57534e;
 }
 
 /* nav-pills 未选中悬停：基线为 #eee，统一为皮肤中性悬停色 + 主色文字 */
-.skin-white .nav-pills > li > a:is(:hover, :focus),
+.skin-gray-light .nav-pills > li > a:is(:hover, :focus),
 body.inside-header .nav-pills > li > a:is(:hover, :focus) {
-    background-color: #f4f4f5;
-    color: #165dff;
+    background-color: #dedad4;
+    color: #57534e;
+}
+
+/* ==========================================================================
+   主题特征层
+   white 骨架负责功能覆盖，本层负责主题气质：侧边栏底色、顶栏、
+   内容区底色、圆角尺度与阴影色调。追加在末尾，同权重覆盖骨架。
+   ========================================================================== */
+
+/* --- 1. 侧边栏底色：区分两个主题的第一视觉锚点 --- */
+.skin-gray-light .main-sidebar,
+.skin-gray-light .left-side,
+.skin-gray-light .sidebar-menu>li.header {
+    background: #e7e4df;
+}
+
+/* 侧边栏顶部用户区 / logo 区 */
+.skin-gray-light .main-header .logo,
+.skin-gray-light .main-header .logo:hover {
+    background: #dbd7d0;
+}
+
+/* 展开的父级菜单：给一层浅底，和白色子菜单拉开层次 */
+.skin-gray-light .sidebar-menu li.treeview.treeview-open>a,
+.skin-gray-light .sidebar-menu li.treeview.active>a {
+    background: #e7e4df;
+}
+
+/* 二级子菜单保持白底，与侧边栏底色形成层次 */
+.skin-gray-light .sidebar-menu>li>.treeview-menu {
+    background: #fff;
+    border-left-color: #e7e4df;
+}
+
+/* 折叠态飞出菜单 */
+.skin-gray-light .sidebar-collapse ul.treeview-menu {
+    background: #fff !important;
+}
+
+/* --- 2. 顶部导航：主题色浅底 + 细线。大面积色块才是"一眼可辨"的关键。
+       用 inset 阴影而非 border，避免 1px 边框撑高导致内容区下移 --- */
+.skin-gray-light .main-header .navbar {
+    background-color: #efedea;
+    box-shadow: inset 0 -1px 0 #e0ddd7;
+}
+
+.skin-gray-light .main-header .navbar-brand,
+.skin-gray-light .main-header .navbar>.sidebar-toggle,
+.skin-gray-light .main-header .navbar .navbar-nav>li>a {
+    border-right-color: #e0ddd7;
+}
+
+/* 顶栏交互态：主色浅底 */
+.skin-gray-light .main-header .navbar .nav>li>a:hover,
+.skin-gray-light .main-header .navbar .nav>li>a:active,
+.skin-gray-light .main-header .navbar .nav>li>a:focus,
+.skin-gray-light .main-header .navbar .nav .open>a,
+.skin-gray-light .main-header .navbar .nav .open>a:hover,
+.skin-gray-light .main-header .navbar .nav .open>a:focus,
+.skin-gray-light .main-header .navbar .nav>.active>a,
+.skin-gray-light .main-header .navbar .sidebar-toggle:hover {
+    color: #57534e !important;
+    background: #dedad4 !important;
+}
+
+/* 标签页（多页签）选中态 */
+.skin-gray-light .nav-addtabs>li.active>a {
+    color: #57534e;
+    background: #dedad4;
+    box-shadow: inset 0 -2px 0 #57534e;
+}
+
+/* --- 3. 内容区底色 --- */
+.skin-gray-light .content-wrapper,
+.skin-gray-light .right-side {
+    background-color: #f4f3f1;
+}
+
+/* --- 4. 卡片 / 面板：主题化的圆角与阴影 --- */
+.skin-gray-light .panel {
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(41, 37, 36, 0.06);
+}
+
+.skin-gray-light .panel-heading {
+    border-radius: 4px 4px 0 0 !important;
+}
+
+/* --- 5. 表格表头 --- */
+.skin-gray-light .bootstrap-table .table thead>tr>th {
+    background: #f0eeea;
+    color: #57534e;
+    border-color: #e0ddd7;
+}
+
+/* --- 6. 侧边栏选中态：主题色左边条 + 浅底 --- */
+.skin-gray-light .sidebar-menu>li.active {
+    border-left-color: #57534e;
+}
+
+.skin-gray-light .sidebar-menu>li:hover>a {
+    color: #1c1917 !important;
+    background: #dedad4 !important;
+}
+
+.skin-gray-light .sidebar-menu>li.active>a {
+    color: #57534e !important;
+    background: #dedad4 !important;
+    box-shadow: inset 3px 0 0 #57534e;
+}
+
+/* --- 7. 滚动条：跟随主题色调 --- */
+.skin-gray-light ::-webkit-scrollbar-thumb {
+    background: #d6d3d1;
+    border-radius: 4px;
+}
+
+.skin-gray-light ::-webkit-scrollbar-thumb:hover {
+    background: #57534e;
+}
+
+/* --- 8. 弹窗圆角跟随主题 --- */
+.skin-gray-light .layui-layer.layui-layer-fast {
+    border-radius: 4px !important;
 }

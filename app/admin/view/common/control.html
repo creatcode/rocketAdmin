@@ -1,77 +1,362 @@
 <style>
-    .skin-list li{
-        float:left; width: 33.33333%; padding: 5px;
+    /* ================= 右侧布局配置面板 ================= */
+
+    /* 面板宽度 230px -> 340px */
+    .control-sidebar {
+        width: 340px;
+        right: -340px;
     }
-    .skin-list li a{
-        display: block; box-shadow: 0 0 3px rgba(0,0,0,0.4);
+
+    .control-sidebar.control-sidebar-open,
+    .control-sidebar-open .control-sidebar {
+        right: 0;
     }
-    .skin-list li a span{
-        display: block;
-        float:left;
+
+    /* 遮罩：全屏半透明，覆盖顶栏，点击关闭
+       复用 AdminLTE 自带的 .control-sidebar-bg 元素，避免新增 DOM。
+       注意：fastadmin.css 中 .control-sidebar-light/dark + .control-sidebar-bg
+       会给该元素设置不透明底色与边框（特异性 0,2,0），必须用同等特异性的
+       选择器一并覆盖，否则遮罩会变成实心色块 */
+    .control-sidebar-bg,
+    .control-sidebar-light + .control-sidebar-bg,
+    .control-sidebar-dark + .control-sidebar-bg {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: auto;
+        z-index: 1040;
+        border: none;
+        background: rgba(29, 33, 41, .45) !important;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .3s ease;
     }
-    .skin-list li.active a {
+
+    /* AdminLTE 的 slide 模式把 control-sidebar-open 加在面板上而非 body，
+       因此主用兄弟选择器；body 上的同名类是 push 模式的兜底 */
+    body.control-sidebar-open .control-sidebar-bg,
+    .control-sidebar.control-sidebar-open ~ .control-sidebar-bg {
         opacity: 1;
-        filter: alpha(opacity=100);
+        pointer-events: auto;
     }
-    .skin-list li.active p {
-        color: #fff;
+
+    /* 面板为浮层，不推挤内容 */
+    @media (min-width: 768px) {
+        body.control-sidebar-open .content-wrapper,
+        body.control-sidebar-open .right-side,
+        body.control-sidebar-open .main-footer {
+            margin-right: 0 !important;
+        }
+    }
+
+    /* 骨架：顶部标题固定，内容区独立滚动 */
+    .lc-panel {
+        top: 0;
+        bottom: 0;
+        padding-top: 0;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-left: 1px solid #e5e6eb;
+        box-shadow: -8px 0 24px rgba(29, 33, 41, .06);
+        color: #1d2129;
+        font-size: 13px;
+    }
+
+    .lc-panel a {
+        color: #4e5969;
+        text-decoration: none;
+    }
+
+    .lc-head {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 48px;
+        padding: 0 16px;
+        border-bottom: 1px solid #f1f4f6;
+    }
+
+    .lc-title {
+        color: #1d2129;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .lc-panel .lc-close {
+        color: #86909c;
+        font-size: 14px;
+    }
+
+    .lc-panel .lc-close:hover {
+        color: #165dff;
+    }
+
+    .lc-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 16px 20px;
+    }
+
+    /* 分组 */
+    .lc-group {
+        padding-top: 14px;
+    }
+
+    .lc-group + .lc-group {
+        margin-top: 4px;
+        border-top: 1px solid #f1f4f6;
+    }
+
+    .lc-group-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+
+    .lc-group-head > span {
+        color: #86909c;
+        font-size: 12px;
+    }
+
+    /* 行 */
+    .lc-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 40px;
+        border-bottom: 1px solid #f6f8fb;
+    }
+
+    .lc-row:last-child {
+        border-bottom: none;
+    }
+
+    .lc-label {
+        color: #1d2129;
+        font-size: 13px;
+    }
+
+    /* 开关 */
+    .lc-switch {
+        position: relative;
+        flex: 0 0 auto;
+        width: 38px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .lc-switch input {
+        position: absolute;
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    .lc-switch .lc-track {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #dcdfe6;
+        border-radius: 10px;
+        transition: background .2s ease;
+    }
+
+    .lc-switch .lc-track:before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform .2s ease;
+    }
+
+    .lc-switch input:checked + .lc-track {
+        background: #165dff;
+    }
+
+    .lc-switch input:checked + .lc-track:before {
+        transform: translateX(18px);
+    }
+
+    .lc-switch input:focus-visible + .lc-track {
+        box-shadow: 0 0 0 3px rgba(22, 93, 255, .18);
+    }
+
+    /* 皮肤卡片：三列 */
+    .lc-skins {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -4px;
+        padding: 0;
+        list-style: none;
+    }
+
+    .lc-skins li {
+        width: 33.33333%;
+        padding: 4px;
+        box-sizing: border-box;
+    }
+
+    .lc-skins li a {
+        display: block;
+        padding: 5px;
+        border: 1px solid #e5e6eb;
+        border-radius: 8px;
+        background: #fff;
+        transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+
+    .lc-skins li a:hover {
+        border-color: #adc6ff;
+        box-shadow: 0 4px 12px rgba(22, 93, 255, .10);
+    }
+
+    .lc-skins li.active a {
+        border-color: #165dff;
+        background: #f0f5ff;
+    }
+
+    .lc-skins li em {
+        display: block;
+        margin-top: 6px;
+        color: #4e5969;
+        font-size: 11px;
+        font-style: normal;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .lc-skins li.active em {
+        color: #165dff;
+        font-weight: 600;
+    }
+
+    /* 缩略图：顶栏主色条 + 侧边栏色块 + 内容区底色，
+       三部分均由内联 CSS 变量控制（--h 主色 / --s 侧边栏 / --b 内容区） */
+    .lc-thumb {
+        position: relative;
+        display: block;
+        height: 36px;
+        border: 1px solid #f1f4f6;
+        border-radius: 4px;
+        background: var(--b, #f6f8fb);
+        overflow: hidden;
+    }
+
+    .lc-thumb:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 10px;
+        background: var(--h, #86909c);
+    }
+
+    .lc-thumb:after {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 0;
+        bottom: 0;
+        width: 34%;
+        background: var(--s, #dcdfe6);
+        /* 右侧细线：让白色侧边栏（如 White 皮肤）在浅底上仍可辨识 */
+        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .06);
     }
 </style>
+
 <!-- Control Sidebar -->
-<aside class="control-sidebar control-sidebar-dark">
-    <!-- Create the tabs -->
-    <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
-        <li class="active"><a href="#control-sidebar-setting-tab" data-toggle="tab" aria-expanded="true"><i class="fa fa-wrench"></i></a></li>
-        <li><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
-        <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
-    </ul>
-    <!-- Tab panes -->
-    <div class="tab-content">
-        <!-- Home tab content -->
-        <div class="tab-pane active" id="control-sidebar-setting-tab">
-            <h4 class="control-sidebar-heading">{:__('Layout Options')}</h4>
-            <div class="form-group"><label class="control-sidebar-subheading"><input type="checkbox" data-config="multiplenav" {if $Think.config.rocket.multiplenav}checked{/if} class="pull-right"> {:__('Multiple Nav')}</label><p>{:__("Toggle the top menu state (multiple or single)")}</p></div>
-            <div class="form-group"><label class="control-sidebar-subheading"><input type="checkbox" data-config="multipletab" {if $Think.config.rocket.multipletab}checked{/if} class="pull-right"> {:__('Multiple Tab')}</label><p>{:__("Always show multiple tab when multiple nav is set")}</p></div>
-            <div class="form-group"><label class="control-sidebar-subheading"><input type="checkbox" data-layout="sidebar-collapse" class="pull-right"> {:__('Toggle Sidebar')}</label><p>{:__("Toggle the left sidebar's state (open or collapse)")}</p></div>
-            <div class="form-group"><label class="control-sidebar-subheading"><input type="checkbox" data-enable="expandOnHover" class="pull-right"> {:__('Sidebar Expand on Hover')}</label><p>{:__('Let the sidebar mini expand on hover')}</p></div>
-            <div class="form-group"><label class="control-sidebar-subheading"><input type="checkbox" data-menu="show-submenu" class="pull-right"> {:__('Show sub menu')}</label><p>{:__('Always show sub menu')}</p></div>
-            <div class="form-group"><label class="control-sidebar-subheading"><input type="checkbox" data-controlsidebar="control-sidebar-open" class="pull-right"> {:__('Toggle Right Sidebar Slide')}</label><p>{:__('Toggle between slide over content and push content effects')}</p></div>
-            <div class="form-group"><label class="control-sidebar-subheading"><input type="checkbox" data-sidebarskin="toggle" class="pull-right"> {:__('Toggle Right Sidebar Skin')}</label><p>{:__('Toggle between dark and light skins for the right sidebar')}</p></div>
-            <h4 class="control-sidebar-heading">{:__('Skins')}</h4>
-            <ul class="list-unstyled clearfix skin-list">
-                <li><a href="javascript:;" data-skin="skin-blue" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #4e73df;"></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Blue</p></li>
-                <li><a href="javascript:;" data-skin="skin-black" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #000;"></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Black</p></li>
-                <li><a href="javascript:;" data-skin="skin-purple" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #605ca8;"></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Purple</p></li>
-                <li><a href="javascript:;" data-skin="skin-green" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 7px;" class="bg-green-active"></span><span class="bg-green" style="width: 80%; height: 7px;"></span></div><div><span style="width: 20%; height: 20px; background: #000;"></span><span style="width: 80%; height: 20px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Green</p></li>
-                <li><a href="javascript:;" data-skin="skin-red" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 7px;" class="bg-red-active"></span><span class="bg-red" style="width: 80%; height: 7px;"></span></div><div><span style="width: 20%; height: 20px; background: #000;"></span><span style="width: 80%; height: 20px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Red</p></li>
-                <li><a href="javascript:;" data-skin="skin-yellow" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 7px;" class="bg-yellow-active"></span><span class="bg-yellow" style="width: 80%; height: 7px;"></span></div><div><span style="width: 20%; height: 20px; background: #000;"></span><span style="width: 80%; height: 20px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Yellow</p></li>
+<aside class="control-sidebar control-sidebar-light lc-panel">
+    <div class="lc-head">
+        <span class="lc-title">{:__('Layout Options')}</span>
+        <a href="javascript:;" class="lc-close" data-toggle="control-sidebar" title="{:__('Close')}"><i class="fa fa-close"></i></a>
+    </div>
 
-                <li><a href="javascript:;" data-skin="skin-blue-light" class="clearfix full-opacity-hover"><div><span style="width: 100%; height: 7px; background: #4e73df;"></span></div><div><span style="width: 100%; height: 20px; background: #f9fafc;"></span></div></a><p class="text-center no-margin" style="font-size: 12px">Blue Light</p></li>
-                <li><a href="javascript:;" data-skin="skin-black-light" class="clearfix full-opacity-hover"><div><span style="width: 100%; height: 7px; background: #000;"></span></div><div><span style="width: 100%; height: 20px; background: #f9fafc;"></span></div></a><p class="text-center no-margin" style="font-size: 12px">Black Light</p></li>
-                <li><a href="javascript:;" data-skin="skin-purple-light" class="clearfix full-opacity-hover"><div><span style="width: 100%; height: 7px; background: #605ca8;"></span></div><div><span style="width: 100%; height: 20px; background: #f9fafc;"></span></div></a><p class="text-center no-margin" style="font-size: 12px">Purple Light</p></li>
-                <li><a href="javascript:;" data-skin="skin-green-light" class="clearfix full-opacity-hover"><div><span style="width: 100%; height: 7px;" class="bg-green"></span></div><div><span style="width: 100%; height: 20px; background: #f9fafc;"></span></div></a><p class="text-center no-margin" style="font-size: 12px">Green Light</p></li>
-                <li><a href="javascript:;" data-skin="skin-red-light" class="clearfix full-opacity-hover"><div><span style="width: 100%; height: 7px;" class="bg-red"></span></div><div><span style="width: 100%; height: 20px; background: #f9fafc;"></span></div></a><p class="text-center no-margin" style="font-size: 12px">Red Light</p></li>
-                <li><a href="javascript:;" data-skin="skin-yellow-light" class="clearfix full-opacity-hover"><div><span style="width: 100%; height: 7px;" class="bg-yellow"></span></div><div><span style="width: 100%; height: 20px; background: #f9fafc;"></span></div></a><p class="text-center no-margin" style="font-size: 12px">Yellow Light</p></li>
+    <div class="lc-body">
 
-                <li><a href="javascript:;" data-skin="skin-black-blue" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #000;"><span style="width: 100%; height: 3px; margin-top:10px; background: #4e73df;"></span></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Black Blue</p></li>
-                <li><a href="javascript:;" data-skin="skin-black-purple" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #000;"><span style="width: 100%; height: 3px; margin-top:10px; background: #605ca8;"></span></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Black Purple</p></li>
-                <li><a href="javascript:;" data-skin="skin-black-green" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #000;"><span style="width: 100%; height: 3px; margin-top:10px;" class="bg-green"></span></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Black Green</p></li>
-                <li><a href="javascript:;" data-skin="skin-black-red" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #000;"><span style="width: 100%; height: 3px; margin-top:10px;" class="bg-red"></span></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Black Red</p></li>
-                <li><a href="javascript:;" data-skin="skin-black-yellow" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #000;"><span style="width: 100%; height: 3px; margin-top:10px;" class="bg-yellow"></span></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Black Yellow</p></li>
-                <li><a href="javascript:;" data-skin="skin-black-pink" class="clearfix full-opacity-hover"><div><span style="width: 20%; height: 27px; background: #000;"><span style="width: 100%; height: 3px; margin-top:10px; background: #f5549f;"></span></span><span style="width: 80%; height: 27px; background: #f4f5f7;"></span></div></a><p class="text-center no-margin">Black Pink</p></li>
+        <!-- 布局选项 -->
+        <div class="lc-group">
+            <div class="lc-group-head"><span>{:__('Layout Options')}</span></div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Multiple nav')}</span>
+                <label class="lc-switch"><input type="checkbox" data-config="multiplenav" {if config('rocket.multiplenav')}checked{/if}><span class="lc-track"></span></label>
+            </div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Multiple tab')}</span>
+                <label class="lc-switch"><input type="checkbox" data-config="multipletab" {if config('rocket.multipletab')}checked{/if}><span class="lc-track"></span></label>
+            </div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Toggle Sidebar')}</span>
+                <label class="lc-switch"><input type="checkbox" data-layout="sidebar-collapse"><span class="lc-track"></span></label>
+            </div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Sidebar Expand on Hover')}</span>
+                <label class="lc-switch"><input type="checkbox" data-enable="expandOnHover"><span class="lc-track"></span></label>
+            </div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Show sub menu')}</span>
+                <label class="lc-switch"><input type="checkbox" data-menu="show-submenu"><span class="lc-track"></span></label>
+            </div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Toggle Right Sidebar Slide')}</span>
+                <label class="lc-switch"><input type="checkbox" data-controlsidebar="control-sidebar-open"><span class="lc-track"></span></label>
+            </div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Toggle Right Sidebar Skin')}</span>
+                <label class="lc-switch"><input type="checkbox" data-sidebarskin="toggle"><span class="lc-track"></span></label>
+            </div>
+        </div>
+
+        <!-- 皮肤 -->
+        <div class="lc-group">
+            <div class="lc-group-head"><span>{:__('Skins')}</span></div>
+            <ul class="lc-skins skin-list">
+                <li><a href="javascript:;" data-skin="skin-white" title="White"><span class="lc-thumb" style="--h:#165dff;--s:#ffffff;--b:#f1f4f6"></span><em>White</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-sky-light" title="Sky Light"><span class="lc-thumb" style="--h:#0369a1;--s:#d9ecfa;--b:#eff6fd"></span><em>Sky Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-gray-light" title="Gray Light"><span class="lc-thumb" style="--h:#57534e;--s:#e7e4df;--b:#f4f3f1"></span><em>Gray Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-blue" title="Blue"><span class="lc-thumb" style="--h:#4e73df;--s:#456cdd"></span><em>Blue</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black" title="Black"><span class="lc-thumb" style="--h:#222d32;--s:#1e282c"></span><em>Black</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-purple" title="Purple"><span class="lc-thumb" style="--h:#605ca8;--s:#5b57a3"></span><em>Purple</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-green" title="Green"><span class="lc-thumb" style="--h:#18bc9c;--s:#1e282c"></span><em>Green</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-red" title="Red"><span class="lc-thumb" style="--h:#f75444;--s:#1e282c"></span><em>Red</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-yellow" title="Yellow"><span class="lc-thumb" style="--h:#f39c12;--s:#1e282c"></span><em>Yellow</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-blue-light" title="Blue Light"><span class="lc-thumb" style="--h:#4e73df;--s:#f4f4f5"></span><em>Blue Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black-light" title="Black Light"><span class="lc-thumb" style="--h:#222d32;--s:#f4f4f5"></span><em>Black Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-purple-light" title="Purple Light"><span class="lc-thumb" style="--h:#605ca8;--s:#f4f4f5"></span><em>Purple Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-green-light" title="Green Light"><span class="lc-thumb" style="--h:#18bc9c;--s:#f4f4f5"></span><em>Green Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-red-light" title="Red Light"><span class="lc-thumb" style="--h:#f75444;--s:#f4f4f5"></span><em>Red Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-yellow-light" title="Yellow Light"><span class="lc-thumb" style="--h:#f39c12;--s:#f4f4f5"></span><em>Yellow Light</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black-blue" title="Black Blue"><span class="lc-thumb" style="--h:#4e73df;--s:#1e282c"></span><em>Black Blue</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black-purple" title="Black Purple"><span class="lc-thumb" style="--h:#605ca8;--s:#1e282c"></span><em>Black Purple</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black-green" title="Black Green"><span class="lc-thumb" style="--h:#18bc9c;--s:#1e282c"></span><em>Black Green</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black-red" title="Black Red"><span class="lc-thumb" style="--h:#f75444;--s:#1e282c"></span><em>Black Red</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black-yellow" title="Black Yellow"><span class="lc-thumb" style="--h:#f39c12;--s:#1e282c"></span><em>Black Yellow</em></a></li>
+                <li><a href="javascript:;" data-skin="skin-black-pink" title="Black Pink"><span class="lc-thumb" style="--h:#f5549f;--s:#1e282c"></span><em>Black Pink</em></a></li>
             </ul>
         </div>
-        <!-- /.tab-pane -->
-        <!-- Home tab content -->
-        <div class="tab-pane" id="control-sidebar-home-tab">
-            <h4 class="control-sidebar-heading">{:__('Home')}</h4>
-        </div>
-        <!-- /.tab-pane -->
-        <!-- Settings tab content -->
-        <div class="tab-pane" id="control-sidebar-settings-tab">
-            <h4 class="control-sidebar-heading">{:__('Setting')}</h4>
-        </div>
-        <!-- /.tab-pane -->
+
     </div>
 </aside>
 <!-- /.control-sidebar -->

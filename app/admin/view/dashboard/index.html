@@ -1,230 +1,405 @@
-<style type="text/css">
-    :root {
-        --bg-main: #f5f7fa;
-        --card-bg: #ffffff;
-        --accent-blue: #0061ff;
-        --accent-indigo: #667eea;
-        --success: #00ba69;
-        --warning: #ff9900;
-        --text-primary: #1a1d23;
-        --text-secondary: #64748b;
-        --radius-lg: 24px;
-        --radius-md: 18px;
+<style>
+    /* ================= 控制台驾驶舱 ================= */
+    .dash-wrap {
+        margin: -15px;                    /* 抵消 .content 的 15px 内边距，让渐变铺满 */
+        height: calc(100vh - 37px);       /* 37px=顶部面包屑；定高后内部滚动，避免裁切 */
+        overflow-y: auto;
     }
 
-    /* 容器：弹性高度锁定 */
-    .dashboard-page {
-        height: calc(100vh - 65px);
-        margin: -15px;
-        padding: 20px;
-        background: var(--bg-main) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="1" fill="rgba(0,0,0,0.03)"/></svg>');
+    .dashboard-shell {
+        /* 设计令牌：蓝青主调，卡片半透明玻璃感 */
+        --page-bg: linear-gradient(180deg, #f7fbff 0%, #f3f7fd 52%, #eef4fb 100%);
+        --card-bg: rgba(255, 255, 255, .86);
+        --card-border: rgba(126, 156, 203, .18);
+        --title: #1d3557;
+        --text: #5d6f86;
+        --muted: #8ea0b8;
+        --shadow: 0 18px 45px rgba(114, 145, 186, .12);
+        --blue: #5b8def;
+        --cyan: #5cc9c9;
+        --violet: #7b88f8;
+        --orange: #f2a65a;
+        --rose: #ef8ca4;
+        --gold: #d9b45b;
+
+        position: relative;
+        overflow: hidden;
+        min-height: 100%;                 /* 内容不足一屏时渐变也铺满 */
+        padding: 24px;
+        background: var(--page-bg);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    /* 背景光斑：右上蓝、左下青 */
+    .dashboard-shell:before,
+    .dashboard-shell:after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(8px);
+        pointer-events: none;
+    }
+    .dashboard-shell:before {
+        width: 340px;
+        height: 340px;
+        top: -120px;
+        right: -90px;
+        background: radial-gradient(circle, rgba(91, 141, 239, .18) 0%, rgba(91, 141, 239, 0) 72%);
+    }
+    .dashboard-shell:after {
+        width: 280px;
+        height: 280px;
+        bottom: -100px;
+        left: -80px;
+        background: radial-gradient(circle, rgba(92, 201, 201, .16) 0%, rgba(92, 201, 201, 0) 72%);
+    }
+
+    /* ---------- 页签：胶囊，与柔和调性一致 ---------- */
+    .dashboard-shell .dash-tabs {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        gap: 8px;
+        margin: 0 0 20px;
+        padding: 0;
+        border: 0;
+        list-style: none;
+    }
+    .dashboard-shell .dash-tabs > li { margin: 0; }
+    .dashboard-shell .dash-tabs > li > a {
+        display: block;
+        min-width: 0 !important;          /* 覆盖皮肤强制的 min-width:64px */
+        margin: 0;
+        padding: 8px 20px;
+        border: 1px solid var(--card-border) !important;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .72) !important;
+        color: var(--text) !important;
+        font-size: 13px;
+        font-weight: 600 !important;
+        line-height: 20px;
+        transition: all .2s ease;
+    }
+    .dashboard-shell .dash-tabs > li > a:hover,
+    .dashboard-shell .dash-tabs > li > a:focus {
+        background: rgba(255, 255, 255, .96) !important;
+        color: var(--blue) !important;
+    }
+    .dashboard-shell .dash-tabs > li.active > a,
+    .dashboard-shell .dash-tabs > li.active > a:hover,
+    .dashboard-shell .dash-tabs > li.active > a:focus {
+        background: linear-gradient(135deg, #6c95f2, #86b2ff) !important;
+        border-color: transparent !important;
+        color: #fff !important;
+        box-shadow: 0 8px 18px rgba(91, 141, 239, .28);
+    }
+    /* 覆盖皮肤给激活页签追加的下划线条 */
+    .dashboard-shell .dash-tabs > li.active > a::after { content: none !important; }
+
+    /* ---------- 栅格行：转 flex，让卡片的 height:100% 真正等高 ---------- */
+    .dashboard-shell .dashboard-section.row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-section {
+        position: relative;
+        z-index: 2;
+        margin-bottom: 18px;
+    }
+
+    /* ---------- 卡片基座 ---------- */
+    .metric-card,
+    .dashboard-card {
+        height: 100%;
+        border: 1px solid var(--card-border);
+        border-radius: 22px;
+        background: var(--card-bg);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+    }
+
+    .metric-card {
+        padding: 22px 22px 18px;
+        transition: all .2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 24px 48px rgba(114, 145, 186, .16);
+    }
+    .metric-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+    .metric-title {
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .metric-icon {
+        flex: 0 0 auto;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        line-height: 42px;
+        text-align: center;
+        font-size: 18px;
+        color: #fff;
+    }
+    .metric-value {
+        margin: 0 0 8px;
+        color: var(--title);
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+    }
+    .metric-desc {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    /* 渐变图标主题 */
+    .theme-blue   { background: linear-gradient(135deg, #6c95f2, #86b2ff); }
+    .theme-cyan   { background: linear-gradient(135deg, #5fc4d4, #8de1e1); }
+    .theme-violet { background: linear-gradient(135deg, #7b88f8, #a5adff); }
+    .theme-orange { background: linear-gradient(135deg, #f1ab63, #f7c78f); }
+    .theme-rose   { background: linear-gradient(135deg, #eb8fa3, #f6b2c1); }
+    .theme-gold   { background: linear-gradient(135deg, #cfaf62, #e6ce93); }
+
+    /* ---------- 内容卡 ---------- */
+    .dashboard-card { padding: 22px; }
+
+    .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+    .card-title {
+        margin: 0;
+        color: var(--title);
+        font-size: 18px;
+        font-weight: 700;
+    }
+    .card-subtitle {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    /* ---------- 胶囊指标 ---------- */
+    .summary-band {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+    .summary-pill {
+        flex: 1;
+        min-width: 0;
+        padding: 16px 18px;
+        border: 1px solid rgba(126, 156, 203, .16);
+        border-radius: 18px;
+        background: linear-gradient(180deg, #f8fbff, #f3f8ff);
+    }
+    .summary-pill .label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .summary-pill .value {
+        color: var(--title);
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- 图表容器 ---------- */
+    .chart-box {
+        position: relative;
+        height: 300px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(247, 250, 255, .95), rgba(240, 246, 255, .92));
+    }
+    .chart-box__empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 13px;
+        pointer-events: none;
+    }
+
+    /* ---------- 服务行 ---------- */
+    .service-box {
+        padding: 18px;
+        border: 1px solid rgba(126, 156, 203, .14);
+        border-radius: 18px;
+        background: linear-gradient(180deg, #f9fbff, #f3f8ff);
+    }
+    .service-main {
+        margin-bottom: 0;
+        color: var(--title);
+        font-size: 30px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+    .service-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px dashed rgba(126, 156, 203, .18);
+        color: var(--text);
+        font-size: 14px;
+    }
+    .service-line:last-child { border-bottom: none; }
+    .service-line strong {
+        color: var(--title);
+        font-size: 18px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- 空状态 ---------- */
+    .dash-empty {
+        position: relative;
+        z-index: 2;
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        overflow: hidden;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 320px;
+        padding: 40px;
+        border: 1px dashed var(--card-border);
+        border-radius: 22px;
+        background: var(--card-bg);
+        color: var(--muted);
     }
+    .dash-empty i { font-size: 28px; opacity: .5; }
+    .dash-empty p { margin: 0; font-size: 13px; }
 
-    .dashboard-page * { box-sizing: border-box; }
-
-    /* 导航标签 */
-    .dashboard-shell.panel { border: none; background: transparent; box-shadow: none; display: flex; flex-direction: column; flex: 1; margin:0; }
-    .dashboard-shell > .panel-heading { padding: 0 0 16px 0; background: transparent; border: none; flex-shrink: 0; }
-    .dashboard-shell .nav-tabs { border: none; display: flex; gap: 12px; }
-    .dashboard-shell .nav-tabs > li > a { 
-        border: none !important; background: rgba(0,0,0,0.04) !important; color: var(--text-secondary); 
-        border-radius: 40px; padding: 8px 24px; font-weight: 600; font-size: 13px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* ---------- 响应式 ---------- */
+    @media (max-width: 767px) {
+        .dashboard-shell { padding: 16px; }
+        .metric-card { padding: 18px 18px 14px; }
+        .dashboard-card { padding: 18px; }
+        .metric-value { font-size: 26px; }
+        .card-title { font-size: 16px; }
+        .summary-band { flex-direction: column; }
     }
-    .dashboard-shell .nav-tabs > li.active > a {
-        background: var(--accent-blue) !important; color: #fff !important;
-        box-shadow: 0 8px 16px rgba(0,97,255,0.25);
-    }
-    /* 覆盖skin-white给激活选项卡追加的4px下划线条 */
-    .dashboard-shell .nav-tabs > li.active > a::after { content: none !important; }
-    
-    .dashboard-shell > .panel-body { padding: 0; flex: 1; display: flex; flex-direction: column; min-height: 0; }
-    .tab-content, .tab-pane { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-
-    /* 1. 顶部指标行 */
-    .top-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex-shrink: 0; }
-    
-    .stat-card-premium {
-        background: var(--card-bg); border-radius: var(--radius-md); padding: 20px;
-        border: 1px solid rgba(255,255,255,0.8);
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04), 0 8px 10px -6px rgba(0,0,0,0.04);
-        display: flex; align-items: center; gap: 20px;
-        position: relative; overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    .stat-card-premium:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.08); }
-
-    .icon-box-p {
-        width: 52px; height: 52px; border-radius: 16px;
-        display: flex; align-items: center; justify-content: center; font-size: 22px;
-    }
-
-    .data-p .v { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; letter-spacing: -1px; }
-    .data-p .l { font-size: 11px; color: var(--text-secondary); margin-top: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
-
-    /* 2. 中间可视化行 */
-    .main-grid-p { flex: 1; display: grid; grid-template-columns: 1fr 340px; gap: 16px; min-height: 0; }
-    
-    .viz-card-p {
-        background: var(--card-bg); border-radius: var(--radius-lg); padding: 24px;
-        border: 1px solid rgba(255,255,255,1); display: flex; flex-direction: column;
-        box-shadow: 0 20px 40px -12px rgba(0,0,0,0.05);
-    }
-    .card-header-p { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .card-header-p h3 { font-size: 16px; font-weight: 800; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
-    
-    .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,186,105, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(0,186,105, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,186,105, 0); } }
-
-    #echart { flex: 1; width: 100%; min-height: 0; }
-
-    .activity-feed-p { flex: 1; overflow-y: auto; padding-right: 8px; }
-    .feed-node-p {
-        background: #f8fafc; border-radius: 16px; padding: 14px 18px; margin-bottom: 12px;
-        display: flex; align-items: center; gap: 16px; border: 1px solid transparent;
-        transition: all 0.3s ease;
-    }
-    .feed-node-p:hover { background: #fff; border-color: var(--accent-blue); box-shadow: 0 8px 20px rgba(0,0,0,0.04); transform: scale(1.02); }
-    .fn-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-    .fn-info { flex: 1; }
-    .fn-info .v { font-size: 18px; font-weight: 800; color: var(--text-primary); display: block; }
-    .fn-info .l { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
-
-    /* 3. 底部固定 Dock */
-    .footer-dock-p {
-        display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex-shrink: 0;
-    }
-    .dock-card-p {
-        background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);
-        border-radius: 20px; padding: 14px 22px;
-        display: flex; align-items: center; gap: 14px; border: 1px solid rgba(255,255,255,0.8);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-    }
-    .dock-card-p i { font-size: 18px; color: var(--text-secondary); opacity: 0.5; }
-    .dock-content-p .l { font-size: 10px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-    .dock-content-p .v { font-size: 14px; font-weight: 800; color: var(--text-primary); }
-
-    .activity-feed-p::-webkit-scrollbar { width: 4px; }
-    .activity-feed-p::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>
 
-<div class="dashboard-page">
-    <div class="panel panel-default dashboard-shell">
-        <div class="panel-heading">
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="#one" data-toggle="tab">系统概览</a></li>
-                <li><a href="#two" data-toggle="tab">设置选项</a></li>
-            </ul>
-        </div>
+<div class="dash-wrap">
+    <div class="dashboard-shell">
+        <ul class="nav nav-tabs dash-tabs">
+            <li class="active"><a href="#one" data-toggle="tab">系统概览</a></li>
+            <li><a href="#two" data-toggle="tab">设置选项</a></li>
+        </ul>
 
-        <div class="panel-body">
-            <div id="myTabContent" class="tab-content">
-                <div class="tab-pane fade active in" id="one">
-                    <div style="display:flex; flex-direction:column; gap:16px; height:100%; min-height:0">
-                        
-                        <!-- 顶部卡片行 -->
-                        <div class="top-section">
-                            <div class="stat-card-premium">
-                                <div class="icon-box-p" style="background:rgba(0,97,255,0.08); color:var(--accent-blue)"><i class="fa fa-users"></i></div>
-                                <div class="data-p">
-                                    <div class="v">{$totaluser|htmlentities}</div>
-                                    <div class="l">累计用户</div>
+        <div class="tab-content">
+            <div class="tab-pane fade active in" id="one">
+
+                <!-- 指标卡 -->
+                <div class="row dashboard-section">
+                    {volist name="metricCards" id="card"}
+                    <div class="col-xs-12 col-sm-6 col-lg-4" style="margin-bottom:16px;">
+                        <div class="metric-card">
+                            <div class="metric-head">
+                                <div class="metric-title">{$card.title}</div>
+                                <div class="metric-icon theme-{$card.theme}">
+                                    <i class="{$card.icon}"></i>
                                 </div>
                             </div>
-                            <div class="stat-card-premium">
-                                <div class="icon-box-p" style="background:rgba(102,126,234,0.08); color:var(--accent-indigo)"><i class="fa fa-cubes"></i></div>
-                                <div class="data-p">
-                                    <div class="v">{$totaladdon|htmlentities}</div>
-                                    <div class="l">插件包</div>
-                                </div>
-                            </div>
-                            <div class="stat-card-premium">
-                                <div class="icon-box-p" style="background:rgba(255,153,0,0.08); color:var(--warning)"><i class="fa fa-leaf"></i></div>
-                                <div class="data-p">
-                                    <div class="v">{$attachmentnums|htmlentities}</div>
-                                    <div class="l">存储统计</div>
-                                </div>
-                            </div>
-                            <div class="stat-card-premium">
-                                <div class="icon-box-p" style="background:rgba(0,186,105,0.08); color:var(--success)"><i class="fa fa-user-circle-o"></i></div>
-                                <div class="data-p">
-                                    <div class="v">{$totaladmin|htmlentities}</div>
-                                    <div class="l">管理员</div>
-                                </div>
-                            </div>
+                            <div class="metric-value">{$card.value}</div>
+                            <div class="metric-desc">{$card.desc}</div>
                         </div>
+                    </div>
+                    {/volist}
+                </div>
 
-                        <!-- 中间展示行 -->
-                        <div class="main-grid-p">
-                            <div class="viz-card-p">
-                                <div class="card-header-p">
-                                    <h3>用户增长分析</h3>
-                                    <div style="display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-secondary); font-weight:700">
-                                        <div class="status-dot"></div> 实时态势
-                                    </div>
-                                </div>
-                                <div id="echart" class="btn-refresh"></div>
-                            </div>
-                            
-                            <div class="viz-card-p">
-                                <div class="card-header-p">
-                                    <h3>活跃动态监测</h3>
-                                </div>
-                                <div class="activity-feed-p">
-                                    <div class="feed-node-p">
-                                        <div class="fn-icon" style="color:var(--accent-blue)"><i class="fa fa-user-plus"></i></div>
-                                        <div class="fn-info"><span class="v">{$todayusersignup|htmlentities}</span><span class="l">今日新注册</span></div>
-                                    </div>
-                                    <div class="feed-node-p">
-                                        <div class="fn-icon" style="color:var(--success)"><i class="fa fa-sign-in"></i></div>
-                                        <div class="fn-info"><span class="v">{$todayuserlogin|htmlentities}</span><span class="l">今日实时登录</span></div>
-                                    </div>
-                                    <div class="feed-node-p">
-                                        <div class="fn-icon" style="color:var(--warning)"><i class="fa fa-bolt"></i></div>
-                                        <div class="fn-info"><span class="v">{$threednu|htmlentities}</span><span class="l">三日留存指标</span></div>
-                                    </div>
-                                    <div class="feed-node-p">
-                                        <div class="fn-icon" style="color:var(--accent-indigo)"><i class="fa fa-area-chart"></i></div>
-                                        <div class="fn-info"><span class="v">{$sevendnu|htmlentities}</span><span class="l">七日趋势新增</span></div>
-                                    </div>
-                                    <div class="feed-node-p">
-                                        <div class="fn-icon" style="color:var(--accent-blue)"><i class="fa fa-compass"></i></div>
-                                        <div class="fn-info"><span class="v">{$sevendau|htmlentities}</span><span class="l">七日均值活跃</span></div>
-                                    </div>
+                <!-- 系统资源总览 -->
+                <div class="row dashboard-section">
+                    <div class="col-xs-12 col-lg-12">
+                        <div class="dashboard-card">
+                            <div class="card-head">
+                                <div>
+                                    <h3 class="card-title">系统资源总览</h3>
+                                    <div class="card-subtitle">数据库、文件与媒体资源的当前占用情况</div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- 底部固定 Dock -->
-                        <div class="footer-dock-p">
-                            <div class="dock-card-p">
-                                <i class="fa fa-rocket"></i>
-                                <div class="dock-content-p"><div class="l">核心引擎</div><div class="v">{$totalworkingaddon|htmlentities} 正常运行</div></div>
-                            </div>
-                            <div class="dock-card-p">
-                                <i class="fa fa-database"></i>
-                                <div class="dock-content-p"><div class="l">数据库占用</div><div class="v">{$dbsize|format_bytes=###,'',0}</div></div>
-                            </div>
-                            <div class="dock-card-p">
-                                <i class="fa fa-hdd-o"></i>
-                                <div class="dock-content-p"><div class="l">云端文件</div><div class="v">{$attachmentsize|format_bytes=###,'',0}</div></div>
-                            </div>
-                            <div class="dock-card-p">
-                                <i class="fa fa-picture-o"></i>
-                                <div class="dock-content-p"><div class="l">媒体资源</div><div class="v">{$picturenums|htmlentities} 张图片</div></div>
+                            <div class="row">
+                                {volist name="resourceSummary" id="item"}
+                                <div class="col-xs-12 col-sm-4" style="margin-bottom:12px;">
+                                    <div class="service-box">
+                                        <div class="card-subtitle">{$item.label}</div>
+                                        <div class="service-main">{$item.value}</div>
+                                        <div class="card-subtitle">{$item.desc}</div>
+                                    </div>
+                                </div>
+                                {/volist}
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="tab-pane fade" id="two">
-                    <div class="viz-card-p" style="height:100%; border:2px dashed #e2e8f0; align-items:center; justify-content:center; color:#cbd5e1">
-                        {:__('Custom zone')}
+
+                <!-- 趋势 + 活跃度 -->
+                <div class="row dashboard-section">
+                    <div class="col-xs-12 col-lg-8" style="margin-bottom:16px;">
+                        <div class="dashboard-card">
+                            <div class="card-head">
+                                <div>
+                                    <h3 class="card-title">近 7 日会员增长趋势</h3>
+                                    <div class="card-subtitle">按日统计新增注册会员数量</div>
+                                </div>
+                            </div>
+                            <div id="userTrendChart" class="chart-box"></div>
+                        </div>
                     </div>
+
+                    <div class="col-xs-12 col-lg-4" style="margin-bottom:16px;">
+                        <div class="dashboard-card">
+                            <div class="card-head">
+                                <div>
+                                    <h3 class="card-title">活跃度概览</h3>
+                                    <div class="card-subtitle">会员活跃与留存表现</div>
+                                </div>
+                            </div>
+                            <div class="summary-band">
+                                {volist name="activePills" id="pill"}
+                                <div class="summary-pill">
+                                    <span class="label">{$pill.label}</span>
+                                    <span class="value">{$pill.value}</span>
+                                </div>
+                                {/volist}
+                            </div>
+                            <div class="service-box">
+                                {volist name="activeLines" id="line"}
+                                <div class="service-line">
+                                    <span>{$line.label}</span>
+                                    <strong>{$line.value}</strong>
+                                </div>
+                                {/volist}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="two">
+                <div class="dash-empty">
+                    <i class="fa fa-th-large"></i>
+                    <p>{:__('Custom zone')}</p>
                 </div>
             </div>
         </div>

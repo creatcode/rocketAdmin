@@ -45,9 +45,10 @@
                 <strong>Copyright &copy; 2017-{:date("Y")} <a href="__PUBLIC__">{$site.name|htmlentities}</a>.</strong> All rights reserved.
             </footer>
 
-            <!-- 右侧控制栏 -->
-            <div class="control-sidebar-bg"></div>
+            <!-- 右侧控制栏：control 必须在 control-sidebar-bg 之前，
+                 遮罩显隐依赖 .control-sidebar.control-sidebar-open ~ .control-sidebar-bg 兄弟选择器 -->
             {include file="common/control" /}
+            <div class="control-sidebar-bg"></div>
         </div>
 
         <!-- 加载JS脚本 -->

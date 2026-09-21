@@ -2,77 +2,113 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
 
     var Controller = {
         index: function () {
-            // 基于准备好的dom，初始化echarts实例
-            var myChart = Echarts.init(document.getElementById('echart'), 'walden');
+            var chartEl = document.getElementById('userTrendChart');
+            if (!chartEl) {
+                return;
+            }
 
-            // 指定图表的配置项和数据
+            var chart = Echarts.init(chartEl);
             var option = {
-                title: {
-                    text: '',
-                    subtext: ''
-                },
-                color: [
-                    "#18d1b1",
-                    "#3fb1e3",
-                    "#626c91",
-                    "#a0a7e6",
-                    "#c4ebad",
-                    "#96dee8"
-                ],
                 tooltip: {
-                    trigger: 'axis'
-                },
-                legend: {
-                    data: [__('Register user')]
-                },
-                toolbox: {
-                    show: false,
-                    feature: {
-                        magicType: {show: true, type: ['stack', 'tiled']},
-                        saveAsImage: {show: true}
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(29,53,87,.92)',
+                    borderWidth: 0,
+                    textStyle: {
+                        color: '#fff'
                     }
+                },
+                grid: {
+                    left: 18,
+                    // ECharts 4 的 containLabel 不为 boundaryGap:false 的末位标签预留右半宽，
+                    // 参考实现用 18 会被裁掉半截日期，故加宽到 36
+                    right: 36,
+                    top: 36,
+                    bottom: 18,
+                    containLabel: true
                 },
                 xAxis: {
                     type: 'category',
                     boundaryGap: false,
-                    data: Config.column
-                },
-                yAxis: {},
-                grid: [{
-                    left: 'left',
-                    top: 'top',
-                    right: '10',
-                    bottom: 30
-                }],
-                series: [{
-                    name: __('Register user'),
-                    type: 'line',
-                    smooth: true,
-                    areaStyle: {
-                        normal: {}
-                    },
-                    lineStyle: {
-                        normal: {
-                            width: 1.5
+                    data: Config.column || [],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#d5e2f3'
                         }
                     },
-                    data: Config.userdata
+                    axisLabel: {
+                        color: '#7f92aa'
+                    },
+                    axisTick: {
+                        show: false
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    minInterval: 1,               // 注册数只能取整，避免出现 0.2 / 0.4 刻度
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(126,156,203,.14)'
+                        }
+                    },
+                    axisLine: {
+                        show: false
+                    },
+                    axisLabel: {
+                        color: '#7f92aa'
+                    },
+                    axisTick: {
+                        show: false
+                    }
+                },
+                series: [{
+                    name: '新增会员',
+                    type: 'line',
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    data: Config.userdata || [],
+                    lineStyle: {
+                        width: 4,
+                        color: '#6b93f1'
+                    },
+                    itemStyle: {
+                        color: '#6b93f1',
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    areaStyle: {
+                        color: new Echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(107,147,241,.34)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(107,147,241,.04)'
+                        }])
+                    }
                 }]
             };
 
-            // 使用刚指定的配置项和数据显示图表。
-            myChart.setOption(option);
+            chart.setOption(option);
 
-            $(window).resize(function () {
-                myChart.resize();
+            // 全 0 时给出空状态，避免渐变底容器被误读为渲染失败
+            var hasData = (Config.userdata || []).some(function (v) {
+                return Number(v) > 0;
+            });
+            if (!hasData) {
+                var tip = document.createElement('div');
+                tip.className = 'chart-box__empty';
+                tip.textContent = '暂无数据';
+                chartEl.appendChild(tip);
+            }
+
+            $(window).on('resize.dashboard', function () {
+                chart.resize();
             });
 
-            $(document).on("click", ".btn-refresh", function () {
-                setTimeout(function () {
-                    myChart.resize();
-                }, 0);
+            // 页签切换后容器尺寸变化，必须重算
+            $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function () {
+                chart.resize();
             });
-
         }
     };
 

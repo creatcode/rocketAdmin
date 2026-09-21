@@ -142,8 +142,8 @@ define(['jquery', 'bootstrap', 'toastr', 'layer', 'lang'], function ($, undefine
                 options = $.extend({
                     type: 2,
                     title: title,
-                    shadeClose: true,
-                    shade: false,
+                    shadeClose: false,
+                    shade: 0.3,
                     maxmin: true,
                     moveOut: true,
                     area: area,
