@@ -1,10 +1,18 @@
 <?php
 
-return [
-    'autoload' => false,
-    'hooks' => [],
-    'route' => [],
-    'priority' => [],
-    'domain' => '',
-    'service' => [],
-];
+return array (
+  'autoload' => false,
+  'hooks' => 
+  array (
+  ),
+  'route' => 
+  array (
+  ),
+  'priority' => 
+  array (
+  ),
+  'domain' => '',
+  'service' => 
+  array (
+  ),
+);
