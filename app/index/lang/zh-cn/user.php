@@ -89,4 +89,5 @@ return [
     'Oldpassword'                                => '旧密码',
     'Newpassword'                                => '新密码',
     'Renewpassword'                              => '重复新密码',
+    'Invalid request'                            => '非法请求',
 ];

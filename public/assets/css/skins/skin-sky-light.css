@@ -20,10 +20,6 @@
     border-right: 1px solid #cfe5f5;
 }
 
-.skin-sky-light .main-header .navbar {
-    background-color: #fff;
-}
-
 .skin-sky-light .main-header .navbar .nav>li>a,
 .skin-sky-light .main-header .navbar .navbar-nav>li>a,
 .skin-sky-light .main-header .navbar .sidebar-toggle {
@@ -137,6 +133,22 @@ body.inside-header fieldset[disabled] .btn-primary:hover {
     color: #fff !important;
 }
 
+/* 成功按钮 */
+.skin-sky-light .btn-success,
+body.inside-header .btn-success {
+    background-color: #18bc9c !important;
+    border-color: #18bc9c !important;
+    color: #fff !important;
+}
+
+.skin-sky-light .btn-success:is(:hover, :focus, .focus, :active, .active),
+.skin-sky-light .open>.dropdown-toggle.btn-success,
+body.inside-header .btn-success:is(:hover, :focus, .focus, :active, .active),
+body.inside-header .open>.dropdown-toggle.btn-success {
+    background-color: #128f76 !important;
+    border-color: #128f76 !important;
+    color: #fff !important;
+}
 
 .skin-sky-light .form-control:focus,
 body.inside-header .form-control:focus {
@@ -160,7 +172,45 @@ body.inside-header .toolbar .dropdown {
     margin-left: 10px;
 }
 
-/* 未选中页码：次级文字色弱化，主色只留给 hover 与选中态（见下方 .active 规则） */
+/* 表格工具栏右侧 */
+.skin-sky-light .bootstrap-table .fixed-table-toolbar .columns-right .btn,
+.skin-sky-light .bootstrap-table .fixed-table-toolbar .search .form-control,
+body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn,
+body.inside-header .bootstrap-table .fixed-table-toolbar .search .form-control {
+    padding: 6px 12px !important;
+    border-radius: 3px;
+    color: #333;
+    background-color: #fff !important;
+    border-color: #ccc !important;
+}
+
+.skin-sky-light .bootstrap-table .fixed-table-toolbar .columns-right .btn:hover,
+.skin-sky-light .bootstrap-table .fixed-table-toolbar .columns-right .btn:focus,
+body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn:hover,
+body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn:focus {
+    color: #333;
+    background-color: #e6e6e6 !important;
+    border-color: #adadad !important;
+}
+
+/* 右侧按钮连成一条 */
+.skin-sky-light .bootstrap-table .fixed-table-toolbar .columns .btn,
+body.inside-header .bootstrap-table .fixed-table-toolbar .columns .btn {
+    margin-left: -1px !important;
+    border-radius: 0 !important;
+}
+
+.skin-sky-light .bootstrap-table .fixed-table-toolbar .columns-right .btn,
+body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn {
+    border-radius: 0 !important;
+}
+
+.skin-sky-light .bootstrap-table .fixed-table-toolbar .columns-right,
+body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right {
+    margin-left: -1px !important;
+}
+
+/* 未选中页码 */
 .skin-sky-light .pagination>li>a,
 .skin-sky-light .pagination>li>span,
 body.inside-header .pagination>li>a,
@@ -331,7 +381,7 @@ body.inside-header .pull-left #toolbar>* {
     margin-bottom: 10px;
 }
 
-/* 工具栏任意相邻子元素统一间距（含被span等包裹的按钮，如附件选择页的上传按钮） */
+/* 工具栏任意相邻子元素统一间距 */
 .skin-sky-light .pull-left #toolbar>*+*,
 body.inside-header .pull-left #toolbar>*+* {
     margin-left: 10px !important;
@@ -339,7 +389,7 @@ body.inside-header .pull-left #toolbar>*+* {
 
 .skin-sky-light .pull-right.search,
 body.inside-header .pull-right.search {
-    margin-right: 20px !important;
+    margin-right: 8px !important;
 }
 
 .skin-sky-light .pull-right.columns,
@@ -361,7 +411,7 @@ body.inside-header .pull-right.columns-right .btn {
 .skin-sky-light .pull-right.columns .btn,
 body.inside-header .pull-right.columns .btn-group,
 body.inside-header .pull-right.columns .btn {
-    margin-left: 1px !important;
+    margin-left: 0 !important;
 }
 
 .skin-sky-light .pull-right.columns .caret,
@@ -371,7 +421,7 @@ body.inside-header .pull-right.columns .caret {
 
 .skin-sky-light .pull-right.columns-right,
 body.inside-header .pull-right.columns-right {
-    margin-left: 1px !important;
+    margin-left: 0 !important;
 }
 
 .skin-sky-light .input-group .input-group-btn .form-control,
@@ -416,11 +466,11 @@ body.inside-header .searchit .label {
 }
 
 .layui-layer.layui-layer-fast .layui-layer-title {
-    background: #e9f4fd !important;
+    background: #fff !important;
     color: #10222f !important;
     font-weight: 700 !important;
     font-size: 16px !important;
-    border-bottom: 1px solid #b3d7ef !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
 
 .layui-layer-fast .layui-layer-setwin .layui-layer-ico::after,
@@ -487,7 +537,7 @@ body.inside-header .layui-layer-fast .layui-layer-footer .btn-primary:focus {
 
 .layui-layer-fast .layui-layer-footer .btn-default,
 body.inside-header .layui-layer-fast .layui-layer-footer .btn-default {
-    background-color: #e9f4fd !important;
+    background-color: #fff !important;
     border-color: #b3d7ef !important;
     color: #33556b !important;
 }
@@ -595,7 +645,7 @@ body.inside-header .panel-intro .panel-heading {
     border-radius: 10px;
 }
 
-/* 语义色：成功态保持绿色，不随主色改为蓝色 */
+/* 语义色 */
 .skin-sky-light .text-success,
 body.inside-header .text-success,
 .skin-sky-light .text-success a,
@@ -662,82 +712,6 @@ body.inside-header .panel-intro>.panel-heading .nav-tabs>li.active>a {
     color: #0369a1;
 }
 
-.skin-sky-light.darktheme .sidebar a,
-.skin-sky-light.darktheme .sidebar-menu li.treeview.treeview-open>a {
-    color: #fff;
-    background: #070707;
-}
-
-.skin-sky-light.darktheme .panel-heading .nav-tabs>li>a,
-body.inside-header.darktheme .panel-heading .nav-tabs>li>a {
-    color: #fff !important;
-    background: #404040 !important;
-}
-
-.skin-sky-light.darktheme .panel-heading .nav-tabs>li.active>a,
-body.inside-header.darktheme .panel-heading .nav-tabs>li.active>a {
-    position: relative;
-}
-
-.skin-sky-light.darktheme .panel-heading .nav-tabs>li.active>a::after,
-body.inside-header.darktheme .panel-heading .nav-tabs>li.active>a::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: #0369a1;
-    border-radius: 6px;
-}
-
-.skin-sky-light.darktheme .btn-default,
-body.inside-header.darktheme .btn-default {
-    color: #fff;
-}
-
-.skin-sky-light.darktheme .bootstrap-table .table thead>tr>th,
-body.inside-header.darktheme .bootstrap-table .table thead>tr>th {
-    border-color: #262626;
-    background: #262626;
-}
-
-.skin-sky-light.darktheme .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd),
-body.inside-header.darktheme .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd) {
-    background: #404040;
-}
-
-.skin-sky-light.darktheme .bootstrap-table tbody tr td,
-body.inside-header.darktheme .bootstrap-table tbody tr td {
-    border-left-width: 0 !important;
-    border-right-width: 0 !important;
-}
-
-.skin-sky-light.darktheme .bootstrap-table .table-hover>tbody>tr:hover,
-body.inside-header.darktheme .bootstrap-table .table-hover>tbody>tr:hover {
-    background: rgba(255, 255, 255, 0.06) !important;
-}
-
-.skin-sky-light.darktheme .form-commonsearch>div,
-body.inside-header.darktheme .form-commonsearch>div {
-    background: #262626 !important;
-}
-
-.skin-sky-light.darktheme .panel-intro .panel-heading,
-body.inside-header.darktheme .panel-intro .panel-heading {
-    border-bottom: 12px solid #262626 !important;
-}
-
-.skin-sky-light.darktheme .panel,
-body.inside-header.darktheme .panel {
-    background-color: #333333 !important;
-}
-
-.skin-sky-light.darktheme .panel-heading,
-body.inside-header.darktheme .panel-heading {
-    background: #3a3a3a;
-}
-
 .skin-sky-light .main-header li.user-header {
     background: #fff !important;
 }
@@ -782,10 +756,6 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     border-color: transparent !important;
 }
 
-.skin-sky-light .sidebar-collapse ul.treeview-menu {
-    background: #cfe7f9 !important;
-}
-
 .skin-sky-light .sidebar-menu li.treeview.active>a,
 .skin-sky-light .sidebar-menu li.treeview.treeview-open>a,
 .skin-sky-light .sidebar-menu>li>.treeview-menu {
@@ -826,28 +796,14 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     border-left-color: transparent;
 }
 
-.skin-sky-light .sidebar-menu>li.active {
-    border-left-color: #0369a1;
-}
-
 .skin-sky-light.sidebar-collapse .sidebar-menu>li.active>a {
     margin: 5px;
     padding-left: 10px;
 }
 
-.skin-sky-light .sidebar-menu>li:hover>a {
-    color: #083c5c !important;
-    background: #cfe7f9 !important;
-}
-
 .skin-sky-light.sidebar-collapse .sidebar-menu li:hover>a {
     color: #083c5c;
     background: #cfe7f9;
-}
-
-.skin-sky-light .sidebar-menu>li.active>a {
-    color: #0369a1 !important;
-    background: #cbe4f7 !important;
 }
 
 .skin-sky-light .treeview-menu>li.active>a:hover {
@@ -891,18 +847,6 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
 .skin-sky-light.sidebar-collapse .sidebar-menu .treeview-menu li.active>a {
     color: #0369a1 !important;
     background: #cbe4f7 !important;
-}
-
-.skin-sky-light .main-header .navbar .nav>li>a:hover,
-.skin-sky-light .main-header .navbar .nav>li>a:active,
-.skin-sky-light .main-header .navbar .nav>li>a:focus,
-.skin-sky-light .main-header .navbar .nav .open>a,
-.skin-sky-light .main-header .navbar .nav .open>a:hover,
-.skin-sky-light .main-header .navbar .nav .open>a:focus,
-.skin-sky-light .main-header .navbar .nav>.active>a,
-.skin-sky-light .main-header .navbar .sidebar-toggle:hover {
-    color: #0369a1;
-    background: #cbe4f7;
 }
 
 .skin-sky-light .main-header .logo:hover {
@@ -958,7 +902,7 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
 .skin-sky-light .main-sidebar,
 .skin-sky-light .left-side,
 .skin-sky-light .logo {
-    width: 200px;
+    width: 230px;
     border-color: transparent;
 }
 
@@ -966,7 +910,7 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
 .skin-sky-light .right-side,
 .skin-sky-light .main-footer,
 .skin-sky-light .main-header .navbar {
-    margin-left: 200px;
+    margin-left: 230px;
     border-left: 1px solid #cfe5f5;
 }
 
@@ -982,9 +926,9 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
 }
 
 .skin-sky-light .sidebar-form {
+    border: 1px solid #b3d7ef !important;
     border-radius: 8px !important;
     overflow: hidden !important;
-    border-color: #cfe5f5 !important;
     background: #fff !important;
 }
 
@@ -1015,7 +959,7 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
 }
 
 .skin-sky-light .sidebar-form .btn {
-    color: #999;
+    color: #33556b;
     border-top-left-radius: 0;
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
@@ -1060,33 +1004,12 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     padding: 0 20px !important;
 }
 
-.skin-sky-light .nav-addtabs>li.active>a {
-    color: #0369a1;
-    background: #cbe4f7;
-}
-
 .skin-sky-light .nav-addtabs>li:hover>a {
     color: #0369a1;
 }
 
 .skin-sky-light .sidebar-menu li>a>.pull-right-container {
     margin-top: -10px;
-}
-
-.skin-sky-light.darktheme .main-header .logo:hover {
-    background: #000;
-    color: #fff;
-}
-
-.skin-sky-light.darktheme .treeview-menu>li.active>a {
-    color: #0369a1 !important;
-    background: #cbe4f7;
-}
-
-.skin-sky-light.darktheme.sidebar-collapse .sidebar-menu li:hover>a,
-.skin-sky-light.darktheme.sidebar-collapse .sidebar-menu li.active>a {
-    color: #0369a1 !important;
-    background: #cbe4f7;
 }
 
 .skin-sky-light .main-sidebar form.sidebar-form {
@@ -1097,15 +1020,8 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     overflow: auto !important;
 }
 
-@media (max-width: 767px) {
-    .skin-sky-light.darktheme .main-header .navbar {
-        background-color: #0c0c0c;
-    }
-}
-
-/* ===== 弹窗样式补充：修复白色皮肤与 layui-layer-fast 基线的混搭 ===== */
-/* 弹窗本体：统一 4px 圆角和轻阴影（选择器带 .layui-layer 提高优先级，
-   保证本皮肤以 @import 方式先于 backend.css 基线加载时也能胜出） */
+/* 弹窗样式补充 */
+/* 弹窗本体 */
 .layui-layer.layui-layer-fast,
 .layui-layer.layui-layer-fast.layui-layer-border {
     border-radius: 6px !important;
@@ -1121,12 +1037,12 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     border-radius: 0 0 4px 4px;
 }
 
-/* 底部表单操作条：基线是灰色背景，这里固定为透明（通常已由上方 .layui-layer-btn 规则覆盖，此处兜底） */
+/* 底部表单操作条 */
 .layui-layer-fast .layui-layer-footer {
     background-color: transparent !important;
 }
 
-/* 第三个及以上的按钮：基线是灰底白字，改为与次要按钮（btn1）一致 */
+/* 第三个及以上的按钮 */
 .layui-layer-fast .layui-layer-btn a:not(.layui-layer-btn0):not(.layui-layer-btn1) {
     border: 1px solid #b3d7ef !important;
     background-color: #e9f4fd !important;
@@ -1138,13 +1054,9 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     color: #0369a1 !important;
 }
 
-/* ==========================================================================
-   色调统一补充：将公共基线的遗留配色收敛到本皮肤的主色 + 中性灰体系
-   ========================================================================== */
+/* 色调统一补充 */
 
-/* --- 1. 全局链接色：基线 fastadmin.css:171 为 #4397fd，统一为主色。
-       权重须为 0,1,1；须排除 .btn 与 .text-* 语义色类（均为 0,1,0），
-       否则二者都会被本条压过。 --- */
+/* 1. 全局链接色 */
 .skin-sky-light a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
 .inside-header a:where(:not(.btn, .text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)) {
     color: #0369a1;
@@ -1157,7 +1069,7 @@ body.inside-header .table-bordered.fixed-table-fast-contaner td {
     color: #075985;
 }
 
-/* --- 2. 内容区底色：基线为 #eff6fd（灰蓝），与 body 的 #cfe5f5 对齐 --- */
+/* 2. 内容区底色 */
 .skin-sky-light .content-wrapper,
 .skin-sky-light .right-side,
 body.inside-header .content-wrapper,
@@ -1165,39 +1077,7 @@ body.inside-header .right-side {
     background-color: #cfe5f5;
 }
 
-/* --- 3. 右侧控制栏：基线为 #222d32 深色，改为白色调 --- */
-.skin-sky-light .control-sidebar-dark,
-.skin-sky-light .control-sidebar-dark + .control-sidebar-bg,
-body.inside-header .control-sidebar-dark,
-body.inside-header .control-sidebar-dark + .control-sidebar-bg {
-    background: #fff;
-    color: #33556b;
-}
-
-.skin-sky-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs,
-body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs {
-    border-bottom-color: #cfe5f5;
-}
-
-.skin-sky-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a,
-body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a {
-    background: #cfe7f9;
-    color: #33556b;
-    border-left-color: transparent;
-    border-bottom-color: transparent;
-}
-
-.skin-sky-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover,
-.skin-sky-light .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a,
-body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li > a:hover,
-body.inside-header .control-sidebar-dark .nav-tabs.control-sidebar-tabs > li.active > a {
-    background: #fff;
-    color: #0369a1;
-}
-
-/* --- 4. 表单标签：基线继承 body 的 #333，统一为次级文字色。
-       本组权重（label 为 0,1,1，.control-label 为 0,2,0）高于语义色类 .text-*（0,1,0），
-       故须用 :where() 排除，否则 <label class="text-danger"> 会被压过 --- */
+/* 3. 表单标签 */
 .skin-sky-light .control-label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
 .skin-sky-light label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
 body.inside-header .control-label:where(:not(.text-primary, .text-success, .text-info, .text-warning, .text-danger, .text-muted)),
@@ -1205,13 +1085,13 @@ body.inside-header label:where(:not(.text-primary, .text-success, .text-info, .t
     color: #33556b;
 }
 
-/* --- 5. 表格行底色：统一为白（条纹色由基线 .bootstrap-table 规则另行处理） --- */
+/* 4. 表格行底色 */
 .skin-sky-light .table > tbody > tr,
 body.inside-header .table > tbody > tr {
     background-color: #fff;
 }
 
-/* --- 6. btn-info：基线为 #1688f1（与主色色差过小），对齐主色 --- */
+/* 5. btn-info */
 .skin-sky-light .btn-info,
 .skin-sky-light .btn-info:active,
 .skin-sky-light .btn-info.active,
@@ -1255,7 +1135,30 @@ body.inside-header fieldset[disabled] .btn-info {
     color: #fff !important;
 }
 
-/* --- 7. label-info / badge：对齐浅底语义色风格 --- */
+/* 5.1 btn-info 切换组：常态与选中态同色会丢失选中反馈，未选中改为描边态 */
+.skin-sky-light .btn-group:has(>.btn-info.active)>.btn-info:not(.active),
+body.inside-header .btn-group:has(>.btn-info.active)>.btn-info:not(.active) {
+    background-color: #fff !important;
+    border-color: #dcdfe6 !important;
+    color: #1d2129 !important;
+}
+
+.skin-sky-light .btn-group:has(>.btn-info.active)>.btn-info:not(.active):hover,
+.skin-sky-light .btn-group:has(>.btn-info.active)>.btn-info:not(.active):focus,
+body.inside-header .btn-group:has(>.btn-info.active)>.btn-info:not(.active):hover,
+body.inside-header .btn-group:has(>.btn-info.active)>.btn-info:not(.active):focus {
+    background-color: #eff6fd !important;
+    border-color: #0369a1 !important;
+    color: #0369a1 !important;
+}
+
+/* 组内按钮不保留 UA 焦点环，焦点反馈由描边与底色变化承担 */
+.skin-sky-light .btn-group:has(>.btn-info.active)>.btn-info,
+body.inside-header .btn-group:has(>.btn-info.active)>.btn-info {
+    outline: none !important;
+}
+
+/* 6. label-info / badge */
 .skin-sky-light .label-info,
 body.inside-header .label-info {
     color: #0369a1;
@@ -1268,13 +1171,13 @@ body.inside-header .badge {
     background-color: #f75444;
 }
 
-/* --- 8. 进度条：语义色保留，仅统一 info 分支 --- */
+/* 7. 进度条 */
 .skin-sky-light .progress-bar-info,
 body.inside-header .progress-bar-info {
     background-color: #0369a1;
 }
 
-/* --- 9. alert 提示条：基线为实心重色且带 !important，需同权重覆盖为浅底风格 --- */
+/* 8. alert 提示条 */
 .skin-sky-light .alert-success,
 body.inside-header .alert-success {
     color: #18bc9c !important;
@@ -1303,9 +1206,7 @@ body.inside-header .alert-danger {
     border-color: rgba(247, 84, 68, 0.2) !important;
 }
 
-/* --- 10. callout 标注框：与 alert 同源的实心重色，统一为浅底。
-       基线 fastadmin.css:5342-5368 对 callout/alert/modal 整组下了 color:#fff !important，
-       故文字色必须同带 !important，否则浅底配白字将不可读 --- */
+/* 9. callout 标注框 */
 .skin-sky-light .callout.callout-success,
 body.inside-header .callout.callout-success {
     background-color: rgba(24, 188, 156, 0.1) !important;
@@ -1334,8 +1235,7 @@ body.inside-header .callout.callout-danger {
     color: #f75444 !important;
 }
 
-/* --- 11. bg-* 角标配色板：仅收敛 bg-blue / bg-light-blue 到主色（基线 #1688f1）；
-       其余分支（red/green/yellow/teal/orange/purple）承载计数辨识，保留原色。 --- */
+/* 10. bg-* 角标配色板 */
 .skin-sky-light .bg-blue,
 body.inside-header .bg-blue {
     background-color: #0369a1 !important;
@@ -1346,7 +1246,7 @@ body.inside-header .bg-light-blue {
     background-color: #0369a1 !important;
 }
 
-/* --- 12. breadcrumb：基线为浅灰底，统一为透明 --- */
+/* 11. breadcrumb */
 .skin-sky-light .breadcrumb,
 body.inside-header .breadcrumb {
     background-color: transparent;
@@ -1357,49 +1257,13 @@ body.inside-header .breadcrumb > .active {
     color: #7295ab;
 }
 
-/* --- 13. 文字语义色：primary 基线为 #444c69、info 基线为 #1688f1，均收敛到主色；
-       muted 基线为 #777777，收敛到提示灰 --- */
-.skin-sky-light .text-primary,
-body.inside-header .text-primary,
-.skin-sky-light .text-info,
-body.inside-header .text-info {
-    color: #0369a1;
-}
+/* 语义色类不覆盖 */
 
-.skin-sky-light .text-muted,
-body.inside-header .text-muted {
-    color: #7295ab;
-}
+/* 14. 基线遗留组件 */
 
-/* 链接态语义色：基线 hover 为各自深色（#30364a / #0c6ec8），统一为主色 hover */
-.skin-sky-light a.text-primary:hover,
-.skin-sky-light a.text-primary:focus,
-.skin-sky-light a.text-info:hover,
-.skin-sky-light a.text-info:focus,
-body.inside-header a.text-primary:hover,
-body.inside-header a.text-primary:focus,
-body.inside-header a.text-info:hover,
-body.inside-header a.text-info:focus {
-    color: #075985;
-}
+/* 13.1 浅色变体 */
 
-/* muted 链接保持中性灰，不随全局链接色转蓝 */
-.skin-sky-light a.text-muted:hover,
-.skin-sky-light a.text-muted:focus,
-body.inside-header a.text-muted:hover,
-body.inside-header a.text-muted:focus {
-    color: #7295ab;
-}
-
-/* ==========================================================================
-   14. 补齐基线遗留组件：Bootstrap 2 旧色板与实心重色
-   ========================================================================== */
-
-/* --- 14.1 浅色变体 btn-*-light / alert-*-light：基线为 Bootstrap 2 旧色板
-       （#dff0d8/#468847 等），统一到皮肤语义浅底。.btn-warning-light 等
-       正被 require-table.js、category/add.html 使用，非空置类。 --- */
-
-/* 主色系：primary 与 info 同收敛到主色 */
+/* 主色系 */
 .skin-sky-light .btn-primary-light,
 .skin-sky-light .btn-info-light,
 .skin-sky-light .alert-primary-light,
@@ -1495,8 +1359,7 @@ body.inside-header .alert-warning-light a {
     color: #c87f0a;
 }
 
-/* --- 14.2 modal：基线的 header/footer 为实心重色（active 色）、body 为实心语义色，
-       且整组 color:#fff !important。统一为浅底 + 同色文字，与 alert / callout 一致 --- */
+/* 13.2 modal */
 .skin-sky-light .modal-primary .modal-header,
 .skin-sky-light .modal-primary .modal-body,
 .skin-sky-light .modal-primary .modal-footer,
@@ -1552,7 +1415,7 @@ body.inside-header .modal-danger .modal-footer {
     color: #f75444 !important;
 }
 
-/* --- 14.3 进度条旧主色变体：基线为 #4397fd / #1688f1，对齐主色 --- */
+/* 13.3 进度条旧主色变体 */
 .skin-sky-light .progress-bar-light-blue,
 .skin-sky-light .progress-bar-aqua,
 body.inside-header .progress-bar-light-blue,
@@ -1560,30 +1423,9 @@ body.inside-header .progress-bar-aqua {
     background-color: #0369a1;
 }
 
-/* --- 14.4 下拉菜单项：基线悬停为 #cfe7f9（旧中性色），统一为浅蓝底 + 主色字 --- */
-.skin-sky-light .dropdown-menu > li > a:hover,
-.skin-sky-light .dropdown-menu > li > a:focus,
-.skin-sky-light .dropdown-menu > li.active > a,
-body.inside-header .dropdown-menu > li > a:hover,
-body.inside-header .dropdown-menu > li > a:focus,
-body.inside-header .dropdown-menu > li.active > a {
-    background-color: #cbe4f7;
-    color: #0369a1;
-}
+/* 15. 基线遗留主色与 info 色 */
 
-.skin-sky-light .bootstrap-table .bs-bars .fixed-table-toolbar .dropdown-menu > li:hover > a,
-body.inside-header .bootstrap-table .bs-bars .fixed-table-toolbar .dropdown-menu > li:hover > a {
-    background-color: #cbe4f7;
-    color: #0369a1;
-}
-
-/* ==========================================================================
-   15. 补齐 FastAdmin 定制版 Bootstrap 的遗留主色与 info 色
-       基线 bootstrap 的主色是 #444c69（深蓝灰）、info 是 #1688f1，
-       与皮肤主色 #0369a1 不一致，且未被第 1-14 组覆盖
-   ========================================================================== */
-
-/* --- 15.1 主色 #444c69 → #0369a1 --- */
+/* 14.1 主色 #444c69 → #0369a1 */
 .skin-sky-light .bg-primary,
 body.inside-header .bg-primary {
     background-color: #0369a1 !important;
@@ -1625,7 +1467,7 @@ body.inside-header .btn-primary .badge {
     color: #0369a1;
 }
 
-/* --- 15.2 info 色 #1688f1 → #0369a1 --- */
+/* 14.2 info 色 #1688f1 → #0369a1 */
 .skin-sky-light .text-aqua,
 .skin-sky-light .text-blue,
 body.inside-header .text-aqua,
@@ -1661,7 +1503,7 @@ body.inside-header .panel-info > .panel-heading .badge {
     color: #fff;
 }
 
-/* --- 15.3 标题副文本与 small：基线为 #777777，统一为提示灰 #7295ab --- */
+/* 14.3 标题副文本与 small */
 .skin-sky-light small,
 .skin-sky-light .small,
 body.inside-header small,
@@ -1669,12 +1511,7 @@ body.inside-header .small {
     color: #7295ab;
 }
 
-/* ==========================================================================
-   16. 标签页选中态配色
-       基线 bootstrap 的 .nav-tabs > li.active > a 为 #555（深灰，独立于
-       panel-heading 使用时可见），FastAdmin 的 .nav-tabs-custom 用旧主色
-       #4397fd。按"选中态用主色、未选中态弱化"的原则统一。
-   ========================================================================== */
+/* 16. 标签页选中态 */
 .skin-sky-light .nav-tabs > li.active > a,
 .skin-sky-light .nav-tabs > li.active > a:is(:hover, :focus),
 body.inside-header .nav-tabs > li.active > a,
@@ -1682,7 +1519,7 @@ body.inside-header .nav-tabs > li.active > a:is(:hover, :focus) {
     color: #0369a1;
 }
 
-/* nav-tabs-custom：基线 active 顶部边框为旧主色 #4397fd */
+/* nav-tabs-custom */
 .skin-sky-light .nav-tabs-custom > .nav-tabs > li.active,
 body.inside-header .nav-tabs-custom > .nav-tabs > li.active {
     border-top-color: #0369a1;
@@ -1693,20 +1530,16 @@ body.inside-header .nav-tabs-custom > .nav-tabs > li.active > a {
     color: #0369a1;
 }
 
-/* nav-pills 未选中悬停：基线为 #eee，统一为皮肤中性悬停色 + 主色文字 */
+/* nav-pills 未选中悬停 */
 .skin-sky-light .nav-pills > li > a:is(:hover, :focus),
 body.inside-header .nav-pills > li > a:is(:hover, :focus) {
     background-color: #cfe7f9;
     color: #0369a1;
 }
 
-/* ==========================================================================
-   主题特征层
-   white 骨架负责功能覆盖，本层负责主题气质：侧边栏底色、顶栏、
-   内容区底色、圆角尺度与阴影色调。追加在末尾，同权重覆盖骨架。
-   ========================================================================== */
+/* 主题特征层 */
 
-/* --- 1. 侧边栏底色：区分两个主题的第一视觉锚点 --- */
+/* 1. 侧边栏底色 */
 .skin-sky-light .main-sidebar,
 .skin-sky-light .left-side,
 .skin-sky-light .sidebar-menu>li.header {
@@ -1719,13 +1552,13 @@ body.inside-header .nav-pills > li > a:is(:hover, :focus) {
     background: #c9e2f5;
 }
 
-/* 展开的父级菜单：给一层浅底，和白色子菜单拉开层次 */
+/* 展开的父级菜单 */
 .skin-sky-light .sidebar-menu li.treeview.treeview-open>a,
 .skin-sky-light .sidebar-menu li.treeview.active>a {
     background: #d9ecfa;
 }
 
-/* 二级子菜单保持白底，与侧边栏底色形成层次 */
+/* 二级子菜单保持白底 */
 .skin-sky-light .sidebar-menu>li>.treeview-menu {
     background: #fff;
     border-left-color: #d9ecfa;
@@ -1736,8 +1569,7 @@ body.inside-header .nav-pills > li > a:is(:hover, :focus) {
     background: #fff !important;
 }
 
-/* --- 2. 顶部导航：主题色浅底 + 细线。大面积色块才是"一眼可辨"的关键。
-       用 inset 阴影而非 border，避免 1px 边框撑高导致内容区下移 --- */
+/* 2. 顶部导航 */
 .skin-sky-light .main-header .navbar {
     background-color: #e6f3fd;
     box-shadow: inset 0 -1px 0 #cfe5f5;
@@ -1769,13 +1601,13 @@ body.inside-header .nav-pills > li > a:is(:hover, :focus) {
     box-shadow: inset 0 -2px 0 #0369a1;
 }
 
-/* --- 3. 内容区底色 --- */
+/* 3. 内容区底色 */
 .skin-sky-light .content-wrapper,
 .skin-sky-light .right-side {
     background-color: #eff6fd;
 }
 
-/* --- 4. 卡片 / 面板：主题化的圆角与阴影 --- */
+/* 3. 卡片 / 面板 */
 .skin-sky-light .panel {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(3, 105, 161, 0.10);
@@ -1785,14 +1617,14 @@ body.inside-header .nav-pills > li > a:is(:hover, :focus) {
     border-radius: 8px 8px 0 0 !important;
 }
 
-/* --- 5. 表格表头 --- */
+/* 4. 表格表头 */
 .skin-sky-light .bootstrap-table .table thead>tr>th {
     background: #e9f4fd;
     color: #33556b;
     border-color: #cfe5f5;
 }
 
-/* --- 6. 侧边栏选中态：主题色左边条 + 浅底 --- */
+/* 5. 侧边栏选中态 */
 .skin-sky-light .sidebar-menu>li.active {
     border-left-color: #0369a1;
 }
@@ -1808,17 +1640,38 @@ body.inside-header .nav-pills > li > a:is(:hover, :focus) {
     box-shadow: inset 3px 0 0 #0369a1;
 }
 
-/* --- 7. 滚动条：跟随主题色调 --- */
-.skin-sky-light ::-webkit-scrollbar-thumb {
+/* 6. 滚动条 */
+.skin-sky-light ::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.inside-header ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.skin-sky-light ::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.inside-header ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.skin-sky-light ::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.inside-header ::-webkit-scrollbar-thumb {
     background: #7dd3fc;
     border-radius: 8px;
 }
 
-.skin-sky-light ::-webkit-scrollbar-thumb:hover {
+.skin-sky-light ::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.inside-header ::-webkit-scrollbar-thumb:hover {
     background: #0369a1;
 }
 
-/* --- 8. 弹窗圆角跟随主题 --- */
+/* 7. 弹窗圆角跟随主题 */
 .skin-sky-light .layui-layer.layui-layer-fast {
     border-radius: 8px !important;
 }

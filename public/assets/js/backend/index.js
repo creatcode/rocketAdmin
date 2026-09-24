@@ -78,7 +78,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
                 $.ajax({
                     url: 'ajax/wipecache',
                     dataType: 'json',
-                    data: {type: $(this).data("type")},
+                    data: { type: $(this).data("type") },
                     cache: false,
                     success: function (ret) {
                         if (ret.hasOwnProperty("code")) {
@@ -117,7 +117,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
             $(document).on('refresh', '.sidebar-menu', function () {
                 Fast.api.ajax({
                     url: 'index/index',
-                    data: {action: 'refreshmenu'},
+                    data: { action: 'refreshmenu' },
                     loading: false
                 }, function (data) {
                     $(".sidebar-menu li:not([data-rel='external'])").remove();
@@ -208,7 +208,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
             var addtabs = Config.referer ? sessionStorage.getItem("addtabs") : null;
 
             //绑定tabs事件,如果需要点击强制刷新iframe,则请将iframeForceRefresh置为true,iframeForceRefreshTable只强制刷新表格
-            nav.addtabs({iframeHeight: "100%", iframeForceRefresh: false, iframeForceRefreshTable: true, nav: nav});
+            nav.addtabs({ iframeHeight: "100%", iframeForceRefresh: false, iframeForceRefreshTable: true, nav: nav });
 
             if ($("ul.sidebar-menu li.active a").length > 0) {
                 $("ul.sidebar-menu li.active a").trigger("click");
@@ -288,42 +288,21 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
                 $(".sidebar-toggle").trigger("click");
             });
 
+            // 盒子布局。fixed 在本项目无可见效果（.wrapper{overflow:hidden} → 外层永不滚动），
+            // 其唯一可见影响是压制盒子布局（fastadmin.css:130 .fixed.layout-boxed .wrapper{max-width:100%}），
+            // 故不单独提供开关，改由盒子布局反向派生：开盒子 = 关 fixed。
+            $("[data-layout='layout-boxed']").on('click', function () {
+                var value = $(this).prop("checked") ? 1 : 0;
+                $("body").toggleClass('layout-boxed', value === 1);
+                $("body").toggleClass('fixed', value !== 1);
+                createCookie('layout_boxed', value);
+                $(window).trigger("resize");
+            });
+
             // 切换子菜单显示和菜单小图标的显示
             $("[data-menu='show-submenu']").on('click', function () {
                 createCookie('show_submenu', $(this).prop("checked") ? 1 : 0);
                 location.reload();
-            });
-
-            // 右侧控制栏切换
-            $("[data-controlsidebar]").on('click', function () {
-                var cls = $(this).data('controlsidebar');
-                $("body").toggleClass(cls);
-                AdminLTE.layout.fixSidebar();
-                //Fix the problem with right sidebar and layout boxed
-                if (cls == "layout-boxed")
-                    AdminLTE.controlSidebar._fix($(".control-sidebar-bg"));
-                if ($('body').hasClass('fixed') && cls == 'fixed') {
-                    AdminLTE.pushMenu.expandOnHover();
-                    AdminLTE.layout.activate();
-                }
-                AdminLTE.controlSidebar._fix($(".control-sidebar-bg"));
-                AdminLTE.controlSidebar._fix($(".control-sidebar"));
-                var slide = !AdminLTE.options.controlSidebarOptions.slide;
-                AdminLTE.options.controlSidebarOptions.slide = slide;
-                if (!slide)
-                    $('.control-sidebar').removeClass('control-sidebar-open');
-            });
-
-            // 右侧控制栏背景切换
-            $("[data-sidebarskin='toggle']").on('click', function () {
-                var sidebar = $(".control-sidebar");
-                if (sidebar.hasClass("control-sidebar-dark")) {
-                    sidebar.removeClass("control-sidebar-dark")
-                    sidebar.addClass("control-sidebar-light")
-                } else {
-                    sidebar.removeClass("control-sidebar-light")
-                    sidebar.addClass("control-sidebar-dark")
-                }
             });
 
             // 菜单栏展开或收起
@@ -336,7 +315,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
 
             // 切换菜单栏
             $(document).on("click", ".sidebar-toggle", function () {
-                setTimeout(function(){
+                setTimeout(function () {
                     var value = $("body").hasClass("sidebar-collapse") ? 1 : 0;
                     setTimeout(function () {
                         $(window).trigger("resize");
@@ -362,9 +341,6 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
             });
 
             // 重设选项
-            if ($('body').hasClass('fixed')) {
-                $("[data-layout='fixed']").prop('checked', true);
-            }
             if ($('body').hasClass('layout-boxed')) {
                 $("[data-layout='layout-boxed']").prop('checked', true);
             }
@@ -408,8 +384,95 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
 
             $(window).resize();
 
+            // 页面水印已改由模板静态渲染（app/admin/view/index/index.html），与首屏同帧出现，此处不再参与
+
+            // 无操作自动登出
+            if (Config.autoLogout > 0) {
+                var idleLimit = Config.autoLogout * 1000,
+                    idleTimer,
+                    lastActive = Date.now(),
+                    lastReset = 0;
+
+                // 注销会话并跳转登录页，退出原因由登录页展示（同源跳转 sessionStorage 可保留）
+                var doLogout = function () {
+                    sessionStorage.setItem('idleLogoutNotice', '1');
+                    location.href = Backend.api.fixurl('index/logout');
+                };
+
+                // 按墙钟剩余量定时：定时器在标签页被冻结/挂起（Chrome Freeze、移动端切 App）期间不执行，
+                // 用剩余量而非整段时长，回到前台补判时若已超时会立即触发。
+                var resetTimer = function () {
+                    clearTimeout(idleTimer);
+                    idleTimer = setTimeout(doLogout, idleLimit - (Date.now() - lastActive));
+                };
+
+                // 记录操作并广播给其它标签页；1 秒节流避免 mousemove 高频重建定时器
+                var resetIdle = function () {
+                    var now = Date.now();
+                    if (now - lastReset < 1000) {
+                        return;
+                    }
+                    lastReset = now;
+                    lastActive = now;
+                    resetTimer();
+                    try {
+                        localStorage.setItem('idleActivity', String(now));
+                    } catch (e) {
+                    }
+                };
+
+                // 其它标签页有活动时同步续期，避免「A 标签在操作、B 标签却把会话登出」。
+                // 只重置、不再广播，否则 A↔B 互相触发会形成死循环。
+                window.addEventListener('storage', function (e) {
+                    if (e.key === 'idleActivity') {
+                        lastReset = 0;
+                        lastActive = Date.now();
+                        resetTimer();
+                    }
+                });
+
+                // 回到前台按墙钟剩余量重新武装（空闲已超时则立即触发）
+                document.addEventListener('visibilitychange', function () {
+                    if (!document.hidden) {
+                        resetTimer();
+                    }
+                });
+
+                // pointerdown 一次覆盖鼠标/触摸/触控笔（触摸端 mousedown 依赖浏览器合成，不可靠）；
+                // scroll 必须用捕获阶段，否则侧边栏 slimscroll、表格 .fixed-table-body 等内部滚动容器的滚动不算操作
+                var bindIdle = function (doc) {
+                    if (!doc || doc.__idleBound) {
+                        return;
+                    }
+                    doc.__idleBound = true;
+                    $(doc).on('mousemove pointerdown keydown', resetIdle);
+                    doc.addEventListener('scroll', resetIdle, true);
+                    doc.addEventListener('wheel', resetIdle, { passive: true });
+                };
+
+                bindIdle(document);
+                setInterval(function () {
+                    $('iframe').each(function () {
+                        try {
+                            bindIdle(this.contentDocument);
+                        } catch (e) {
+                        }
+                    });
+                }, 2000);
+                resetIdle();
+            }
+
         },
         login: function () {
+            // 超时自动退出后在登录页说明原因
+            if (sessionStorage.getItem('idleLogoutNotice')) {
+                sessionStorage.removeItem('idleLogoutNotice');
+                Layer.alert(__('Logged out automatically due to inactivity'), {
+                    icon: 7,
+                    title: __('Session timeout')
+                });
+            }
+
             var lastlogin = localStorage.getItem("lastlogin");
             if (lastlogin) {
                 lastlogin = JSON.parse(lastlogin);

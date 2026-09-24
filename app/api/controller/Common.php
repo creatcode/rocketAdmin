@@ -47,9 +47,9 @@ class Common extends Api
             $lat = $this->request->request('lat');
 
             //配置信息
-            $upload = Config::get('upload');
+            $upload = Config::get('upload') ?: [];
             //如果非服务端中转模式需要修改为中转
-            if ($upload['storage'] !== 'local' && isset($upload['uploadmode']) && $upload['uploadmode'] !== 'server') {
+            if (($upload['storage'] ?? 'local') !== 'local' && isset($upload['uploadmode']) && $upload['uploadmode'] !== 'server') {
                 //临时修改上传模式为服务端中转
                 set_addon_config($upload['storage'], ["uploadmode" => "server"], false);
 
@@ -57,16 +57,24 @@ class Common extends Api
                 // 上传信息配置后
                 $upload = Event::trigger("upload_config_init", $upload, true) ?: $upload;
 
-                Config::set(array_merge(Config::get('upload'), $upload), 'upload');
+                $upload = array_merge(Config::get('upload') ?: [], $upload);
+                Config::set($upload, 'upload');
             }
 
             $upload['cdnurl'] = $upload['cdnurl'] ?: cdnurl('', true);
+            $upload['uploadurl'] = $upload['uploadurl'] ?? '/api/common/upload';
+            $upload['storage'] = $upload['storage'] ?? 'local';
             $upload['uploadurl'] = preg_match("/^((?:[a-z]+:)?\/\/)(.*)/i", $upload['uploadurl']) ? $upload['uploadurl'] : (string)url($upload['storage'] == 'local' ? '/api/common/upload' : $upload['uploadurl'], [], false, true);
 
+            //仅输出客户端上传所需字段，避免暴露内部上传配置
+            $uploaddata = [
+                'cdnurl'    => $upload['cdnurl'],
+                'uploadurl' => $upload['uploadurl'],
+            ];
             $content = [
                 'citydata'    => Area::getCityFromLngLat($lng, $lat),
                 'versiondata' => Version::check($version),
-                'uploaddata'  => $upload,
+                'uploaddata'  => $uploaddata,
                 'coverdata'   => Config::get("cover"),
             ];
             $this->success('', $content);

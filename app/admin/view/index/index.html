@@ -4,7 +4,19 @@
         <!-- 加载样式及META信息 -->
         {include file="common/meta" /}
     </head>
-    <body class="hold-transition {$Think.config.rocket.adminskin|default='skin-white'} sidebar-mini {:$Request.cookie.sidebar_collapse?'sidebar-collapse':''} fixed {:$Think.config.rocket.multipletab?'multipletab':''} {:$Think.config.rocket.multiplenav?'multiplenav':''}" id="tabs">
+    <body class="hold-transition {$Think.config.rocket.adminskin|default='skin-white'} sidebar-mini {:$Request.cookie.sidebar_collapse?'sidebar-collapse':''} {:$Request.cookie.layout_boxed?'layout-boxed':'fixed'} {:$Think.config.rocket.multipletab?'multipletab':''} {:$Think.config.rocket.multiplenav?'multiplenav':''}" id="tabs">
+
+        <!-- 页面水印：静态渲染，与首屏同帧出现，不依赖 JS。固定中性色，不写入皮肤文件（兼容全部皮肤） -->
+        {if $watermarkText}
+        <svg style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:100000;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="page-watermark" width="320" height="180" patternUnits="userSpaceOnUse">
+                    <text x="160" y="90" dy=".35em" text-anchor="middle" transform="rotate(-22 160 90)" fill="#1d2129" fill-opacity=".07" font-family="-apple-system, 'Microsoft YaHei', Arial, sans-serif" font-size="14">{$watermarkText}</text>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#page-watermark)"/>
+        </svg>
+        {/if}
 
         <div class="wrapper">
 

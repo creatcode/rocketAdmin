@@ -2,6 +2,7 @@
 
 namespace app\common\library;
 
+use think\facade\Db;
 use think\facade\Event;
 use util\Random;
 
@@ -43,13 +44,13 @@ class Sms
      * 发送验证码
      *
      * @param   int    $mobile 手机号
-     * @param   int    $code   验证码,为空时将自动生成4位数字
+     * @param   int    $code   验证码,为空时自动生成
      * @param   string $event  事件
      * @return  boolean
      */
     public static function send($mobile, $code = null, $event = 'default')
     {
-        $code = is_null($code) ? Random::numeric(config('captcha.length')) : $code;
+        $code = is_null($code) ? Random::numeric((int)config('rocket.sms_captcha_length') ?: 6) : $code;
         $time = time();
         $ip = request()->ip();
         $sms = \app\common\model\Sms::create(['event' => $event, 'mobile' => $mobile, 'code' => $code, 'ip' => $ip, 'createtime' => $time]);
@@ -83,36 +84,54 @@ class Sms
     /**
      * 校验验证码
      *
-     * @param   int    $mobile 手机号
-     * @param   int    $code   验证码
-     * @param   string $event  事件
+     * @param   int     $mobile 手机号
+     * @param   int     $code   验证码
+     * @param   string  $event  事件
+     * @param   boolean $flush  校验成功是否删除验证码
      * @return  boolean
      */
-    public static function check($mobile, $code, $event = 'default')
+    public static function check($mobile, $code, $event = 'default', $flush = false)
     {
-        $time = time() - self::$expire;
-        $sms = \app\common\model\Sms::where(['mobile' => $mobile, 'event' => $event])
-            ->order('id', 'DESC')
-            ->find();
-        if ($sms) {
-            if ($sms['createtime'] > $time && $sms['times'] <= self::$maxCheckNums) {
-                $correct = $code == $sms['code'];
-                if (!$correct) {
-                    $sms->times = $sms->times + 1;
-                    $sms->save();
-                    return false;
-                } else {
-                    $result = Event::trigger('sms_check', $sms, true);
-                    return $result;
-                }
-            } else {
-                // 过期则清空该手机验证码
-                self::flush($mobile, $event);
-                return false;
-            }
-        } else {
+        if (!$mobile || !$code) {
             return false;
         }
+        $expireTime = time() - self::$expire;
+        //事务加行锁，避免同一验证码被并发重复校验
+        Db::startTrans();
+        try {
+            $sms = \app\common\model\Sms::where(['mobile' => $mobile, 'event' => $event])
+                ->order('id', 'DESC')
+                ->lock(true)
+                ->find();
+            if (!$sms) {
+                Db::rollback();
+                return false;
+            }
+            //过期则清空该手机验证码
+            if ($sms['createtime'] <= $expireTime) {
+                self::flush($mobile, $event);
+                Db::commit();
+                return false;
+            }
+            if ($sms['times'] >= self::$maxCheckNums) {
+                Db::rollback();
+                return false;
+            }
+            //无论校验成功与否均计数，避免并发绕过次数上限
+            \app\common\model\Sms::where('id', $sms['id'])->inc('times')->update();
+            if ($code != $sms['code']) {
+                Db::commit();
+                return false;
+            }
+            if ($flush) {
+                self::flush($mobile, $event);
+            }
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollback();
+            return false;
+        }
+        return Event::trigger('sms_check', $sms, true);
     }
 
     /**

@@ -36,16 +36,12 @@ module.exports = function (grunt) {
         var matches = content.match(pattern);
         if (matches) {
             if (type === 'js') {
-                var data = matches[1].replaceAll(/(urlArgs|baseUrl):(.*)\n/gi, '');
-                const parse = require('parse-config-file'), fs = require('fs');
-                require('jsonminify');
-
-                data = JSON.minify("{\n" + data + "\n}");
-                let options = parse(data);
+                var data = matches[1].replaceAll(/(urlArgs|baseUrl):[^\r\n]*(?:\r?\n|$)/gi, '');
+                let options = require('vm').runInNewContext('({' + data + '\n})');
                 options.paths.tableexport = "empty:";
                 Object.assign(config.compile.options, options);
             }
-            let requirejs = require("./application/admin/command/Min/r");
+            let requirejs = require("./app/admin/command/Min/r");
 
             try {
                 requirejs.optimize(config.compile.options, function (buildResponse) {
@@ -53,11 +49,11 @@ module.exports = function (grunt) {
                     callback();
                 }, function (err) {
                     console.error(err);
-                    callback();
+                    callback(err);
                 });
             } catch (err) {
                 console.error(err);
-                callback();
+                callback(err);
             }
         }
     };

@@ -174,6 +174,11 @@ class User extends Frontend
     public function logout()
     {
         if ($this->request->isPost()) {
+            //Referer同源校验
+            $referer = $this->request->server('HTTP_REFERER');
+            if (!$referer || strtolower((string)parse_url($referer, PHP_URL_HOST)) != strtolower($this->request->host())) {
+                $this->error(__('Invalid request'));
+            }
             $this->token();
             //退出本站
             $this->auth->logout();

@@ -54,7 +54,19 @@ class Index extends Backend
                 $this->success('', null, ['menulist' => $menulist, 'navlist' => $navlist]);
             }
         }
-        $this->assignconfig('cookie', ['prefix' => '']);
+        //页面水印：占位符替换后交由模板静态渲染，与首屏同帧出现，不依赖 JS
+        $watermarkAdmin = $this->auth->getUserInfo();
+        $this->view->assign('watermarkText', config('rocket.watermark') ? strtr((string)config('rocket.watermark_text'), [
+            '{nickname}' => $watermarkAdmin ? $watermarkAdmin['nickname'] : '',
+            '{username}' => $watermarkAdmin ? $watermarkAdmin['username'] : '',
+            '{date}'     => date('Y-m-d'),
+            '{time}'     => date('H:i'),
+        ]) : '');
+        $this->assignconfig([
+            'cookie'     => ['prefix' => ''],
+            //无操作自动登出秒数,0 表示不启用
+            'autoLogout' => (int)config('rocket.auto_logout'),
+        ]);
         $this->view->assign('menulist', $menulist);
         $this->view->assign('navlist', $navlist);
         $this->view->assign('fixedmenu', $fixedmenu);
@@ -131,6 +143,13 @@ class Index extends Backend
     public function logout()
     {
         if ($this->request->isPost()) {
+            //Referer同源校验，允许为空
+            $referer = $this->request->server('HTTP_REFERER');
+            if ($referer && strtolower((string)parse_url($referer, PHP_URL_HOST)) != strtolower($this->request->host())) {
+                $this->error(__('Invalid request'));
+            }
+            $this->token();
+
             AdminLog::setTitle(__('Logout'));
             // TODO:传递参数给访问日志调用
             $this->auth->backendlog = $this->request->session('admin');

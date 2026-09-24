@@ -543,31 +543,43 @@ class Backend extends BaseController
                 }
             };
         }
+        $dataLimitWhere = [];
         $adminIds = $this->getDataLimitAdminIds();
         if (is_array($adminIds)) {
-            $this->model->where($this->dataLimitField, 'in', $adminIds);
+            $dataLimitWhere[] = [$this->dataLimitField, 'in', $adminIds];
         }
+
+        //如果有primaryvalue,说明当前是初始化传值,按照选择顺序排序
+        $primaryOrder = null;
+        if ($primaryvalue !== null && preg_match("/^[a-zA-Z0-9_\-]+$/i", $primarykey)) {
+            $primaryOrder = array_unique(is_array($primaryvalue) ? $primaryvalue : explode(',', $primaryvalue));
+            //主键值需手工转义（think-orm 无 quote 方法），兼容字符串型 data-primary-key
+            $primaryOrder = array_map(function ($value) {
+                return '\'' . addslashes((string)$value) . '\'';
+            }, $primaryOrder);
+            $primaryOrder = implode(',', $primaryOrder);
+        }
+
+        //查询条件不跨语句保留，数据限制与排序须与查询条件构建在同一条链上
+        $buildQuery = function () use ($where, $dataLimitWhere, $order, $primarykey, $primaryOrder) {
+            $query = $this->model->where($where);
+            foreach ($dataLimitWhere as $item) {
+                $query->where($item[0], $item[1], $item[2]);
+            }
+            if ($primaryOrder !== null) {
+                $query->orderRaw("FIELD(`{$primarykey}`, {$primaryOrder})");
+            } else {
+                $query->order($order);
+            }
+            return $query;
+        };
+
         $list = [];
-        $total = $this->model->where($where)->count();
+        $total = $buildQuery()->count();
         if ($total > 0) {
             $fields = is_array($this->selectpageFields) ? $this->selectpageFields : ($this->selectpageFields && $this->selectpageFields != '*' ? explode(',', $this->selectpageFields) : []);
 
-            //如果有primaryvalue,说明当前是初始化传值,按照选择顺序排序
-            if ($primaryvalue !== null && preg_match("/^[a-zA-Z0-9_\-]+$/i", $primarykey)) {
-                $primaryvalue = array_unique(is_array($primaryvalue) ? $primaryvalue : explode(',', $primaryvalue));
-                //修复自定义data-primary-key为字符串内容时，给排序字段添加上引号
-                $primaryvalue = array_map(function ($value) {
-                    return '\'' . addslashes((string)$value) . '\'';
-                }, $primaryvalue);
-
-                $primaryvalue = implode(',', $primaryvalue);
-
-                $this->model->orderRaw("FIELD(`{$primarykey}`, {$primaryvalue})");
-            } else {
-                $this->model->order($order);
-            }
-
-            $datalist = $this->model->where($where)
+            $datalist = $buildQuery()
                 ->page($page, $pagesize)
                 ->select();
 

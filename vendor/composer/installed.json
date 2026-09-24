@@ -3714,9 +3714,14 @@
             "name": "topthink/think-queue",
             "version": "v3.0.12",
             "version_normalized": "3.0.12.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/top-think/think-queue.git",
+                "reference": "48adee0298a363f497b8ba07628d5b63cf020868"
+            },
             "dist": {
                 "type": "zip",
-                "url": "https://mirrors.cloud.tencent.com/repository/composer/topthink/think-queue/v3.0.12/topthink-think-queue-v3.0.12.zip",
+                "url": "https://api.github.com/repos/top-think/think-queue/zipball/48adee0298a363f497b8ba07628d5b63cf020868",
                 "reference": "48adee0298a363f497b8ba07628d5b63cf020868",
                 "shasum": ""
             },
@@ -3752,6 +3757,7 @@
                     "think\\": "src"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "Apache-2.0"
             ],

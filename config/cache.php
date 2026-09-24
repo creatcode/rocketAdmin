@@ -24,6 +24,26 @@ return [
             // 序列化机制 例如 ['serialize', 'unserialize']
             'serialize'  => [],
         ],
+        'redis' => [
+            // 驱动方式
+            'type'       => 'redis',
+            // 服务器地址
+            'host'       => env('redis.host', '127.0.0.1'),
+            // 端口
+            'port'       => env('redis.port', 6379),
+            // 密码
+            'password'   => env('redis.password', ''),
+            // 数据库索引
+            'select'     => env('redis.select', 1),
+            // 超时时间(秒)
+            'timeout'    => env('redis.timeout', 1.5),
+            // 是否长连接
+            'persistent' => false,
+            // 缓存前缀
+            'prefix'     => '',
+            // 缓存有效期 0表示永久缓存
+            'expire'     => 0,
+        ],
         // 更多的缓存连接
     ],
 ];

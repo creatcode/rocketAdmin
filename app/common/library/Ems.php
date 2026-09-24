@@ -2,6 +2,7 @@
 
 namespace app\common\library;
 
+use think\facade\Db;
 use think\facade\Event;
 use util\Random;
 
@@ -43,13 +44,13 @@ class Ems
      * 发送验证码
      *
      * @param int    $email 邮箱
-     * @param int    $code  验证码,为空时将自动生成4位数字
+     * @param int    $code  验证码,为空时自动生成
      * @param string $event 事件
      * @return  boolean
      */
     public static function send($email, $code = null, $event = 'default')
     {
-        $code = is_null($code) ? Random::numeric(config('captcha.length')) : $code;
+        $code = is_null($code) ? Random::numeric((int)config('rocket.sms_captcha_length') ?: 6) : $code;
         $time = time();
         $ip = request()->ip();
         $ems = \app\common\model\Ems::create(['event' => $event, 'email' => $email, 'code' => $code, 'ip' => $ip, 'createtime' => $time]);
@@ -108,36 +109,55 @@ class Ems
     /**
      * 校验验证码
      *
-     * @param int    $email 邮箱
-     * @param int    $code  验证码
-     * @param string $event 事件
+     * @param int     $email 邮箱
+     * @param int     $code  验证码
+     * @param string  $event 事件
+     * @param boolean $flush 校验成功是否删除验证码
      * @return  boolean
      */
-    public static function check($email, $code, $event = 'default')
+    public static function check($email, $code, $event = 'default', $flush = false)
     {
-        $time = time() - self::$expire;
-        $ems = \app\common\model\Ems::where(['email' => $email, 'event' => $event])
-            ->order('id', 'DESC')
-            ->find();
-        if ($ems) {
-            if ($ems['createtime'] > $time && $ems['times'] <= self::$maxCheckNums) {
-                $correct = $code == $ems['code'];
-                if (!$correct) {
-                    $ems->times = $ems->times + 1;
-                    $ems->save();
-                    return false;
-                } else {
-                    $result = Event::trigger('ems_check', $ems, true);
-                    return true;
-                }
-            } else {
-                // 过期则清空该邮箱验证码
-                self::flush($email, $event);
-                return false;
-            }
-        } else {
+        if (!$email || !$code) {
             return false;
         }
+        $expireTime = time() - self::$expire;
+        //事务加行锁，避免同一验证码被并发重复校验
+        Db::startTrans();
+        try {
+            $ems = \app\common\model\Ems::where(['email' => $email, 'event' => $event])
+                ->order('id', 'DESC')
+                ->lock(true)
+                ->find();
+            if (!$ems) {
+                Db::rollback();
+                return false;
+            }
+            //过期则清空该邮箱验证码
+            if ($ems['createtime'] <= $expireTime) {
+                self::flush($email, $event);
+                Db::commit();
+                return false;
+            }
+            if ($ems['times'] >= self::$maxCheckNums) {
+                Db::rollback();
+                return false;
+            }
+            //无论校验成功与否均计数，避免并发绕过次数上限
+            \app\common\model\Ems::where('id', $ems['id'])->inc('times')->update();
+            if ($code != $ems['code']) {
+                Db::commit();
+                return false;
+            }
+            if ($flush) {
+                self::flush($email, $event);
+            }
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollback();
+            return false;
+        }
+        Event::trigger('ems_check', $ems, true);
+        return true;
     }
 
     /**

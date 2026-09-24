@@ -1,0 +1,5 @@
+{
+  "version": "1.6.1.20250430.1",
+  "url": "/upgrade-test-1.6.1.20250430.1.zip",
+  "notes": "本地在线升级测试：安装后新增 public/upgrade-demo.txt，不执行 SQL。"
+}

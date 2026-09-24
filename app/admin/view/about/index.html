@@ -1,0 +1,330 @@
+<style>
+    /* 关键指标:先给结论,一屏看完 */
+    #about-panel .about-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    #about-panel .about-kpi {
+        padding: 16px 20px;
+        background-color: #fff;
+        border: 1px solid #dcdfe6;
+        border-radius: 10px;
+        animation: about-in .3s ease-out both;
+    }
+
+    #about-panel .about-kpi:nth-child(2) {
+        animation-delay: .04s;
+    }
+
+    #about-panel .about-kpi:nth-child(3) {
+        animation-delay: .08s;
+    }
+
+    #about-panel .about-kpi:nth-child(4) {
+        animation-delay: .12s;
+    }
+
+    #about-panel .about-kpi-label {
+        margin: 0 0 7px;
+        font-size: 12px;
+        color: #86909c;
+    }
+
+    #about-panel .about-kpi-value {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 500;
+        line-height: 1.2;
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        color: #1d2129;
+        word-break: break-all;
+    }
+
+    #about-panel .about-kpi-desc {
+        margin: 7px 0 0;
+        font-size: 12px;
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        color: #86909c;
+        word-break: break-all;
+    }
+
+    #about-panel .about-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    #about-panel .about-card {
+        padding: 20px 22px;
+        background-color: #fff;
+        border: 1px solid #dcdfe6;
+        border-radius: 10px;
+        animation: about-in .3s ease-out both;
+    }
+
+    /* 三列内容的长卡片整行独占 */
+    #about-panel .about-card.is-wide {
+        grid-column: span 2;
+    }
+
+    #about-panel .about-card:nth-child(2) {
+        animation-delay: .04s;
+    }
+
+    #about-panel .about-card:nth-child(3) {
+        animation-delay: .08s;
+    }
+
+    /* 卡片分类标签,与标题构成两级信息 */
+    #about-panel .about-card-tag {
+        margin: 0 0 5px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #86909c;
+    }
+
+    #about-panel .about-card-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin: 0 0 14px;
+        padding-bottom: 13px;
+        font-size: 16px;
+        font-weight: 500;
+        color: #1d2129;
+        border-bottom: 1px solid #f1f4f6;
+    }
+
+    #about-panel .about-card-title i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+        color: #165dff;
+        background-color: #f0f5ff;
+        border-radius: 7px;
+    }
+
+    /* 多个 dl 并排,各自独立维护项间分隔线 */
+    #about-panel .about-split {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0 28px;
+    }
+
+    #about-panel .about-group-title {
+        margin: 0 0 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #4e5969;
+    }
+
+    #about-panel .about-list {
+        margin: 0;
+    }
+
+    /* 标签定宽 + 值左对齐,避免两端对齐在宽卡片里撑出大片空白 */
+    #about-panel .about-item {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        padding: 9px 0;
+    }
+
+    #about-panel .about-item + .about-item {
+        border-top: 1px solid #f1f4f6;
+    }
+
+    #about-panel .about-item dt {
+        flex: 0 0 106px;
+        font-size: 12px;
+        font-weight: 400;
+        color: #86909c;
+    }
+
+    #about-panel .about-item dd {
+        flex: 0 1 auto;
+        margin: 0;
+        font-size: 13px;
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        color: #1d2129;
+        word-break: break-all;
+    }
+
+    #about-panel .about-item dd .fa {
+        margin-right: 4px;
+    }
+
+    #about-panel .about-item dd .is-on {
+        color: #18bc9c;
+    }
+
+    #about-panel .about-item dd .is-off {
+        color: #86909c;
+    }
+
+    @keyframes about-in {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1399px) {
+        #about-panel .about-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        #about-panel .about-split {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 28px 18px;
+        }
+    }
+
+    @media (max-width: 991px) {
+        #about-panel .about-cards,
+        #about-panel .about-split {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        #about-panel .about-card.is-wide {
+            grid-column: span 1;
+        }
+    }
+
+    @media (max-width: 575px) {
+        #about-panel .about-kpis {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        #about-panel .about-item dt {
+            flex: 0 0 96px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #about-panel .about-kpi,
+        #about-panel .about-card {
+            animation: none;
+        }
+    }
+</style>
+<div class="panel panel-default panel-intro" id="about-panel">
+    <div class="panel-heading"><strong>{:__('About system')}</strong></div>
+    <div class="panel-body">
+        <div class="about-kpis">
+            <div class="about-kpi">
+                <p class="about-kpi-label">{:__('PHP version')}</p>
+                <p class="about-kpi-value">{$phpVersion}</p>
+                <p class="about-kpi-desc">{$phpSapi}</p>
+            </div>
+            <div class="about-kpi">
+                <p class="about-kpi-label">{:__('MySQL version')}</p>
+                <p class="about-kpi-value">{$dbVersion|default='-'}</p>
+                <p class="about-kpi-desc">{$dbName|default='-'}</p>
+            </div>
+            <div class="about-kpi">
+                <p class="about-kpi-label">{:__('Redis version')}</p>
+                <p class="about-kpi-value">{$redis.version|default='-'}</p>
+                <p class="about-kpi-desc">{if $redis.connected}{:__('Connected')}{else}{:__('Disconnected')}{/if}</p>
+            </div>
+            <div class="about-kpi">
+                <p class="about-kpi-label">{:__('Web server')}</p>
+                <p class="about-kpi-value">{$serverSoftware|default='-'}</p>
+                <p class="about-kpi-desc">{$osInfo}</p>
+            </div>
+        </div>
+
+        <div class="about-cards">
+            <section class="about-card is-wide">
+                <p class="about-card-tag">System</p>
+                <h4 class="about-card-title"><i class="fa fa-server" aria-hidden="true"></i>{:__('Server environment')}</h4>
+                <div class="about-split">
+                    <div>
+                        <p class="about-group-title">{:__('System info')}</p>
+                        <dl class="about-list">
+                            <div class="about-item"><dt>{:__('Operating system')}</dt><dd>{$osInfo}</dd></div>
+                            <div class="about-item"><dt>{:__('Hostname')}</dt><dd>{$hostName|default='-'}</dd></div>
+                            <div class="about-item"><dt>{:__('Server IP')}</dt><dd>{$serverIp|default='-'}</dd></div>
+                            <div class="about-item"><dt>{:__('Timezone')}</dt><dd>{$timezone}</dd></div>
+                            <div class="about-item"><dt>{:__('Server time')}</dt><dd>{$serverTime}</dd></div>
+                            <div class="about-item"><dt>{:__('Run mode')}</dt><dd>{if $debugEnabled}{:__('Debug mode')}{else}{:__('Production mode')}{/if}</dd></div>
+                        </dl>
+                    </div>
+                    <div>
+                        <p class="about-group-title">{:__('Common settings')}</p>
+                        <dl class="about-list">
+                            <div class="about-item"><dt>{:__('Upload max filesize')}</dt><dd>{$uploadMax}</dd></div>
+                            <div class="about-item"><dt>{:__('Post max size')}</dt><dd>{$postMax}</dd></div>
+                            <div class="about-item"><dt>{:__('Memory limit')}</dt><dd>{$memoryLimit}</dd></div>
+                            <div class="about-item"><dt>{:__('Max execution time')}</dt><dd>{$maxExecTime}</dd></div>
+                            <div class="about-item"><dt>{:__('Max file uploads')}</dt><dd>{$maxFileUploads}</dd></div>
+                            <div class="about-item"><dt>{:__('Disk space')}</dt><dd>{$diskSpace|default='-'}</dd></div>
+                        </dl>
+                    </div>
+                    <div>
+                        <p class="about-group-title">{:__('Paths')}</p>
+                        <dl class="about-list">
+                            <div class="about-item"><dt>{:__('Document root')}</dt><dd>{$docRoot|default='-'}</dd></div>
+                            <div class="about-item"><dt>{:__('PHP config file')}</dt><dd>{$phpIni|default='-'}</dd></div>
+                            <div class="about-item"><dt>{:__('Extension dir')}</dt><dd>{$extensionDir|default='-'}</dd></div>
+                            <div class="about-item"><dt>{:__('Upload tmp dir')}</dt><dd>{$uploadTmpDir|default='-'}</dd></div>
+                            <div class="about-item"><dt>{:__('Session path')}</dt><dd>{$sessionPath|default='-'}</dd></div>
+                            <div class="about-item"><dt>{:__('Error log')}</dt><dd>{$errorLog|default='-'}</dd></div>
+                        </dl>
+                    </div>
+                </div>
+            </section>
+
+            <section class="about-card">
+                <p class="about-card-tag">Database</p>
+                <h4 class="about-card-title"><i class="fa fa-database" aria-hidden="true"></i>{:__('Database')}</h4>
+                <dl class="about-list">
+                    <div class="about-item"><dt>{:__('Database type')}</dt><dd>{$dbDriver|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Database host')}</dt><dd>{$dbHost|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Database name')}</dt><dd>{$dbName|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Database charset')}</dt><dd>{$dbCharset|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Table prefix')}</dt><dd>{$dbPrefix|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Max connections')}</dt><dd>{$dbMaxConn|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Threads connected')}</dt><dd>{$dbThreads|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Database size')}</dt><dd>{$dbSize|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Storage engine')}</dt><dd>{$dbEngine|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Buffer pool')}</dt><dd>{$dbBufferPool|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Max packet')}</dt><dd>{$dbMaxPacket|default='-'}</dd></div>
+                </dl>
+            </section>
+
+            <section class="about-card">
+                <p class="about-card-tag">Cache</p>
+                <h4 class="about-card-title"><i class="fa fa-bolt" aria-hidden="true"></i>Redis</h4>
+                <dl class="about-list">
+                    <div class="about-item">
+                        <dt>{:__('Connection status')}</dt>
+                        <dd>{if $redis.connected}<i class="fa fa-check-circle is-on" aria-hidden="true"></i>{:__('Connected')}{else}<i class="fa fa-times-circle is-off" aria-hidden="true"></i>{:__('Disconnected')}{/if}</dd>
+                    </div>
+                    <div class="about-item"><dt>{:__('Run mode')}</dt><dd>{$redis.mode|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Uptime')}</dt><dd>{$redis.uptime|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Memory usage')}</dt><dd>{$redis.memory|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Memory peak')}</dt><dd>{$redis.memoryPeak|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Max memory')}</dt><dd>{$redis.maxMemory|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Connected clients')}</dt><dd>{$redis.clients}</dd></div>
+                    <div class="about-item"><dt>{:__('Hit rate')}</dt><dd>{$redis.hitRate|default='-'}</dd></div>
+                    <div class="about-item"><dt>{:__('Key count')}</dt><dd>{$redis.keys}</dd></div>
+                    <div class="about-item"><dt>{:__('AOF status')}</dt><dd>{if $redis.aof}{:__('Enabled')}{else}{:__('Disabled')}{/if}</dd></div>
+                </dl>
+            </section>
+        </div>
+    </div>
+</div>

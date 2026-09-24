@@ -1,0 +1,310 @@
+<style>
+    #upgrade-panel .upgrade-versionbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #f1f4f6;
+    }
+
+    #upgrade-panel .upgrade-version-label {
+        font-size: 12px;
+        color: #86909c;
+    }
+
+    #upgrade-panel .upgrade-version {
+        padding: 3px 10px;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        color: #165dff;
+        background-color: #f0f5ff;
+        border-radius: 4px;
+    }
+
+    #upgrade-panel .upgrade-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* 基线 pre 为 #f5f5f5 底 + #ccc 边（0,0,1），需 id 前缀压过 */
+    #upgrade-panel pre {
+        margin: 0;
+        padding: 10px 14px;
+        color: #4e5969;
+        background-color: #f6f8fb;
+        border: 0;
+        border-left: 3px solid #165dff;
+        border-radius: 0 6px 6px 0;
+        white-space: pre-wrap;
+    }
+
+    /* 需压过基线 .label 的 75% 字号与 .label-* 的浅底（0,1,0 / 0,2,1），故用 id 前缀 */
+    #upgrade-panel .preview-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 10px;
+        padding: 4px 10px;
+        font-size: 13px;
+        font-weight: 500;
+        vertical-align: middle;
+        border-radius: 4px;
+        color: #fff;
+    }
+
+    #upgrade-panel .preview-state.label-success {
+        background-color: #18bc9c;
+    }
+
+    #upgrade-panel .preview-state.label-warning {
+        background-color: #f39c12;
+    }
+
+    /* 步骤名与 upgrade.php 的状态文案一一对应 */
+    #upgrade-panel .upgrade-progress {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 18px;
+    }
+
+    #upgrade-panel .upgrade-progress-percent {
+        min-width: 42px;
+        margin-right: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        color: #165dff;
+        text-align: right;
+    }
+
+    #upgrade-panel .upgrade-progress-step {
+        position: relative;
+        padding: 4px 9px;
+        font-size: 12px;
+        color: #86909c;
+        background-color: #f6f8fb;
+        border: 1px solid #dcdfe6;
+        border-radius: 6px;
+    }
+
+    #upgrade-panel .upgrade-progress-step + .upgrade-progress-step {
+        margin-left: 18px;
+    }
+
+    #upgrade-panel .upgrade-progress-step + .upgrade-progress-step::before {
+        content: "→";
+        position: absolute;
+        top: 50%;
+        left: -16px;
+        transform: translateY(-50%);
+        color: #c9cdd4;
+    }
+
+    #upgrade-panel .upgrade-progress-step.is-done {
+        color: #18bc9c;
+        background-color: rgba(24, 188, 156, 0.1);
+        border-color: rgba(24, 188, 156, 0.2);
+    }
+
+    #upgrade-panel .upgrade-progress-step.is-active {
+        color: #fff;
+        background-color: #165dff;
+        border-color: #165dff;
+    }
+
+    #upgrade-panel .upgrade-manual {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f1f4f6;
+    }
+
+    /* 关闭态：操作链整体收敛，只保留状态陈述 */
+    #upgrade-panel .upgrade-empty {
+        margin-bottom: 18px;
+        padding: 15px 15px 15px;
+        text-align: center;
+        background-color: #f6f8fb;
+        border: 1px solid #dcdfe6;
+        border-radius: 8px;
+        animation: upgrade-empty-in 0.24s ease-out;
+    }
+
+    #upgrade-panel .upgrade-empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 14px;
+        font-size: 20px;
+        color: #86909c;
+        background-color: #fff;
+        border: 1px solid #dcdfe6;
+        border-radius: 50%;
+    }
+
+    #upgrade-panel .upgrade-empty-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 500;
+        color: #1d2129;
+    }
+
+    #upgrade-panel .upgrade-empty-version {
+        margin: 20px 0 0;
+        padding-top: 14px;
+        font-size: 12px;
+        color: #86909c;
+        border-top: 1px solid #e5e6eb;
+    }
+
+    #upgrade-panel .upgrade-empty-version span {
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        color: #4e5969;
+    }
+
+    @keyframes upgrade-empty-in {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #upgrade-panel .upgrade-empty {
+            animation: none;
+        }
+    }
+
+    /* 替换 layer 默认的 loading-0.gif；需压过其自带规则 .layui-layer-loading .layui-layer-content（0,2,0） */
+    body > .layui-layer-loading .layui-layer-content {
+        box-sizing: border-box;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        background: none;
+        border: 3px solid rgba(22, 93, 255, 0.2);
+        border-top-color: #165dff;
+        border-radius: 50%;
+        animation: upgrade-loading-spin 0.8s linear infinite;
+    }
+
+    @keyframes upgrade-loading-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<div class="panel panel-default panel-intro" id="upgrade-panel">
+    <div class="panel-heading"><strong>{:__('System upgrade')}</strong></div>
+    <div class="panel-body">
+        {if $upgradeEnabled}
+        <p class="text-muted">{:__('Upgrade desc')}</p>
+        {/if}
+
+        {if !$upgradeEnabled}
+        <div class="upgrade-empty">
+            <div class="upgrade-empty-icon"><i class="fa fa-lock" aria-hidden="true"></i></div>
+            <p class="upgrade-empty-title">{:__('Upgrade disabled')}</p>
+            <p class="upgrade-empty-version">{:__('Current version')}: <span>{$currentVersion}</span></p>
+        </div>
+        {/if}
+
+        {if $interruptedBatch}
+        <div class="alert alert-warning" role="alert" data-state="{$interruptedBatch.state}"
+             data-recoverable="{if $interruptedBatch.recoverable}1{else}0{/if}">
+            <strong>{:__('Upgrade recovery required')}</strong>
+            <p>{:__('Batch')}: {$interruptedBatch.batch} · {:__($interruptedBatch.state)}</p>
+            {if $interruptedBatch.message}<p>{$interruptedBatch.message}</p>{/if}
+            {if $interruptedBatch.recoverable}
+            <button type="button" class="btn btn-warning btn-recover" data-batch="{$interruptedBatch.batch}">
+                <i class="fa fa-undo" aria-hidden="true"></i> {:__('Recover upgrade')}
+            </button>
+            {else}
+            <p>{:__('Upgrade still running')}</p>
+            {/if}
+            {if $interruptedBatch.package_url}
+            <div class="upgrade-manual">
+                <span class="text-muted">{:__('Manual download tip')}</span>
+                <a class="upgrade-manual-url" href="{$interruptedBatch.package_url}" target="_blank"
+                   rel="noopener noreferrer" download>{$interruptedBatch.to_version} {:__('Download')}</a>
+                <button type="button" class="btn btn-default btn-xs btn-copy-url">{:__('Copy')}</button>
+            </div>
+            {/if}
+        </div>
+        {/if}
+
+        {if $upgradeEnabled}
+        <div class="upgrade-versionbar">
+            <span class="upgrade-version-label">{:__('Current version')}:</span>
+            <span class="upgrade-version">{$currentVersion}</span>
+            <form id="upgrade-form" class="upgrade-actions" role="form" method="post" novalidate>
+                {:token_field()}
+                <button type="button" class="btn btn-primary btn-check" {if $interruptedBatch}disabled{/if}>
+                    <i class="fa fa-search" aria-hidden="true"></i> {:__('Check update')}
+                </button>
+                <button type="button" class="btn btn-danger btn-run hide" disabled>
+                    <i class="fa fa-cloud-download" aria-hidden="true"></i> {:__('Run upgrade')}
+                </button>
+            </form>
+        </div>
+
+        <div class="upgrade-progress hide" aria-live="polite">
+            <span class="upgrade-progress-percent"></span>
+            <span class="upgrade-progress-step" data-state="preparing">{:__('preparing')}</span>
+            <span class="upgrade-progress-step" data-state="downloading">{:__('downloading')}</span>
+            <span class="upgrade-progress-step" data-state="verified">{:__('verified')}</span>
+            <span class="upgrade-progress-step" data-state="backing_up">{:__('backing_up')}</span>
+            <span class="upgrade-progress-step" data-state="applying_files">{:__('applying_files')}</span>
+            <span class="upgrade-progress-step" data-state="running_sql">{:__('running_sql')}</span>
+            <span class="upgrade-progress-step" data-state="committing">{:__('committing')}</span>
+            <span class="upgrade-progress-step" data-state="done">{:__('done')}</span>
+        </div>
+
+        <section id="upgrade-preview" class="panel panel-default hide" aria-live="polite">
+            <div class="panel-heading">
+                <strong>{:__('Upgrade preview')}</strong>
+                <span class="label preview-state"></span>
+            </div>
+            <div class="panel-body">
+                <p><strong>{:__('Latest version')}:</strong> <span class="preview-version"></span></p>
+                <p><strong>{:__('Changelog')}:</strong></p>
+                <pre id="upgrade-notes"></pre>
+                <div class="upgrade-manual hide">
+                    <span class="text-muted">{:__('Manual download tip')}</span>
+                    <a class="upgrade-manual-url" href="#" target="_blank" rel="noopener noreferrer" download><span class="upgrade-manual-version"></span> {:__('Download')}</a>
+                    <button type="button" class="btn btn-default btn-xs btn-copy-url">{:__('Copy')}</button>
+                </div>
+            </div>
+        </section>
+        <div id="upgrade-status" class="hide alert alert-info" role="status" aria-live="polite"></div>
+        {/if}
+
+        <section class="panel panel-default">
+            <div class="panel-heading"><strong>{:__('Upgrade history')}</strong> </div>
+            <div class="panel-body">
+                <div class="widget-body no-padding">
+                    <div id="toolbar" class="toolbar">
+                        {:build_toolbar('refresh,del')}
+                    </div>
+                    <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
+                           width="100%"></table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

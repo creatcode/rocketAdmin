@@ -64,5 +64,8 @@ return [
     'QQ qun'                                                     => 'QQ交流群',
     'Captcha'                                                    => '验证码',
     'The duration of the session is %s hours'                    => '设定会话有效时长为%s小时',
+    'Session timeout'                                            => '会话超时',
+    'Logged out automatically due to inactivity'                 => '长时间未操作，系统已自动退出。',
     'Security tips'                                              => '<i class="fa fa-warning"></i> 安全提示：为了你的后台安全，请勿将后台管理入口设置为admin或admin.php',
+    'Invalid request'                                            => '非法请求',
 ];

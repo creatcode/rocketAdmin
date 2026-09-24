@@ -18,7 +18,7 @@ class Api extends Command
         $this->setName('api')
             ->addOption('url', 'u', Option::VALUE_OPTIONAL, 'default api url', '')
             ->addOption('module', 'm', Option::VALUE_OPTIONAL, 'module name(admin/index/api)', 'api')
-            ->addOption('output', 'o', Option::VALUE_OPTIONAL, 'output index file name', 'api.html')
+            ->addOption('output', 'o', Option::VALUE_OPTIONAL, 'output index file name', '')
             ->addOption('template', 'e', Option::VALUE_OPTIONAL, '', 'index.html')
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, 'force override general file', false)
             ->addOption('title', 't', Option::VALUE_OPTIONAL, 'document title', $site['name'] ?? '')
@@ -46,9 +46,16 @@ class Api extends Command
             throw new Exception('language file not found');
         }
         $lang = include_once $langFile;
-        // 目标目录
-        $output_dir = app()->getRootPath() . 'public' . DIRECTORY_SEPARATOR;
-        $output_file = $output_dir . $input->getOption('output');
+        //输出到runtime目录，避免文档被直接访问
+        $output_dir = runtime_path() . 'docs' . DIRECTORY_SEPARATOR;
+        if (!is_dir($output_dir)) {
+            mkdir($output_dir, 0755, true);
+        }
+        $output_name = $input->getOption('output') ?: 'doc_' . date('Ymd_') . strtolower(\util\Random::alnum(6)) . '.html';
+        if ($output_name === 'api.html') {
+            throw new Exception('api.html cannot be used as the output file name');
+        }
+        $output_file = $output_dir . $output_name;
         if (is_file($output_file) && !$force) {
             throw new Exception("api index file already exists!\nIf you need to rebuild again, use the parameter --force=true ");
         }
@@ -79,6 +86,9 @@ class Api extends Command
         }
         if (!is_dir($moduleDir)) {
             throw new Exception('module not found');
+        }
+        if (in_array($module, ['admin', 'common'])) {
+            throw new Exception('module not allowed');
         }
 
         if (version_compare(PHP_VERSION, '7.0.0', '<')) {

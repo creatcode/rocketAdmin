@@ -75,7 +75,7 @@ class User extends Api
         if (!Validate::regex($mobile, "^1\d{10}$")) {
             $this->error(__('Mobile is incorrect'));
         }
-        if (!Sms::check($mobile, $captcha, 'mobilelogin')) {
+        if (!Sms::check($mobile, $captcha, 'mobilelogin', true)) {
             $this->error(__('Captcha is incorrect'));
         }
         $this->auth->keeptime($this->getTokenExpireFromRequest());
@@ -124,7 +124,7 @@ class User extends Api
         if ($mobile && !Validate::regex($mobile, "^1\d{10}$")) {
             $this->error(__('Mobile is incorrect'));
         }
-        $ret = Sms::check($mobile, $code, 'register');
+        $ret = Sms::check($mobile, $code, 'register', true);
         if (!$ret) {
             $this->error(__('Captcha is incorrect'));
         }
@@ -182,7 +182,17 @@ class User extends Api
             $user->nickname = $nickname;
         }
         $user->bio = $bio;
-        $user->avatar = $avatar;
+        //仅允许站内相对路径或本站/CDN前缀，避免写入任意外链
+        if ($avatar) {
+            $cdnurl = rtrim((string)config('upload.cdnurl'), '/');
+            $host = $this->request->host();
+            if (preg_match('#^/[^/]#', $avatar)
+                || ($cdnurl && strpos($avatar, $cdnurl . '/') === 0)
+                || strpos($avatar, 'http://' . $host . '/') === 0
+                || strpos($avatar, 'https://' . $host . '/') === 0) {
+                $user->avatar = $avatar;
+            }
+        }
         $user->save();
         $this->success();
     }
@@ -208,7 +218,7 @@ class User extends Api
         if (\app\common\model\User::where('email', $email)->where('id', '<>', $user->id)->find()) {
             $this->error(__('Email already exists'));
         }
-        $result = Ems::check($email, $captcha, 'changeemail');
+        $result = Ems::check($email, $captcha, 'changeemail', true);
         if (!$result) {
             $this->error(__('Captcha is incorrect'));
         }
@@ -243,7 +253,7 @@ class User extends Api
         if (\app\common\model\User::where('mobile', $mobile)->where('id', '<>', $user->id)->find()) {
             $this->error(__('Mobile already exists'));
         }
-        $result = Sms::check($mobile, $captcha, 'changemobile');
+        $result = Sms::check($mobile, $captcha, 'changemobile', true);
         if (!$result) {
             $this->error(__('Captcha is incorrect'));
         }
@@ -322,7 +332,7 @@ class User extends Api
             if ($user->status != 'normal') {
                 $this->error(__('Account is locked'));
             }
-            $ret = Sms::check($mobile, $captcha, 'resetpwd');
+            $ret = Sms::check($mobile, $captcha, 'resetpwd', true);
             if (!$ret) {
                 $this->error(__('Captcha is incorrect'));
             }
@@ -338,7 +348,7 @@ class User extends Api
             if ($user->status != 'normal') {
                 $this->error(__('Account is locked'));
             }
-            $ret = Ems::check($email, $captcha, 'resetpwd');
+            $ret = Ems::check($email, $captcha, 'resetpwd', true);
             if (!$ret) {
                 $this->error(__('Captcha is incorrect'));
             }

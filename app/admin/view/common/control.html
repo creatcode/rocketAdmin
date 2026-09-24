@@ -278,6 +278,27 @@
         /* 右侧细线：让白色侧边栏（如 White 皮肤）在浅底上仍可辨识 */
         box-shadow: inset -1px 0 0 rgba(0, 0, 0, .06);
     }
+
+    /* ================= 盒子布局（面板开关的全局布局效果） =================
+       基线 fastadmin.css:50 为 max-width:1250px + 0 0 8px rgba(0,0,0,.5)：
+       固定 1250px 在 1920 屏仅占 66%、2560 屏 49%（大屏浪费），窄屏又近全宽；
+       且 .layout-boxed 引用的 ../img/boxed-bg.jpg 资源缺失（404），body 与 .wrapper 同为白底，
+       "盒子"无边界，只剩"内容变窄"一个副作用。故改为响应式限宽 + 中性灰底 + 轻阴影。 */
+    .layout-boxed {
+        background: #e9edf2;
+    }
+
+    .layout-boxed .wrapper {
+        max-width: min(1680px, 94%);
+        box-shadow: 0 0 24px rgba(29, 33, 41, .10);
+    }
+
+    /* 2K/4K 屏：上限放宽到 1920px，避免居中留白过多 */
+    @media (min-width: 2100px) {
+        .layout-boxed .wrapper {
+            max-width: 1920px;
+        }
+    }
 </style>
 
 <!-- Control Sidebar -->
@@ -292,6 +313,11 @@
         <!-- 布局选项 -->
         <div class="lc-group">
             <div class="lc-group-head"><span>{:__('Layout Options')}</span></div>
+
+            <div class="lc-row">
+                <span class="lc-label">{:__('Boxed Layout')}</span>
+                <label class="lc-switch"><input type="checkbox" data-layout="layout-boxed"><span class="lc-track"></span></label>
+            </div>
 
             <div class="lc-row">
                 <span class="lc-label">{:__('Multiple nav')}</span>
@@ -318,15 +344,6 @@
                 <label class="lc-switch"><input type="checkbox" data-menu="show-submenu"><span class="lc-track"></span></label>
             </div>
 
-            <div class="lc-row">
-                <span class="lc-label">{:__('Toggle Right Sidebar Slide')}</span>
-                <label class="lc-switch"><input type="checkbox" data-controlsidebar="control-sidebar-open"><span class="lc-track"></span></label>
-            </div>
-
-            <div class="lc-row">
-                <span class="lc-label">{:__('Toggle Right Sidebar Skin')}</span>
-                <label class="lc-switch"><input type="checkbox" data-sidebarskin="toggle"><span class="lc-track"></span></label>
-            </div>
         </div>
 
         <!-- 皮肤 -->
