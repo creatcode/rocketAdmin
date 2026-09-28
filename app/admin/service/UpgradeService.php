@@ -112,10 +112,18 @@ class UpgradeService
             $status['state'] = 'verified';
             $status['has_sql'] = count($bundle['sql']) > 0;
             $status['sql_total'] = count($bundle['sql']);
+            foreach ($bundle['sql'] as $item) {
+                $status['sql_logs'][$item['path']] = [
+                    'version' => $item['version'], 'file' => $item['path'], 'state' => 'pending',
+                    'started_at' => '', 'finished_at' => '', 'message' => '',
+                ];
+            }
             $this->saveStatus($batch, $status);
 
             $stagingPath = $this->batchPath($batch) . 'staging';
             $plan = $this->buildFilePlan($bundle);
+            $status['files_total'] = count($plan);
+            $this->saveStatus($batch, $status);
             $this->preflight($bundle, $plan);
             $this->extractPayload($packageFile, $stagingPath, $bundle);
             $this->prepareJournal($batch, $plan);
@@ -304,6 +312,217 @@ class UpgradeService
     }
 
     /**
+     * 查询指定批次的进度与最终结果，未指定批次时只查询未结束现场。
+     *
+     * @param string $batch 批次编号
+     * @param string $after 本次操作前的最新批次，0 表示此前没有批次
+     * @return array|null
+     */
+    public function progress(string $batch = '', string $after = ''): ?array
+    {
+        if ($batch === '') {
+            $interrupted = $this->dashboard()['interrupted'];
+            if ($interrupted) {
+                return $this->progress($interrupted['batch']);
+            }
+            if ($after !== '') {
+                if ($after !== '0' && !$this->isValidBatch($after)) {
+                    throw new RuntimeException('升级批次编号无效。');
+                }
+                // 请求断开且前端还未见到批次时，仍可找回这次操作的最终结果。
+                foreach ($this->batchStatuses() as $status) {
+                    if (strcmp($status['batch'], $after) > 0) {
+                        return $this->progress($status['batch']);
+                    }
+                }
+            }
+            return null;
+        }
+        $status = $this->loadStatus($batch);
+        if (!$status) {
+            throw new RuntimeException('升级批次不存在。');
+        }
+        $result = $this->buildHistory([$status])[0];
+        $result['recoverable'] = !$this->upgradeLockHeld()
+            && (!in_array($status['state'], self::TERMINAL_STATES, true) || $this->maintenanceLockBelongsTo($batch));
+        return $result;
+    }
+
+    /**
+     * 读取批次的 SQL 文件执行详情和备份信息，兼容旧批次日志。
+     *
+     * @param string $batch 批次编号
+     * @return array
+     */
+    public function detail(string $batch): array
+    {
+        $status = $this->loadStatus($batch);
+        if (!$status) {
+            throw new RuntimeException('升级批次不存在。');
+        }
+        $backup = ['files_count' => 0, 'files_size' => 0, 'database_size' => 0, 'error' => '', 'exportable' => false];
+        try {
+            foreach ($this->backupEntries($batch, $status) as $entry) {
+                if ($entry['name'] === 'database.sql') {
+                    $backup['database_size'] = $entry['size'];
+                } else {
+                    $backup['files_count']++;
+                    $backup['files_size'] += $entry['size'];
+                }
+            }
+            $backup['exportable'] = in_array($status['state'], array_merge(self::TERMINAL_STATES, ['needs_repair']), true)
+                && !$this->upgradeLockHeld()
+                && ($backup['files_count'] > 0 || $backup['database_size'] > 0);
+        } catch (\Throwable $e) {
+            // 备份异常仍展示 SQL 现场信息，但禁止导出不完整或不安全的备份。
+            $backup['error'] = $e->getMessage();
+        }
+        $logs = array_values($status['sql_logs'] ?? []);
+        if (!$this->upgradeLockHeld()) {
+            foreach ($logs as &$log) {
+                if ($log['state'] === 'running') {
+                    $log['state'] = 'interrupted';
+                }
+            }
+            unset($log);
+        }
+        return [
+            'summary' => $this->buildHistory([$status])[0],
+            'sql_logs' => $logs,
+            'backup' => $backup,
+        ];
+    }
+
+    /**
+     * 校验并打包批次备份，交给回调流式发送，完成后移除临时 ZIP。
+     *
+     * @param string $batch 批次编号
+     * @param callable $send 接收临时 ZIP 路径和下载名称的发送回调
+     * @return void
+     */
+    public function exportBackup(string $batch, callable $send): void
+    {
+        $lock = $this->acquireLock();
+        $temporary = '';
+        $zip = null;
+        try {
+            $status = $this->loadStatus($batch);
+            if (!$status || !in_array($status['state'], array_merge(self::TERMINAL_STATES, ['needs_repair']), true)) {
+                throw new RuntimeException('仅可导出已结束或待修复批次的备份。');
+            }
+            $entries = $this->backupEntries($batch, $status);
+            if (!$entries) {
+                throw new RuntimeException('该批次没有可导出的备份。');
+            }
+            $required = array_sum(array_column($entries, 'size')) + 16777216;
+            $available = disk_free_space($this->upgradeRoot());
+            if (!is_numeric($available) || $available < $required) {
+                throw new RuntimeException('运行目录空间不足，无法打包备份。');
+            }
+            foreach ($entries as $entry) {
+                if (hash_file('sha256', $entry['source']) !== $entry['sha256']) {
+                    throw new RuntimeException('备份校验失败：' . $entry['name']);
+                }
+            }
+            $temporary = $this->upgradeRoot() . DIRECTORY_SEPARATOR . 'export-' . bin2hex(random_bytes(8)) . '.zip';
+            $zip = new \ZipArchive();
+            if ($zip->open($temporary, \ZipArchive::CREATE | \ZipArchive::EXCL) !== true) {
+                $zip = null;
+                throw new RuntimeException('无法创建备份导出 ZIP。');
+            }
+            foreach ($entries as $entry) {
+                if (!$zip->addFile($entry['source'], $entry['name'])) {
+                    throw new RuntimeException('无法加入备份文件：' . $entry['name']);
+                }
+            }
+            // 同时保留恢复清单；文件备份仅包含本批次已经备份的受影响文件。
+            $metadata = ['status.json' => $status];
+            if (is_file($this->batchPath($batch) . 'journal.json')) {
+                $metadata['journal.json'] = $this->loadJournal($batch);
+            }
+            foreach ($metadata as $name => $data) {
+                if (!$zip->addFromString($name, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR))) {
+                    throw new RuntimeException('无法加入备份恢复清单。');
+                }
+            }
+            $closed = $zip->close();
+            $zip = null;
+            if (!$closed) {
+                throw new RuntimeException('备份导出 ZIP 写入失败。');
+            }
+            $send($temporary, 'upgrade-backup-' . $batch . '.zip');
+        } finally {
+            try {
+                if ($zip !== null) {
+                    $zip->close();
+                }
+                if ($temporary !== '' && is_file($temporary) && !unlink($temporary)) {
+                    throw new RuntimeException('备份导出临时文件无法删除。');
+                }
+            } finally {
+                $this->releaseLock($lock);
+            }
+        }
+    }
+
+    /**
+     * 按恢复日志收集实际备份文件，不接受请求指定的任意文件路径。
+     *
+     * @param string $batch 批次编号
+     * @param array $status 批次状态
+     * @return array
+     */
+    private function backupEntries(string $batch, array $status): array
+    {
+        $entries = [];
+        $root = $this->batchPath($batch);
+        if (is_file($root . 'journal.json') || is_link($root . 'journal.json')) {
+            $journal = $this->loadJournal($batch);
+            $entries[] = $this->backupEntry($batch, 'backup/rocket.php', 'files/config/rocket.php', $journal['version_backup_sha256']);
+            foreach ($journal['files'] as $item) {
+                if ($item['existed'] && $item['backup_ready']) {
+                    $entries[] = $this->backupEntry($batch, 'backup/files/' . $item['path'], 'files/' . $item['path'], $item['backup_sha256'] ?? '');
+                }
+            }
+        }
+        if (!empty($status['database_backup'])) {
+            $entries[] = $this->backupEntry($batch, 'database.sql', 'database.sql', $status['database_backup']['sha256'] ?? '');
+        }
+        return $entries;
+    }
+
+    /**
+     * 校验备份路径各段，防止符号链接或目录越界泄露其他文件。
+     *
+     * @param string $batch 批次编号
+     * @param string $relative 批次内的备份路径
+     * @param string $name 导出 ZIP 内路径
+     * @param string $hash 备份时记录的校验值
+     * @return array
+     */
+    private function backupEntry(string $batch, string $relative, string $name, string $hash): array
+    {
+        $root = $this->batchPath($batch);
+        $source = rtrim($root, '/\\');
+        foreach (explode('/', $this->normalizeRelativePath($relative)) as $segment) {
+            $source .= DIRECTORY_SEPARATOR . $segment;
+            if (is_link($source)) {
+                throw new RuntimeException('备份路径包含符号链接：' . $name);
+            }
+        }
+        $resolved = realpath($source);
+        if (!is_file($source) || !is_readable($source) || $resolved === false
+            || stripos($resolved, $root) !== 0 || !preg_match('/^[a-f0-9]{64}$/D', $hash)) {
+            throw new RuntimeException('备份缺失或不安全：' . $name);
+        }
+        $size = filesize($source);
+        if ($size === false) {
+            throw new RuntimeException('无法读取备份大小：' . $name);
+        }
+        return ['source' => $source, 'name' => $name, 'sha256' => $hash, 'size' => $size];
+    }
+
+    /**
      * 批量删除已结束的升级批次目录。
      *
      * @param array $batches 批次编号列表
@@ -311,28 +530,33 @@ class UpgradeService
      */
     public function deleteBatches(array $batches): void
     {
-        $directories = [];
-        // 先整体校验再删除：任一不可删就整体拒绝，避免删掉一半再报错
-        foreach ($batches as $batch) {
-            $batch = (string)$batch;
-            if (!$this->isValidBatch($batch)) {
-                throw new RuntimeException('批次编号无效。');
+        $lock = $this->acquireLock();
+        try {
+            $directories = [];
+            // 先整体校验再删除：任一不可删就整体拒绝，避免删掉一半再报错
+            foreach ($batches as $batch) {
+                $batch = (string)$batch;
+                if (!$this->isValidBatch($batch)) {
+                    throw new RuntimeException('批次编号无效。');
+                }
+                $directory = $this->upgradeRoot() . DIRECTORY_SEPARATOR . $batch;
+                if (is_link($directory) || !is_dir($directory)) {
+                    throw new RuntimeException('批次目录不存在。');
+                }
+                $state = $this->loadStatus($batch)['state'] ?? '';
+                if (!in_array($state, self::TERMINAL_STATES, true)) {
+                    throw new RuntimeException('仅可删除已完成、失败或已回滚的批次；进行中与待修复的批次必须保留备份。');
+                }
+                if ($this->maintenanceLockBelongsTo($batch)) {
+                    throw new RuntimeException('该批次仍处于维护状态，不能删除。');
+                }
+                $directories[] = $directory;
             }
-            $directory = $this->upgradeRoot() . DIRECTORY_SEPARATOR . $batch;
-            if (is_link($directory) || !is_dir($directory)) {
-                throw new RuntimeException('批次目录不存在。');
+            foreach ($directories as $directory) {
+                $this->removeTree($directory);
             }
-            $state = $this->loadStatus($batch)['state'] ?? '';
-            if (!in_array($state, self::TERMINAL_STATES, true)) {
-                throw new RuntimeException('仅可删除已完成、失败或已回滚的批次；进行中与待修复的批次必须保留备份。');
-            }
-            if ($this->maintenanceLockBelongsTo($batch)) {
-                throw new RuntimeException('该批次仍处于维护状态，不能删除。');
-            }
-            $directories[] = $directory;
-        }
-        foreach ($directories as $directory) {
-            $this->removeTree($directory);
+        } finally {
+            $this->releaseLock($lock);
         }
     }
 
@@ -387,6 +611,7 @@ class UpgradeService
                 'message' => htmlspecialchars((string)($status['message'] ?? ''), ENT_QUOTES, 'UTF-8'),
                 'sql_total' => max(0, (int)($status['sql_total'] ?? 0)),
                 'sql_completed' => is_array($completedSql) ? count($completedSql) : 0,
+                'files_total' => max(0, (int)($status['files_total'] ?? 0)),
             ];
         }
         return $history;
@@ -568,7 +793,7 @@ class UpgradeService
             }
             $referenced[$key] = true;
             if (version_compare($entry['version'], $currentVersion, '>')) {
-                $sql[] = ['path' => $path, 'sha256' => hash('sha256', $contents)];
+                $sql[] = ['version' => $entry['version'], 'path' => $path, 'sha256' => hash('sha256', $contents)];
             }
         }
         if (count($referenced) !== count($sqlEntries)) {
@@ -919,31 +1144,50 @@ class UpgradeService
                     }
                     continue;
                 }
-                $sql = $zip->getFromName($item['path']);
-                if (!is_string($sql) || hash('sha256', $sql) !== $item['sha256']) {
-                    throw new RuntimeException('升级包 SQL 文件校验失败：' . basename($item['path']));
-                }
-                $sqlDirectory = $batchPath . 'sql-execution';
-                $this->ensureDirectory($sqlDirectory);
-                $sqlFile = $sqlDirectory . DIRECTORY_SEPARATOR . basename($item['path']);
-                $this->writeAtomic($sqlFile, $sql);
-                try {
-                    $result = $this->runProcess([
-                        $binary,
-                        '--defaults-extra-file=' . $optionFile,
-                        '--default-character-set=utf8mb4',
-                        '--database=' . $config['database'],
-                    ], $sqlFile, $batchPath . 'sql.out', $batchPath . 'sql.err');
-                    if ($result['exit_code'] !== 0) {
-                        throw new RuntimeException('SQL 执行失败：' . basename($item['path']) . '；' . $result['error']);
-                    }
-                } finally {
-                    if (is_file($sqlFile) && !unlink($sqlFile)) {
-                        throw new RuntimeException('SQL 临时文件无法删除：' . basename($item['path']));
-                    }
-                }
-                $status['sql_completed'][$item['path']] = $item['sha256'];
+                $status['sql_logs'][$item['path']] = [
+                    'version' => $item['version'],
+                    'file' => $item['path'],
+                    'state' => 'running',
+                    'started_at' => date('Y-m-d H:i:s'),
+                    'finished_at' => '',
+                    'message' => '',
+                ];
                 $this->saveStatus($batch, $status);
+                try {
+                    $sql = $zip->getFromName($item['path']);
+                    if (!is_string($sql) || hash('sha256', $sql) !== $item['sha256']) {
+                        throw new RuntimeException('升级包 SQL 文件校验失败：' . basename($item['path']));
+                    }
+                    $sqlDirectory = $batchPath . 'sql-execution';
+                    $this->ensureDirectory($sqlDirectory);
+                    $sqlFile = $sqlDirectory . DIRECTORY_SEPARATOR . basename($item['path']);
+                    $this->writeAtomic($sqlFile, $sql);
+                    try {
+                        $result = $this->runProcess([
+                            $binary,
+                            '--defaults-extra-file=' . $optionFile,
+                            '--default-character-set=utf8mb4',
+                            '--database=' . $config['database'],
+                        ], $sqlFile, $batchPath . 'sql.out', $batchPath . 'sql.err');
+                        if ($result['exit_code'] !== 0) {
+                            throw new RuntimeException('SQL 执行失败：' . basename($item['path']) . '；' . $result['error']);
+                        }
+                    } finally {
+                        if (is_file($sqlFile) && !unlink($sqlFile)) {
+                            throw new RuntimeException('SQL 临时文件无法删除：' . basename($item['path']));
+                        }
+                    }
+                    $status['sql_completed'][$item['path']] = $item['sha256'];
+                    $status['sql_logs'][$item['path']]['state'] = 'success';
+                } catch (\Throwable $e) {
+                    // 保留失败文件的现场信息，外层仍按原流程停止升级并恢复备份。
+                    $status['sql_logs'][$item['path']]['state'] = 'error';
+                    $status['sql_logs'][$item['path']]['message'] = $e->getMessage();
+                    throw $e;
+                } finally {
+                    $status['sql_logs'][$item['path']]['finished_at'] = date('Y-m-d H:i:s');
+                    $this->saveStatus($batch, $status);
+                }
             }
         } finally {
             $zip->close();
@@ -961,7 +1205,7 @@ class UpgradeService
     private function estimateDatabaseSize(): int
     {
         $config = $this->databaseConfig();
-        $pdo = Db::connect()->getPdo();
+        $pdo = Db::connect()->connect();
         $statement = $pdo->prepare(
             'SELECT COALESCE(SUM(data_length + index_length), 0) '
             . 'FROM information_schema.tables WHERE table_schema = :database'

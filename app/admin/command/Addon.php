@@ -13,9 +13,16 @@ use think\console\Command;
 use think\console\input\Option;
 use think\db\exception\PDOException;
 
+/**
+ * 管理插件创建、启停及打包
+ */
 class Addon extends Command
 {
 
+    /**
+     * 配置插件管理命令参数
+     * @return void
+     */
     protected function configure()
     {
         $this->setName('addon')
@@ -30,14 +37,18 @@ class Addon extends Command
             ->setDescription('Addon manager');
     }
 
+    /**
+     * 执行插件管理操作并验证文件操作边界
+     * @param Input $input 命令输入
+     * @param Output $output 命令输出
+     * @return void
+     */
     protected function execute(Input $input, Output $output)
     {
         Config::load(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config.php');
         $name = $input->getOption('name') ?: '';
         $action = $input->getOption('action') ?: '';
-        if (stripos($name, 'addons' . DIRECTORY_SEPARATOR) !== false) {
-            $name = explode(DIRECTORY_SEPARATOR, $name)[1];
-        }
+        $name = preg_replace('#^addons[\\\\/]#i', '', $name);
         //强制覆盖
         $force = $input->getOption('force');
         //版本
@@ -52,7 +63,10 @@ class Addon extends Command
         if (!$name && !in_array($action, ['refresh'])) {
             throw new Exception('Addon name could not be empty');
         }
-        if (!$action || !in_array($action, ['create', 'disable', 'enable', 'install', 'uninstall', 'refresh', 'upgrade', 'package', 'move'])) {
+        if ($name && !preg_match('/^[a-z][a-z0-9]*$/i', $name)) {
+            throw new Exception('Addon name not correct');
+        }
+        if (!$action || !in_array($action, ['create', 'disable', 'enable', 'uninstall', 'refresh', 'package', 'move'])) {
             throw new Exception('Please input correct action name');
         }
 
@@ -60,6 +74,13 @@ class Addon extends Command
         Db::execute("SELECT 1");
 
         $addonDir = ADDON_PATH . $name . DIRECTORY_SEPARATOR;
+        if ($name && is_dir($addonDir)) {
+            // 已有目录也需验证真实路径，避免符号链接指向插件目录之外。
+            $addonRoot = realpath(ADDON_PATH) . DIRECTORY_SEPARATOR;
+            if (stripos(realpath($addonDir) . DIRECTORY_SEPARATOR, $addonRoot) !== 0) {
+                throw new Exception('Addon directory is outside addon root');
+            }
+        }
         switch ($action) {
             case 'create':
                 //非覆盖模式时如果存在则报错
@@ -179,7 +200,7 @@ class Addon extends Command
                     throw new Exception(__('Addon info file data incorrect'));
                 }
                 $infoname = $info['name'] ?? '';
-                if (!$infoname || !preg_match("/^[a-z]+$/i", $infoname) || $infoname != $name) {
+                if (!$infoname || !preg_match("/^[a-z][a-z0-9]*$/i", $infoname) || $infoname != $name) {
                     throw new Exception(__('Addon info name incorrect'));
                 }
 
@@ -197,7 +218,9 @@ class Addon extends Command
                     throw new Exception(__('ZinArchive not install'));
                 }
                 $zip = new \ZipArchive;
-                $zip->open($addonFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+                if ($zip->open($addonFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                    throw new Exception('Cannot open addon package: ' . $addonFile);
+                }
 
                 $files = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator($addonDir),
@@ -212,11 +235,15 @@ class Addon extends Command
                         continue;
                     $relativePath = substr($filePath, strlen($addonDir));
                     if (!in_array($file->getFilename(), ['.DS_Store', 'Thumbs.db'])) {
-                        $zip->addFile($filePath, $relativePath);
+                        if (!$zip->addFile($filePath, $relativePath)) {
+                            throw new Exception('Cannot add package file: ' . $relativePath);
+                        }
                     }
                 }
 
-                $zip->close();
+                if (!$zip->close()) {
+                    throw new Exception('Cannot save addon package: ' . $addonFile);
+                }
                 $output->info("Package Resource Path:" . $addonFile);
                 $output->info("Package Successed!");
                 break;
@@ -265,20 +292,17 @@ class Addon extends Command
                 }
                 foreach ($paths as $oldPath => $newPath) {
                     if (is_dir($oldPath)) {
+                        if (is_dir($newPath) && stripos(realpath($newPath) . DIRECTORY_SEPARATOR, realpath($addonDir) . DIRECTORY_SEPARATOR) !== 0) {
+                            throw new Exception('Addon target directory is outside addon root');
+                        }
                         if ($force) {
                             if (is_dir($newPath)) {
-                                $list = scandir($newPath);
-                                foreach ($list as $_v) {
-                                    if (!in_array($_v, ['.', '..'])) {
-                                        $file = $newPath . DIRECTORY_SEPARATOR . $_v;
-                                        @chmod($file, 0777);
-                                        @unlink($file);
-                                    }
-                                }
-                                @rmdir($newPath);
+                                rmdirs($newPath);
                             }
                         }
-                        copydirs($oldPath, $newPath);
+                        if (!copydirs($oldPath, $newPath)) {
+                            throw new Exception('Cannot copy addon files: ' . $oldPath);
+                        }
                     }
                 }
                 break;
@@ -332,9 +356,13 @@ class Addon extends Command
         $content = str_replace($search, $replace, $stub);
 
         if (!is_dir(dirname($pathname))) {
-            mkdir(strtolower(dirname($pathname)), 0755, true);
+            mkdir(dirname($pathname), 0755, true);
         }
-        return file_put_contents($pathname, $content);
+        $result = file_put_contents($pathname, $content);
+        if ($result === false) {
+            throw new Exception('Cannot write file: ' . $pathname);
+        }
+        return $result;
     }
 
     /**

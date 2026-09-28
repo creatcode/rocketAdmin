@@ -14,6 +14,9 @@ use think\facade\Lang;
 use think\facade\View;
 use util\Random;
 
+/**
+ * 提供原版安装命令的适配实现
+ */
 class Install extends Command
 {
 
@@ -246,11 +249,11 @@ class Install extends Command
         }
 
         // 设置新的Token随机密钥key
-        $oldTokenKey = config('token.key');
         $newTokenKey = Random::alnum(32);
         $coreConfigFile = config_path() . 'token.php';
-        $coreConfigText = @file_get_contents($coreConfigFile);
-        $coreConfigText = preg_replace("/'key'(\s+)=>(\s+)'{$oldTokenKey}'/", "'key'\$1=>\$2'{$newTokenKey}'", $coreConfigText);
+        $coreConfig = include $coreConfigFile;
+        $coreConfig['key'] = $newTokenKey;
+        $coreConfigText = '<?php' . "\n\nreturn " . var_export_short($coreConfig) . ";\n";
 
         $result = @file_put_contents($coreConfigFile, $coreConfigText);
         if (!$result) {
@@ -320,7 +323,6 @@ class Install extends Command
     {
         // 检测目录是否存在
         $checkDirs = [
-            'thinkphp',
             'vendor',
             'public' . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'libs'
         ];

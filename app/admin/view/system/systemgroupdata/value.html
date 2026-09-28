@@ -1,0 +1,26 @@
+<div class="form-group">
+    <label class="control-label col-xs-12 col-sm-2">{:__('Data group')}:</label>
+    <div class="col-xs-12 col-sm-8">
+        <p class="form-control-static">{$group.title}</p>
+    </div>
+</div>
+{foreach name="fields" item="field"}
+<div class="form-group">
+    <label class="control-label col-xs-12 col-sm-2">{$field.title}:</label>
+    <div class="col-xs-12 col-sm-8">
+        {if $field.type == 'text'}
+        <textarea class="form-control" name="row[value][{$field.name}]" rows="5" data-rule="{$field.required_rule}">{$field.value}</textarea>
+        {elseif $field.type == 'number' /}
+        <input type="number" class="form-control" name="row[value][{$field.name}]" value="{$field.value}"{if $field.has_min} min="{$field.min}"{/if}{if $field.has_max} max="{$field.max}"{/if} data-rule="{$field.required_rule}"/>
+        {elseif $field.type == 'switch' /}
+        {:Form::switcher('row[value][' . $field.name . ']', $field.value)}
+        {elseif $field.type == 'image' /}
+        {:Form::image('row[value][' . $field.name . ']', $field.value)}
+        {elseif $field.type == 'select' /}
+        {:build_select('row[value][' . $field.name . ']', $field.options, $field.value, ['class' => 'form-control selectpicker', 'data-rule' => $field.required_rule])}
+        {else /}
+        <input type="text" class="form-control" name="row[value][{$field.name}]" value="{$field.value}" maxlength="{$field.maxlength}" data-rule="{$field.required_rule}"/>
+        {/if}
+    </div>
+</div>
+{/foreach}

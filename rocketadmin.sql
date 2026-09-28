@@ -11,7 +11,7 @@
  Target Server Version : 80012
  File Encoding         : 65001
 
- Date: 24/09/2026 18:26:39
+ Date: 28/09/2026 18:03:12
 */
 
 SET NAMES utf8mb4;
@@ -44,7 +44,7 @@ CREATE TABLE `im_admin`  (
 -- ----------------------------
 -- Records of im_admin
 -- ----------------------------
-INSERT INTO `im_admin` VALUES (1, 'admin', 'Admin', '27c04db44798cf4835ff71d58153dffb', 'eutanS', '/assets/img/avatar.png', 'admin@admin.com', '', 2, 1790146796, '127.0.0.1', 1491635035, 1790148106, '3de11dea-0173-4f76-81c7-f6b2dbbfa64e', 'normal');
+INSERT INTO `im_admin` VALUES (1, 'admin', 'Admin', '27c04db44798cf4835ff71d58153dffb', 'eutanS', '/assets/img/avatar.png', 'admin@admin.com', '', 0, 1790560763, '127.0.0.1', 1491635035, 1790560763, 'a9fc9391-ef03-4a17-9985-bc6ea41efe89', 'normal');
 
 -- ----------------------------
 -- Table structure for im_admin_log
@@ -62,7 +62,7 @@ CREATE TABLE `im_admin_log`  (
   `createtime` bigint(16) NULL DEFAULT NULL COMMENT '操作时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `name`(`username`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 512 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '管理员日志表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 587 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '管理员日志表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_admin_log
@@ -420,6 +420,33 @@ INSERT INTO `im_admin_log` VALUES (582, 1, 'admin', '/admin/upgrade/check', '系
 INSERT INTO `im_admin_log` VALUES (583, 1, 'admin', '/admin/upgrade/run', '系统升级', '{\"version\":\"1.6.1.20250430.1\",\"__token__\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0', 1790240964);
 INSERT INTO `im_admin_log` VALUES (584, 1, 'admin', '/admin/upgrade/check', '系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0', 1790241461);
 INSERT INTO `im_admin_log` VALUES (585, 1, 'admin', '/admin/upgrade/run', '系统升级', '{\"version\":\"1.6.1.20250430.1\",\"__token__\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0', 1790241464);
+INSERT INTO `im_admin_log` VALUES (586, 1, 'admin', '/admin/index/login.html?url=/admin/about?ref=addtabs', '登录', '{\"url\":\"\\/admin\\/about?ref=addtabs\",\"__token__\":\"***\",\"username\":\"admin\",\"password\":\"***\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790560763);
+INSERT INTO `im_admin_log` VALUES (587, 1, 'admin', '/admin/upgrade/check', '系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790560774);
+INSERT INTO `im_admin_log` VALUES (588, 1, 'admin', '/admin/addon/install', '插件管理', '{\"name\":\"command\",\"force\":\"0\",\"uid\":\"21746\",\"token\":\"***\",\"version\":\"1.2.2\",\"faversion\":\"1.6.1.20250430.0\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790574121);
+INSERT INTO `im_admin_log` VALUES (589, 1, 'admin', '/admin/addon/state', '插件管理 / 禁用启用', '{\"name\":\"command\",\"action\":\"enable\",\"force\":\"0\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790574121);
+INSERT INTO `im_admin_log` VALUES (590, 1, 'admin', '/admin/command/get_field_list', '在线命令管理', '{\"table\":\"im_command\"}', '127.0.0.1', 'curl/8.9.1', 1790574708);
+INSERT INTO `im_admin_log` VALUES (591, 1, 'admin', '/admin/command/get_controller_list', '在线命令管理', '{\"q_word\":[\"Command\"],\"pageNumber\":\"1\",\"pageSize\":\"10\"}', '127.0.0.1', 'curl/8.9.1', 1790574708);
+INSERT INTO `im_admin_log` VALUES (592, 1, 'admin', '/admin/command/command/action/command', '在线命令管理 / 生成并执行命令', '{\"__token__\":\"***\",\"commandtype\":\"crud\",\"table\":\"im_command\",\"controller\":\"diagnostic\",\"model\":\"Diagnostic\",\"fields\":\"id\",\"local\":\"1\",\"force\":\"0\",\"delete\":\"0\",\"action\":\"command\"}', '127.0.0.1', 'curl/8.9.1', 1790574847);
+INSERT INTO `im_admin_log` VALUES (593, 1, 'admin', '/admin/command/get_field_list', '在线命令管理', '{\"table\":\"im_admin\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575248);
+INSERT INTO `im_admin_log` VALUES (594, 1, 'admin', '/admin/command/get_controller_list', '在线命令管理', '{\"q_word\":[\"\"],\"pageNumber\":\"1\",\"pageSize\":\"10\",\"andOr\":\"OR\",\"orderBy\":[[\"name\",\"ASC\"]],\"searchTable\":\"tbl\",\"showField\":\"name\",\"keyField\":\"***\",\"searchField\":[\"name\"],\"name\":\"\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575251);
+INSERT INTO `im_admin_log` VALUES (595, 1, 'admin', '/admin/command/get_controller_list', '在线命令管理', '{\"q_word\":[\"sys\"],\"pageNumber\":\"1\",\"pageSize\":\"10\",\"andOr\":\"OR\",\"orderBy\":[[\"name\",\"ASC\"]],\"searchTable\":\"tbl\",\"showField\":\"name\",\"keyField\":\"***\",\"searchField\":[\"name\"],\"name\":\"sys\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575253);
+INSERT INTO `im_admin_log` VALUES (596, 1, 'admin', '/admin/command/get_controller_list', '在线命令管理', '{\"q_word\":[\"sys\"],\"pageNumber\":\"1\",\"pageSize\":\"10\",\"andOr\":\"OR\",\"orderBy\":[[\"name\",\"ASC\"]],\"searchTable\":\"tbl\",\"showField\":\"name\",\"keyField\":\"***\",\"searchField\":[\"name\"],\"name\":\"sys\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575256);
+INSERT INTO `im_admin_log` VALUES (597, 1, 'admin', '/admin/command/get_controller_list', '在线命令管理', '{\"q_word\":[\"\"],\"pageNumber\":\"1\",\"pageSize\":\"10\",\"andOr\":\"OR\",\"orderBy\":[[\"name\",\"ASC\"]],\"searchTable\":\"tbl\",\"showField\":\"name\",\"keyField\":\"***\",\"searchField\":[\"name\"],\"name\":\"\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575259);
+INSERT INTO `im_admin_log` VALUES (598, 1, 'admin', '/admin/command/get_controller_list', '在线命令管理', '{\"q_word\":[\"\"],\"pageNumber\":\"1\",\"pageSize\":\"10\",\"andOr\":\"OR\",\"orderBy\":[[\"name\",\"ASC\"]],\"searchTable\":\"tbl\",\"showField\":\"name\",\"keyField\":\"***\",\"searchField\":[\"name\"],\"name\":\"\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575261);
+INSERT INTO `im_admin_log` VALUES (599, 1, 'admin', '/admin/command/command/action/command', '在线命令管理 / 生成并执行命令', '{\"__token__\":\"***\",\"commandtype\":\"menu\",\"allcontroller\":\"0\",\"delete\":\"0\",\"force\":\"0\",\"controllerfile_text\":\"\",\"controllerfile\":\"general\\/Systemgroup.php\",\"action\":\"command\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575262);
+INSERT INTO `im_admin_log` VALUES (600, 1, 'admin', '/admin/command/command/action/execute', '在线命令管理 / 生成并执行命令', '{\"__token__\":\"***\",\"commandtype\":\"menu\",\"allcontroller\":\"0\",\"delete\":\"0\",\"force\":\"0\",\"controllerfile_text\":\"\",\"controllerfile\":\"general\\/Systemgroup.php\",\"action\":\"execute\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575263);
+INSERT INTO `im_admin_log` VALUES (601, 1, 'admin', '/admin/command/command/action/execute', '在线命令管理 / 生成并执行命令', '{\"__token__\":\"***\",\"commandtype\":\"menu\",\"allcontroller\":\"0\",\"delete\":\"0\",\"force\":\"0\",\"controllerfile_text\":\"\",\"controllerfile\":\"general\\/Systemgroup.php\",\"action\":\"execute\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575530);
+INSERT INTO `im_admin_log` VALUES (602, 1, 'admin', '/admin/command/command/action/command', '在线命令管理 / 生成并执行命令', '{\"__token__\":\"***\",\"commandtype\":\"menu\",\"allcontroller\":\"0\",\"delete\":\"0\",\"force\":\"0\",\"controllerfile_text\":\"\",\"controllerfile\":\"general\\/Systemgroup.php\",\"action\":\"command\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575532);
+INSERT INTO `im_admin_log` VALUES (603, 1, 'admin', '/admin/command/command/action/execute', '在线命令管理 / 生成并执行命令', '{\"__token__\":\"***\",\"commandtype\":\"menu\",\"allcontroller\":\"0\",\"delete\":\"0\",\"force\":\"0\",\"controllerfile_text\":\"\",\"controllerfile\":\"general\\/Systemgroup.php\",\"action\":\"execute\"}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790575533);
+INSERT INTO `im_admin_log` VALUES (604, 1, 'admin', '/admin/upgrade/check', '系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790576517);
+INSERT INTO `im_admin_log` VALUES (605, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790580221);
+INSERT INTO `im_admin_log` VALUES (606, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790582372);
+INSERT INTO `im_admin_log` VALUES (607, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790582569);
+INSERT INTO `im_admin_log` VALUES (608, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790583875);
+INSERT INTO `im_admin_log` VALUES (609, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790583947);
+INSERT INTO `im_admin_log` VALUES (610, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790584001);
+INSERT INTO `im_admin_log` VALUES (611, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790584030);
+INSERT INTO `im_admin_log` VALUES (612, 1, 'admin', '/admin/system.upgrade/check', '系统管理 / 系统升级', '', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0', 1790584058);
 
 -- ----------------------------
 -- Table structure for im_area
@@ -4218,7 +4245,7 @@ CREATE TABLE `im_attachment`  (
   `storage` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'local' COMMENT '存储位置',
   `sha1` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '文件 sha1编码',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '附件表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '附件表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_attachment
@@ -4293,7 +4320,7 @@ CREATE TABLE `im_auth_rule`  (
   UNIQUE INDEX `name`(`name`) USING BTREE,
   INDEX `pid`(`pid`) USING BTREE,
   INDEX `weigh`(`weigh`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 728 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '节点表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 730 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '节点表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_auth_rule
@@ -4380,9 +4407,29 @@ INSERT INTO `im_auth_rule` VALUES (81, 'file', 79, 'user.rule/del', 'Del', 'fa f
 INSERT INTO `im_auth_rule` VALUES (82, 'file', 79, 'user.rule/add', 'Add', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (83, 'file', 79, 'user.rule/edit', 'Edit', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (84, 'file', 79, 'user.rule/multi', 'Multi', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (726, 'file', 728, 'upgrade', '系统升级', 'fa fa-cloud-download', '', '', '后台系统升级', 1, 'addtabs', '', '', '', 1790148601, 1790243083, 100, 'normal');
+INSERT INTO `im_auth_rule` VALUES (726, 'file', 728, 'system/upgrade', '系统升级', 'fa fa-cloud-download', '', '', '后台系统升级', 1, 'addtabs', '', '', '', 1790148601, 1790578536, 100, 'normal');
 INSERT INTO `im_auth_rule` VALUES (728, 'file', 0, 'system', '系统管理', 'fa fa-wrench', '', '', '后台系统级功能入口', 1, NULL, '', 'xtgl', 'xitongguanli', 1790243083, 1790243083, 100, 'normal');
-INSERT INTO `im_auth_rule` VALUES (729, 'file', 728, 'about', '关于系统', 'fa fa-info-circle', '', '', '系统版本与运行环境信息', 1, 'addtabs', '', 'gyxt', 'guanyuxitong', 1790243083, 1790243083, 90, 'normal');
+INSERT INTO `im_auth_rule` VALUES (729, 'file', 728, 'system/about', '关于系统', 'fa fa-info-circle', '', '', '系统版本与运行环境信息', 1, 'addtabs', '', 'gyxt', 'guanyuxitong', 1790243083, 1790578536, 90, 'normal');
+INSERT INTO `im_auth_rule` VALUES (730, 'file', 728, 'system/systemgroup', '组合数据', 'fa fa-th-large', '', '', '维护多条记录共用一套字段的数据组,业务读取使用 SystemGroupData::getDataList', 1, NULL, '', 'zhsj', 'zuheshuju', 1790567523, 1790578536, 50, 'normal');
+INSERT INTO `im_auth_rule` VALUES (731, 'file', 730, 'system/systemgroup/index', '查看', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790578536, 49, 'normal');
+INSERT INTO `im_auth_rule` VALUES (732, 'file', 730, 'system/systemgroup/add', '添加数据组', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790578536, 48, 'normal');
+INSERT INTO `im_auth_rule` VALUES (733, 'file', 730, 'system/systemgroup/edit', '编辑数据组标识是业务读取依据,创建后不可修改;组内已有记录时字段结构不可修改。', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790578536, 47, 'normal');
+INSERT INTO `im_auth_rule` VALUES (734, 'file', 730, 'system/systemgroup/del', '删除数据组组内存在记录时禁止删除,避免产生孤立记录。', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790578536, 46, 'normal');
+INSERT INTO `im_auth_rule` VALUES (735, 'file', 730, 'system/systemgroup/multi', '批量更新只允许修改状态和排序,字段结构必须通过编辑表单变更。', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790578536, 45, 'normal');
+INSERT INTO `im_auth_rule` VALUES (737, 'file', 0, 'command', '在线命令管理', 'fa fa-terminal', '', '', '', 1, NULL, '', '', '', 1790574120, 1790574120, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (738, 'file', 737, 'command/index', '查看', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574120, 1790574120, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (739, 'file', 737, 'command/add', '添加', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574120, 1790574120, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (740, 'file', 737, 'command/detail', '详情', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574120, 1790574120, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (741, 'file', 737, 'command/command', '生成并执行命令', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574121, 1790574121, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (742, 'file', 737, 'command/execute', '再次执行命令', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574121, 1790574121, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (743, 'file', 737, 'command/del', '删除', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574121, 1790574121, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (744, 'file', 737, 'command/multi', '批量更新', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574121, 1790574121, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (745, 'file', 730, 'system/systemgroupdata', '组合数据记录', 'fa fa-list-alt', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (746, 'file', 745, 'system/systemgroupdata/index', '查看', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (747, 'file', 745, 'system/systemgroupdata/add', '添加', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (748, 'file', 745, 'system/systemgroupdata/edit', '编辑', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (749, 'file', 745, 'system/systemgroupdata/del', '删除', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (750, 'file', 745, 'system/systemgroupdata/multi', '批量更新', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
 
 -- ----------------------------
 -- Table structure for im_category
@@ -4406,7 +4453,7 @@ CREATE TABLE `im_category`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `weigh`(`weigh`, `id`) USING BTREE,
   INDEX `pid`(`pid`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '分类表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '分类表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_category
@@ -4447,6 +4494,8 @@ CREATE TABLE `im_command`  (
 -- ----------------------------
 INSERT INTO `im_command` VALUES (1, 'api', '[\"--force=1\",\"--url=1\",\"--output=1\"]', 'php think api --force=1 --url=1 --output=1', 'Build Successed!', 1714272984, 1714272984, 1714272984, 'successed');
 INSERT INTO `im_command` VALUES (2, 'api', '[\"--force=1\",\"--url=1\",\"--output=1.html\"]', 'php think api --force=1 --url=1 --output=1.html', 'Build Successed!', 1714273066, 1714273066, 1714273066, 'successed');
+INSERT INTO `im_command` VALUES (3, 'menu', '{\"__token__\":\"eb4a1b598d664318c6097d20f0497645\",\"commandtype\":\"menu\",\"allcontroller\":\"0\",\"delete\":\"0\",\"force\":\"0\",\"controllerfile_text\":\"\",\"controllerfile\":\"general\\/Systemgroup.php\"}', 'php think menu --controller=general/Systemgroup', 'SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry \'731\' for key \'PRIMARY\'', 1790575263, 1790575263, 1790575263, 'failured');
+INSERT INTO `im_command` VALUES (4, 'menu', '{\"__token__\":\"04e81afb802a6273ef0641efd11530ff\",\"commandtype\":\"menu\",\"allcontroller\":\"0\",\"delete\":\"0\",\"force\":\"0\",\"controllerfile_text\":\"\",\"controllerfile\":\"general\\/Systemgroup.php\"}', 'php think menu --controller=general/Systemgroup', 'Build Successed!', 1790575533, 1790575533, 1790575533, 'successed');
 
 -- ----------------------------
 -- Table structure for im_config
@@ -4467,7 +4516,7 @@ CREATE TABLE `im_config`  (
   `setting` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '配置',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `name`(`name`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '系统配置' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '系统配置' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_config
@@ -51013,51 +51062,45 @@ CREATE TABLE `im_sms`  (
 -- ----------------------------
 
 -- ----------------------------
--- Table structure for im_system_config
+-- Table structure for im_system_group
 -- ----------------------------
-DROP TABLE IF EXISTS `im_system_config`;
-CREATE TABLE `im_system_config`  (
-  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '配置id',
-  `menu_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '字段名称',
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '类型(文本框,单选按钮...)',
-  `input_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT 'input' COMMENT '表单类型',
-  `config_tab_id` int(10) UNSIGNED NOT NULL COMMENT '配置分类id',
-  `parameter` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '规则 单选框和多选框',
-  `upload_type` tinyint(1) UNSIGNED NULL DEFAULT NULL COMMENT '上传文件格式1单图2多图3文件',
-  `required` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '规则',
-  `width` int(10) UNSIGNED NULL DEFAULT NULL COMMENT '多行文本框的宽度',
-  `high` int(10) UNSIGNED NULL DEFAULT NULL COMMENT '多行文框的高度',
-  `value` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '默认值',
-  `info` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '配置名称',
-  `desc` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '配置简介',
-  `sort` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '排序',
-  `status` tinyint(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '是否隐藏',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '配置表' ROW_FORMAT = DYNAMIC;
+DROP TABLE IF EXISTS `im_system_group`;
+CREATE TABLE `im_system_group`  (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '数据组ID',
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '数据组标识',
+  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '数据组名称',
+  `tip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用途说明',
+  `fields` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '字段定义(JSON)',
+  `weigh` int(10) NOT NULL DEFAULT 0 COMMENT '排序',
+  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal' COMMENT '状态:normal/hidden',
+  `createtime` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建时间',
+  `updatetime` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `name`(`name`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '组合数据组定义' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of im_system_config
+-- Records of im_system_group
 -- ----------------------------
 
 -- ----------------------------
--- Table structure for im_system_config_tab
+-- Table structure for im_system_group_data
 -- ----------------------------
-DROP TABLE IF EXISTS `im_system_config_tab`;
-CREATE TABLE `im_system_config_tab`  (
-  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '配置分类id',
-  `pid` int(11) NOT NULL DEFAULT 0 COMMENT '上级分类id',
-  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '配置分类名称',
-  `eng_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '配置分类英文名称',
-  `status` tinyint(1) UNSIGNED NOT NULL DEFAULT 1 COMMENT '配置分类状态',
-  `info` tinyint(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '配置分类是否显示',
-  `icon` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '图标',
-  `type` int(2) NULL DEFAULT 0 COMMENT '配置类型',
-  `sort` int(11) NOT NULL DEFAULT 0 COMMENT '排序',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '配置分类表' ROW_FORMAT = DYNAMIC;
+DROP TABLE IF EXISTS `im_system_group_data`;
+CREATE TABLE `im_system_group_data`  (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+  `group_id` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '所属数据组ID',
+  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '记录值(JSON)',
+  `weigh` int(10) NOT NULL DEFAULT 0 COMMENT '排序',
+  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal' COMMENT '状态:normal/hidden',
+  `createtime` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '创建时间',
+  `updatetime` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `group_id`(`group_id`, `status`, `weigh`, `id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '组合数据记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of im_system_config_tab
+-- Records of im_system_group_data
 -- ----------------------------
 
 -- ----------------------------
@@ -51165,7 +51208,7 @@ CREATE TABLE `im_user_group`  (
   `updatetime` bigint(16) NULL DEFAULT NULL COMMENT '更新时间',
   `status` enum('normal','hidden') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '状态',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员组表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员组表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_user_group

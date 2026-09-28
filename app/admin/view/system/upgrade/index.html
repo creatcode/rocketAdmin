@@ -1,4 +1,98 @@
 <style>
+    /* 检查与结果占主栏，操作说明占侧栏；窄屏保持阅读顺序。 */
+    #upgrade-panel .upgrade-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+        gap: 20px;
+        align-items: start;
+    }
+
+    #upgrade-panel .upgrade-layout > .upgrade-main {
+        padding: 20px;
+        border: 1px solid #e5e6eb;
+        border-radius: 4px;
+    }
+
+    #upgrade-panel .upgrade-main,
+    #upgrade-panel .upgrade-guide {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    #upgrade-panel .upgrade-guide {
+        padding: 20px;
+        background-color: #f6f8fb;
+        border: 1px solid #e5e6eb;
+        border-radius: 4px;
+        color: #4e5969;
+        line-height: 1.7;
+    }
+
+    #upgrade-panel .upgrade-guide h3 {
+        margin: 0 0 16px;
+        font-size: 15px;
+    }
+
+    #upgrade-panel .upgrade-guide ol {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    #upgrade-panel .upgrade-guide li + li {
+        margin-top: 12px;
+    }
+
+    #upgrade-panel .upgrade-guide p {
+        margin: 4px 0 0;
+    }
+
+    #upgrade-panel .upgrade-guide .upgrade-guide-note {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid #e5e6eb;
+    }
+
+    #upgrade-panel .upgrade-placeholder {
+        padding: 24px 12px;
+        text-align: center;
+        color: #4e5969;
+    }
+
+    #upgrade-panel .upgrade-placeholder > .fa {
+        margin-bottom: 12px;
+        font-size: 28px;
+        color: #165dff;
+    }
+
+    #upgrade-panel .upgrade-placeholder h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+    }
+
+    #upgrade-panel .upgrade-placeholder p {
+        margin: 0;
+    }
+
+    #upgrade-panel .upgrade-actions {
+        margin-left: auto;
+    }
+
+    #upgrade-panel .upgrade-version-info .upgrade-version-label {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    @media (max-width: 767px) {
+        #upgrade-panel .upgrade-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        #upgrade-panel .upgrade-main .btn {
+            min-height: 44px;
+            white-space: normal;
+        }
+    }
+
     #upgrade-panel .upgrade-versionbar {
         display: flex;
         flex-wrap: wrap;
@@ -39,6 +133,12 @@
         border-left: 3px solid #165dff;
         border-radius: 0 6px 6px 0;
         white-space: pre-wrap;
+    }
+
+    #upgrade-panel #upgrade-preview .btn-run {
+        display: block;
+        margin-top: 16px;
+        margin-left: auto;
     }
 
     /* 需压过基线 .label 的 75% 字号与 .label-* 的浅底（0,1,0 / 0,2,1），故用 id 前缀 */
@@ -209,12 +309,18 @@
         }
     }
 </style>
-<div class="panel panel-default panel-intro" id="upgrade-panel">
-    <div class="panel-heading"><strong>{:__('System upgrade')}</strong></div>
+<div class="panel panel-default panel-intro" id="upgrade-panel" data-last-batch="{$lastBatch}">
+    <div class="panel-heading">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active" role="presentation"><a href="#upgrade-tab" role="tab" data-toggle="tab" aria-controls="upgrade-tab" aria-expanded="true">{:__('System upgrade')}</a></li>
+            <li role="presentation"><a href="#upgrade-logs-tab" role="tab" data-toggle="tab" aria-controls="upgrade-logs-tab" aria-expanded="false">{:__('Upgrade history')}</a></li>
+        </ul>
+    </div>
     <div class="panel-body">
-        {if $upgradeEnabled}
-        <p class="text-muted">{:__('Upgrade desc')}</p>
-        {/if}
+        <div class="tab-content">
+        <div class="tab-pane active" id="upgrade-tab" role="tabpanel">
+        <div class="{if $upgradeEnabled}upgrade-layout{/if}">
+        <div class="upgrade-main">
 
         {if !$upgradeEnabled}
         <div class="upgrade-empty">
@@ -250,29 +356,32 @@
 
         {if $upgradeEnabled}
         <div class="upgrade-versionbar">
-            <span class="upgrade-version-label">{:__('Current version')}:</span>
-            <span class="upgrade-version">{$currentVersion}</span>
+            <div class="upgrade-version-info">
+                <span class="upgrade-version-label">{:__('Current version')}</span>
+                <span class="upgrade-version current-version">{$currentVersion}</span>
+            </div>
             <form id="upgrade-form" class="upgrade-actions" role="form" method="post" novalidate>
                 {:token_field()}
                 <button type="button" class="btn btn-primary btn-check" {if $interruptedBatch}disabled{/if}>
                     <i class="fa fa-search" aria-hidden="true"></i> {:__('Check update')}
                 </button>
-                <button type="button" class="btn btn-danger btn-run hide" disabled>
-                    <i class="fa fa-cloud-download" aria-hidden="true"></i> {:__('Run upgrade')}
-                </button>
             </form>
         </div>
 
+        {if !$interruptedBatch}
+        <div id="upgrade-placeholder" class="upgrade-placeholder">
+            <i class="fa fa-cloud-download" aria-hidden="true"></i>
+            <h3>{:__('Check available updates')}</h3>
+            <p>{:__('Check update hint')}</p>
+        </div>
+        {/if}
+
         <div class="upgrade-progress hide" aria-live="polite">
-            <span class="upgrade-progress-percent"></span>
-            <span class="upgrade-progress-step" data-state="preparing">{:__('preparing')}</span>
-            <span class="upgrade-progress-step" data-state="downloading">{:__('downloading')}</span>
-            <span class="upgrade-progress-step" data-state="verified">{:__('verified')}</span>
-            <span class="upgrade-progress-step" data-state="backing_up">{:__('backing_up')}</span>
-            <span class="upgrade-progress-step" data-state="applying_files">{:__('applying_files')}</span>
-            <span class="upgrade-progress-step" data-state="running_sql">{:__('running_sql')}</span>
-            <span class="upgrade-progress-step" data-state="committing">{:__('committing')}</span>
+            <span class="upgrade-progress-step" data-state="preparing downloading verified">{:__('Download and check')}</span>
+            <span class="upgrade-progress-step" data-state="backing_up">{:__('Backup information')}</span>
+            <span class="upgrade-progress-step" data-state="applying_files running_sql committing">{:__('Apply upgrade')}</span>
             <span class="upgrade-progress-step" data-state="done">{:__('done')}</span>
+            <span class="upgrade-progress-current"></span>
         </div>
 
         <section id="upgrade-preview" class="panel panel-default hide" aria-live="polite">
@@ -281,9 +390,12 @@
                 <span class="label preview-state"></span>
             </div>
             <div class="panel-body">
-                <p><strong>{:__('Latest version')}:</strong> <span class="preview-version"></span></p>
+                <p><strong>{:__('Version')}:</strong> <span class="current-version">{$currentVersion}</span> <i class="fa fa-long-arrow-right" aria-hidden="true"></i> <strong class="preview-version"></strong></p>
                 <p><strong>{:__('Changelog')}:</strong></p>
                 <pre id="upgrade-notes"></pre>
+                <button type="button" class="btn btn-success btn-run hide" disabled>
+                    <i class="fa fa-cloud-download" aria-hidden="true"></i> {:__('Run upgrade')}
+                </button>
                 <div class="upgrade-manual hide">
                     <span class="text-muted">{:__('Manual download tip')}</span>
                     <a class="upgrade-manual-url" href="#" target="_blank" rel="noopener noreferrer" download><span class="upgrade-manual-version"></span> {:__('Download')}</a>
@@ -293,7 +405,30 @@
         </section>
         <div id="upgrade-status" class="hide alert alert-info" role="status" aria-live="polite"></div>
         {/if}
-
+        <div id="upgrade-result" class="hide alert alert-info" role="status" aria-live="polite">
+            <strong class="result-title"></strong>
+            <p class="result-counts"></p>
+            <p class="result-message"></p>
+            <button type="button" class="btn btn-default btn-refresh-status">{:__('Refresh status')}</button>
+            <button type="button" class="btn btn-default btn-refresh-page">{:__('Refresh page')}</button>
+            <button type="button" class="btn btn-info btn-upgrade-detail hide">{:__('Upgrade details')}</button>
+            <button type="button" class="btn btn-warning btn-recover hide">{:__('Recover upgrade')}</button>
+        </div>
+        </div>
+        {if $upgradeEnabled}
+        <aside class="upgrade-guide" aria-labelledby="upgrade-guide-title">
+            <h3 id="upgrade-guide-title">{:__('Upgrade guide')}</h3>
+            <ol>
+                <li><strong>{:__('Check update')}</strong><p>{:__('Review update notes')}</p></li>
+                <li><strong>{:__('Run upgrade')}</strong><p>{:__('Keep upgrade page open')}</p></li>
+                <li><strong>{:__('Upgrade details')}</strong><p>{:__('Review upgrade records')}</p></li>
+            </ol>
+            <p class="upgrade-guide-note">{:__('Upgrade desc')}</p>
+        </aside>
+        {/if}
+        </div>
+        </div>
+        <div class="tab-pane" id="upgrade-logs-tab" role="tabpanel">
         <section class="panel panel-default">
             <div class="panel-heading"><strong>{:__('Upgrade history')}</strong> </div>
             <div class="panel-body">
@@ -304,6 +439,31 @@
                     <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
                            width="100%"></table>
                 </div>
+            </div>
+        </section>
+        </div>
+        </div>
+    </div>
+</div>
+<div id="upgrade-detail-template" class="hide">
+    <div class="panel-body">
+        <p><strong>{:__('Batch')}:</strong> <span class="detail-batch"></span></p>
+        <p><strong>{:__('Result')}:</strong> <span class="detail-result"></span></p>
+        <button type="button" class="btn btn-default btn-refresh-detail">{:__('Refresh status')}</button>
+        <section class="panel panel-default">
+            <div class="panel-heading"><strong>{:__('Backup information')}</strong></div>
+            <div class="panel-body">
+                <p>{:__('Affected file backups')}</p>
+                <p>{:__('Backup files count')}: <span class="detail-files-count"></span> · {:__('Backup size')}: <span class="detail-files-size"></span></p>
+                <p>{:__('Database backup')}: <span class="detail-database-size"></span></p>
+                <div class="detail-backup-error alert alert-warning hide" role="alert"></div>
+                <button type="button" class="btn btn-default btn-export-backup" disabled>{:__('Export backup')}</button>
+            </div>
+        </section>
+        <section class="panel panel-default">
+            <div class="panel-heading"><strong>{:__('SQL file details')}</strong></div>
+            <div class="panel-body table-responsive">
+                <table class="detail-sql-table table table-striped table-bordered"></table>
             </div>
         </section>
     </div>

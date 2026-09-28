@@ -6,6 +6,7 @@ use ReflectionClass;
 use think\Exception;
 use ReflectionMethod;
 use think\facade\Cache;
+use think\facade\Db;
 use think\console\Input;
 use think\facade\Config;
 use think\console\Output;
@@ -13,10 +14,17 @@ use think\console\Command;
 use app\admin\model\AuthRule;
 use think\console\input\Option;
 
+/**
+ * 从控制器管理后台权限菜单
+ */
 class Menu extends Command
 {
     protected $model = null;
 
+    /**
+     * 配置菜单命令参数
+     * @return void
+     */
     protected function configure()
     {
         $this->setName('menu')
@@ -28,6 +36,12 @@ class Menu extends Command
         //要执行的controller必须一样，不适用模糊查询
     }
 
+    /**
+     * 生成或删除控制器权限菜单
+     * @param Input $input 命令输入
+     * @param Output $output 命令输出
+     * @return void
+     */
     protected function execute(Input $input, Output $output)
     {
         $this->model = new AuthRule();
@@ -62,11 +76,11 @@ class Menu extends Command
                     } else {
                         $controllerArr = [parse_name($item)];
                     }
-                    $item = str_replace('_', '\_', implode('/', $controllerArr));
+                    $item = strtolower(implode('/', $controllerArr));
                     if ($equal) {
                         $query->whereOr('name', 'eq', $item);
                     } else {
-                        $query->whereOr('name', 'like', strtolower($item) . "%");
+                        $query->whereOr('name', 'like', str_replace('_', '\_', $item) . "%");
                     }
                 }
             })->select();
@@ -109,20 +123,27 @@ class Menu extends Command
                     $controllerArr
                 ) . '.php';
                 if (!is_file($adminPath)) {
-                    $output->error("controller not found");
-                    return;
+                    throw new Exception("controller not found: " . $item);
                 }
-                $this->importRule($item);
+                Db::transaction(function () use ($item) {
+                    $this->importRule($item);
+                });
             }
         } else {
             $authRuleList = AuthRule::select();
             //生成权限规则备份文件
-            file_put_contents(app()->getRuntimePath() . 'authrule.json', json_encode($authRuleList->toArray()));
+            $backup = json_encode($authRuleList->toArray(), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+            if (file_put_contents(app()->getRuntimePath() . 'authrule.json', $backup) === false) {
+                throw new Exception('Cannot save auth rule backup');
+            }
 
-            $this->model->where('id', '>', 0)->delete();
+            // 按名称更新并保留规则主键，避免角色授权失效或误删自定义菜单。
             $controllerDir = $adminPath . 'controller' . DIRECTORY_SEPARATOR;
             // 扫描新的节点信息并导入
-            $treelist = $this->import($this->scandir($controllerDir));
+            $controllers = $this->scandir($controllerDir);
+            Db::transaction(function () use ($controllers) {
+                $this->import($controllers);
+            });
         }
         Cache::delete("__menu__");
         $output->info("Build Successed!");
@@ -177,6 +198,11 @@ class Menu extends Command
         return $menuarr;
     }
 
+    /**
+     * 读取控制器并更新权限规则
+     * @param string $controller 控制器路径
+     * @return void
+     */
     protected function importRule($controller)
     {
         $controller = str_replace('\\', '/', $controller);
@@ -202,7 +228,9 @@ class Menu extends Command
 
         //临时的类文件
         $tempClassFile = __DIR__ . DIRECTORY_SEPARATOR . $uniqueName . ".php";
-        file_put_contents($tempClassFile, $classContent);
+        if (file_put_contents($tempClassFile, $classContent) === false) {
+            throw new Exception('Cannot write temporary controller file');
+        }
         $className = "\\app\\admin\\command\\" . $uniqueName;
 
         //删除临时文件
@@ -222,7 +250,7 @@ class Menu extends Command
         //判断是否有启用软删除
         $softDeleteMethods = ['destroy', 'restore', 'recyclebin'];
         $withSofeDelete = false;
-        $modelRegexArr = ["/\\\$this\->model\s*=\s*model\(['|\"](\w+)['|\"]\);/", "/\\\$this\->model\s*=\s*new\s+([a-zA-Z\\\]+);/"];
+        $modelRegexArr = ["/\\\$this\->model\s*=\s*model\(['|\"](\w+)['|\"]\);/", "/\\\$this\->model\s*=\s*new\s+([a-zA-Z0-9_\\\]+)/"];
         $modelRegex = preg_match($modelRegexArr[0], $classContent) ? $modelRegexArr[0] : $modelRegexArr[1];
         preg_match_all($modelRegex, $classContent, $matches);
         if (isset($matches[1]) && isset($matches[1][0]) && $matches[1][0]) {
@@ -317,10 +345,16 @@ class Menu extends Command
 
             $ruleArr[] = array('id' => $id, 'pid' => $pid, 'name' => $name . "/" . strtolower($n->name), 'icon' => 'fa fa-circle-o', 'title' => $title, 'ismenu' => 0, 'status' => 'normal');
         }
-        $this->model->insertAll($ruleArr);
+        // 已有主键的规则更新，新增规则插入，避免重复生成菜单时主键冲突
+        $this->model->saveAll($ruleArr);
     }
 
     //获取主键
+    /**
+     * 按规则名称获取已有主键
+     * @param string $name 规则名称
+     * @return int|null
+     */
     protected function getAuthRulePK($name)
     {
         if (!empty($name)) {
@@ -331,6 +365,12 @@ class Menu extends Command
         }
     }
 
+    /**
+     * 解析完整模型类名和导入别名
+     * @param string $name 模型名称
+     * @param string $classContent 控制器源码
+     * @return string|null
+     */
     protected function resolveModelClass($name, $classContent)
     {
         $name = trim($name, '\\');

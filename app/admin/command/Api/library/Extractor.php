@@ -109,6 +109,7 @@ class Extractor
     {
         $class = new \ReflectionClass($className);
 
+        self::$classMethodAnnotationCache[$className] = [];
         foreach ($class->getMethods() as $object) {
             self::$classMethodAnnotationCache[$className][$object->name] = self::getMethodAnnotations($className, $object->name);
         }

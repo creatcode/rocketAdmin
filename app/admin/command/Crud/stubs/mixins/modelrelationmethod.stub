@@ -1,5 +1,9 @@
 
+    /**
+     * 定义一对一关联，允许关联记录不存在。
+     * @return \think\model\relation\HasOne|\think\model\relation\BelongsTo
+     */
     public function {%relationMethod%}()
     {
-        return $this->{%relationMode%}('{%relationClassName%}', '{%relationForeignKey%}', '{%relationPrimaryKey%}', [], 'LEFT');
+        return $this->{%relationMode%}('{%relationClassName%}', '{%relationForeignKey%}', '{%relationPrimaryKey%}')->joinType('LEFT');
     }

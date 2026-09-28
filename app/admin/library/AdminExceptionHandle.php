@@ -63,10 +63,15 @@ class AdminExceptionHandle extends Handle
                 $data['file'] = $e->getFile();
                 $data['line'] = $e->getLine();
             }
-            return json($data);
+            return json($data)->options(['json_encode_param' => JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE]);
         }
 
         // 其他错误交给系统处理
-        return parent::render($request, $e);
+        $response = parent::render($request, $e);
+        // 调试数据中的非 UTF-8 字符不能导致异常响应再次编码失败
+        if (!$e instanceof HttpResponseException && $response instanceof \think\response\Json) {
+            $response->options(['json_encode_param' => JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE]);
+        }
+        return $response;
     }
 }

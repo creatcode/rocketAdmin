@@ -1,0 +1,50 @@
+<div class="form-group">
+    <label class="control-label col-xs-12 col-sm-2">{:__('Fields')}:</label>
+    <div class="col-xs-12 col-sm-10">
+        <table class="table table-striped fieldlist" data-name="row[fields]" data-template="systemgroupfieldstpl">
+            <tr>
+                <td width="15%">{:__('Field name')}</td>
+                <td width="20%">{:__('Field title')}</td>
+                <td width="15%">{:__('Field type')}</td>
+                <td width="10%">{:__('Field required')}</td>
+                <td>{:__('Field limit')}</td>
+                <td width="90">{:__('Operate')}</td>
+            </tr>
+            <tr>
+                <td colspan="6">
+                    <a href="javascript:;" class="btn btn-sm btn-success btn-append"><i class="fa fa-plus"></i> {:__('Append')}</a>
+                    <textarea name="row[fields]" class="form-control hide" cols="30" rows="5">{$fieldsValue}</textarea>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<script type="text/html" id="systemgroupfieldstpl">
+    <tr>
+        <td><input type="text" class="form-control" name="<%=name%>[<%=index%>][name]" value="<%=row.name%>" placeholder="{:__('Field name tips')}"/></td>
+        <td><input type="text" class="form-control" name="<%=name%>[<%=index%>][title]" value="<%=row.title%>"/></td>
+        <td>
+            <select class="form-control" name="<%=name%>[<%=index%>][type]">
+                {foreach name="fieldTypeList" item="typeTitle"}
+                <option value="{$key}"<%=row.type=='{$key}'?' selected':''%>>{$typeTitle}</option>
+                {/foreach}
+            </select>
+        </td>
+        <td>
+            <select class="form-control" name="<%=name%>[<%=index%>][required]">
+                <option value="0"<%=row.required=='1'?'':' selected'%>>{:__('No')}</option>
+                <option value="1"<%=row.required=='1'?' selected':''%>>{:__('Yes')}</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" class="form-control" name="<%=name%>[<%=index%>][maxlength]" value="<%=row.maxlength%>" placeholder="{:__('Field maxlength tips')}"/>
+            <input type="text" class="form-control" name="<%=name%>[<%=index%>][min]" value="<%=row.min%>" placeholder="{:__('Field min tips')}"/>
+            <input type="text" class="form-control" name="<%=name%>[<%=index%>][max]" value="<%=row.max%>" placeholder="{:__('Field max tips')}"/>
+            <textarea class="form-control" name="<%=name%>[<%=index%>][options]" rows="2" placeholder="{:__('Field options tips')}"><%=row.options%></textarea>
+        </td>
+        <td width="90">
+            <span class="btn btn-xs btn-danger btn-remove"><i class="fa fa-times"></i></span>
+            <span class="btn btn-xs btn-primary btn-dragsort"><i class="fa fa-arrows"></i></span>
+        </td>
+    </tr>
+</script>

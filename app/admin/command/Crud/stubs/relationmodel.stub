@@ -4,8 +4,16 @@ namespace {%modelNamespace%};
 
 use think\Model;
 
+/**
+ * 生成的关联数据模型
+ */
 class {%relationName%} extends Model
 {
+    {%modelConnection%}
+
+    // 数据表的实际主键，兼容非 id 主键。
+    protected $pk = '{%relationPriKey%}';
+
     // 表名
     protected ${%relationTableType%} = '{%relationTableTypeName%}';
     

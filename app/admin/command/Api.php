@@ -10,8 +10,15 @@ use think\console\Command;
 use think\console\input\Option;
 use app\admin\command\Api\library\Builder;
 
+/**
+ * 生成控制器 API 文档
+ */
 class Api extends Command
 {
+    /**
+     * 配置 API 文档命令参数
+     * @return void
+     */
     protected function configure()
     {
         $site = Config::get('site');
@@ -29,6 +36,12 @@ class Api extends Command
             ->setDescription('Build Api document from controller');
     }
 
+    /**
+     * 从控制器生成 API 文档
+     * @param Input $input 命令输入
+     * @param Output $output 命令输出
+     * @return void
+     */
     protected function execute(Input $input, Output $output)
     {
         $apiDir = __DIR__ . DIRECTORY_SEPARATOR . 'Api' . DIRECTORY_SEPARATOR;
@@ -36,6 +49,9 @@ class Api extends Command
         $force = $input->getOption('force');
         $url = $input->getOption('url');
         $language = $input->getOption('language');
+        if ($language && !preg_match('/^[a-z0-9_-]+$/i', $language)) {
+            throw new Exception('language name not correct');
+        }
         $template = $input->getOption('template');
         if (!preg_match("/^([a-z0-9]+)\.html\$/i", $template)) {
             throw new Exception('template file not correct');
@@ -45,15 +61,18 @@ class Api extends Command
         if (!is_file($langFile)) {
             throw new Exception('language file not found');
         }
-        $lang = include_once $langFile;
+        $lang = include $langFile;
         //输出到runtime目录，避免文档被直接访问
         $output_dir = runtime_path() . 'docs' . DIRECTORY_SEPARATOR;
-        if (!is_dir($output_dir)) {
-            mkdir($output_dir, 0755, true);
-        }
         $output_name = $input->getOption('output') ?: 'doc_' . date('Ymd_') . strtolower(\util\Random::alnum(6)) . '.html';
+        if (!preg_match('/^[a-z0-9_\-]+\.html$/i', $output_name)) {
+            throw new Exception('output file name not correct');
+        }
         if ($output_name === 'api.html') {
             throw new Exception('api.html cannot be used as the output file name');
+        }
+        if (!is_dir($output_dir) && !mkdir($output_dir, 0755, true)) {
+            throw new Exception('Cannot create document directory');
         }
         $output_file = $output_dir . $output_name;
         if (is_file($output_file) && !$force) {
@@ -66,7 +85,7 @@ class Api extends Command
             throw new Exception('template file not found');
         }
         // 额外的类
-        $classes = $input->getOption('class');
+        $classes = $input->getOption('class') ?: [];
         // 标题
         $title = $input->getOption('title');
         // 模块
@@ -74,6 +93,9 @@ class Api extends Command
         // 插件
         $addon = $input->getOption('addon');
 
+        if (!preg_match('/^[a-z][a-z0-9_]*$/i', $module) || ($addon && !preg_match('/^[a-z][a-z0-9]*$/i', $addon))) {
+            throw new Exception('module or addon name not correct');
+        }
         $moduleDir = $addonDir = '';
         if ($addon) {
             $addonInfo = get_addon_info($addon);
@@ -115,6 +137,9 @@ class Api extends Command
             }
         } else {
             foreach ($controller as $index => $item) {
+                if (!preg_match('/^[a-z0-9_]+(?:[\\\\\/][a-z0-9_]+)*$/i', $item)) {
+                    throw new Exception('controller name not correct');
+                }
                 $filePath = $moduleDir . Config::get('route.controller_layer') . DIRECTORY_SEPARATOR . $item . '.php';
                 $className = $this->getClassFromFile($filePath);
                 if ($className) {

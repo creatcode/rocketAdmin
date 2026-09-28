@@ -82,7 +82,8 @@ define(['jquery', 'bootstrap', 'toastr', 'layer', 'lang'], function ($, undefine
                     },
                     error: function (xhr) {
                         index && Layer.close(index);
-                        var ret = {code: xhr.status, msg: xhr.statusText, data: null};
+                        var response = xhr.responseJSON || {};
+                        var ret = {code: xhr.status, msg: $('<div>').text(response.msg || response.message || xhr.statusText).html(), data: null};
                         Fast.events.onAjaxError(ret, error);
                     }
                 }, options);

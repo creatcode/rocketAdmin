@@ -33,6 +33,10 @@ class Builder
         $this->view = app('view');
     }
 
+    /**
+     * 提取本次控制器的文档注解
+     * @return array
+     */
     protected function extractAnnotations()
     {
         foreach ($this->classes as $class) {
@@ -57,7 +61,9 @@ class Builder
         //            }
         //        }
         //        unset($methods);
-        return [$allClassAnnotation, $allClassMethodAnnotation];
+        // 静态解析缓存可能包含上一次文档的类，本次只输出指定控制器。
+        $classKeys = array_flip($this->classes);
+        return [array_intersect_key($allClassAnnotation ?: [], $classKeys), array_intersect_key($allClassMethodAnnotation ?: [], $classKeys)];
     }
 
     protected function generateHeadersTemplate($docs)
@@ -161,6 +167,10 @@ class Builder
         return $labels[$method] ?? $labels['GET'];
     }
 
+    /**
+     * 按分组和权重组织接口文档
+     * @return array
+     */
     public function parse()
     {
         list($allClassAnnotations, $allClassMethodAnnotations) = $this->extractAnnotations();
@@ -177,7 +187,7 @@ class Builder
         unset($allClassAnnotation);
 
         arsort($sectorArr);
-        $routes = include_once config_path() . 'route.php';
+        $routes = include config_path() . 'route.php';
         $subdomain = false;
         if (config('url_domain_deploy') && isset($routes['__domain__']) && isset($routes['__domain__']['api']) && $routes['__domain__']['api']) {
             $subdomain = true;
@@ -200,7 +210,7 @@ class Builder
                 if ($subdomain) {
                     $route = substr($route, 4);
                 }
-                $docsList[$section][$name] = [
+                $docsList[$section][$class . '::' . $name] = [
                     'id'                => $counter,
                     'method'            => is_array($docs['ApiMethod'][0]) ? $docs['ApiMethod'][0]['data'] : $docs['ApiMethod'][0],
                     'methodLabel'       => $this->generateBadgeForMethod($docs),
@@ -231,6 +241,7 @@ class Builder
             arsort($methodSectorArr);
             $methods = array_merge(array_flip(array_keys($methodSectorArr)), $methods);
         }
+        $sectorArr = array_intersect_key($sectorArr, $docsList);
         $docsList = array_merge(array_flip(array_keys($sectorArr)), $docsList);
         return $docsList;
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace app\admin\controller;
+namespace app\admin\controller\system;
 
 use app\common\controller\Backend;
 use think\facade\Db;

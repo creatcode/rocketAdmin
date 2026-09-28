@@ -5,12 +5,18 @@ namespace {%modelNamespace%};
 use think\Model;
 {%softDeleteClassPath%}
 
+/**
+ * 生成的业务数据模型
+ */
 class {%modelName%} extends Model
 {
 
     {%softDelete%}
 
     {%modelConnection%}
+
+    // 数据表的实际主键，兼容非 id 主键。
+    protected $pk = '{%pk%}';
 
     // 表名
     protected ${%modelTableType%} = '{%modelTableTypeName%}';

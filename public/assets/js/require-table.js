@@ -185,7 +185,8 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     if (e.status === 0) {
                         return;
                     }
-                    Toastr.error(__('Unknown data format'));
+                    var ret = e.responseJSON || {};
+                    Toastr.error($('<div>').text(ret.msg || ret.message || __('Unknown data format')).html());
                 });
                 //当加载数据成功时
                 table.on('load-success.bs.table', function (e, data) {

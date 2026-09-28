@@ -13,6 +13,9 @@ use think\console\input\Option;
 use think\exception\ErrorException;
 use util\Form;
 
+/**
+ * 根据数据库表结构管理 CRUD 文件
+ */
 class Crud extends Command
 {
     protected $stubList = [];
@@ -245,6 +248,10 @@ class Crud extends Command
      */
     protected $fieldMaxLen = 0;
 
+    /**
+     * 配置 CRUD 命令参数
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -282,15 +289,21 @@ class Crud extends Command
             ->addOption('headingfilterfield', null, Option::VALUE_OPTIONAL, 'heading filter field', null)
             ->addOption('fixedcolumns', null, Option::VALUE_OPTIONAL, 'fixed columns', null)
             ->addOption('editorclass', null, Option::VALUE_OPTIONAL, 'automatically generate editor class', null)
-            ->addOption('db', null, Option::VALUE_OPTIONAL, 'database config name', 'database')
+            ->addOption('db', null, Option::VALUE_OPTIONAL, 'database config name', null)
             ->setDescription('Build CRUD controller and model from table');
     }
 
+    /**
+     * 根据数据表生成或删除 CRUD 文件
+     * @param Input $input 命令输入
+     * @param Output $output 命令输出
+     * @return void
+     */
     protected function execute(Input $input, Output $output)
     {
         $adminPath = dirname(__DIR__) . DIRECTORY_SEPARATOR;
         //数据库
-        $db = $input->getOption('db');
+        $db = $input->getOption('db') ?: Config::get('database.default');
         //表名
         $table = $input->getOption('table') ?: '';
         //自定义控制器
@@ -392,6 +405,9 @@ class Crud extends Command
         $this->reservedField = array_merge($this->reservedField, [$this->createTimeField, $this->updateTimeField, $this->deleteTimeField]);
 
         $dbconfig = Config::get('database.connections.' . $db);
+        if (!$dbconfig) {
+            throw new Exception('database config not found: ' . $db);
+        }
         $dbconnect = Db::connect($db);
         $dbname = $dbconfig['database'];
         $prefix = $dbconfig['prefix'];
@@ -412,11 +428,11 @@ class Crud extends Command
         $modelTableTypeName = $modelTableName = $modelName;
         $modelTableInfo = null;
         if (!$input->getOption('delete')) {
-            $modelTableInfo = $dbconnect->query("SHOW TABLE STATUS LIKE '{$modelTableName}'", [], true);
+            $modelTableInfo = $dbconnect->query("SHOW TABLE STATUS WHERE Name = ?", [$modelTableName], true);
             if (!$modelTableInfo) {
                 $modelTableType = 'name';
                 $modelTableName = $prefix . $modelName;
-                $modelTableInfo = $dbconnect->query("SHOW TABLE STATUS LIKE '{$modelTableName}'", [], true);
+                $modelTableInfo = $dbconnect->query("SHOW TABLE STATUS WHERE Name = ?", [$modelTableName], true);
                 if (!$modelTableInfo) {
                     throw new Exception("table not found");
                 }
@@ -434,11 +450,11 @@ class Crud extends Command
                 $relationName = stripos($relationTable, $prefix) === 0 ? substr($relationTable, strlen($prefix)) : $relationTable;
                 $relationTableType = 'table';
                 $relationTableTypeName = $relationTableName = $relationName;
-                $relationTableInfo = $dbconnect->query("SHOW TABLE STATUS LIKE '{$relationTableName}'", [], true);
+                $relationTableInfo = $dbconnect->query("SHOW TABLE STATUS WHERE Name = ?", [$relationTableName], true);
                 if (!$relationTableInfo) {
                     $relationTableType = 'name';
                     $relationTableName = $prefix . $relationName;
-                    $relationTableInfo = $dbconnect->query("SHOW TABLE STATUS LIKE '{$relationTableName}'", [], true);
+                    $relationTableInfo = $dbconnect->query("SHOW TABLE STATUS WHERE Name = ?", [$relationTableName], true);
                     if (!$relationTableInfo) {
                         throw new Exception("relation table not found");
                     }
@@ -552,7 +568,7 @@ class Crud extends Command
 
             //继续删除菜单
             if ($menu) {
-                exec("php think menu -c {$controllerUrl} -d 1 -f 1");
+                (new Menu())->run(new Input(['--controller=' . str_replace('.', '/', $controllerUrl), '--delete=1', '--force=1']), $output);
             }
 
             $output->info("Delete Successed");
@@ -587,6 +603,13 @@ class Crud extends Command
             $fieldArr[] = $v['COLUMN_NAME'];
         }
 
+        if ($fields) {
+            $fields = implode(',', array_filter(array_map('trim', explode(',', $fields))));
+            if (array_diff(explode(',', $fields), $fieldArr)) {
+                throw new Exception('visible fields not found in table');
+            }
+        }
+
         // 加载关联表的列
         foreach ($relations as $index => &$relation) {
             $relationColumnList = $dbconnect->query($sql, [$dbname, $relation['relationTableName']]);
@@ -595,20 +618,21 @@ class Crud extends Command
             foreach ($relationColumnList as $k => $v) {
                 $relationFieldList[] = $v['COLUMN_NAME'];
             }
-            if (!$relation['relationPrimaryKey']) {
+            $relation['relationPriKey'] = '';
+            if (!$relation['relationPriKey']) {
                 foreach ($relationColumnList as $k => $v) {
                     if ($v['COLUMN_KEY'] == 'PRI') {
-                        $relation['relationPrimaryKey'] = $v['COLUMN_NAME'];
+                        $relation['relationPriKey'] = $v['COLUMN_NAME'];
                         break;
                     }
                 }
             }
             // 如果主键为空
-            if (!$relation['relationPrimaryKey']) {
+            if (!$relation['relationPriKey']) {
                 throw new Exception('Relation Primary key not found!');
             }
             // 如果主键不在表字段中
-            if (!in_array($relation['relationPrimaryKey'], $relationFieldList)) {
+            if (!in_array($relation['relationPriKey'], $relationFieldList)) {
                 throw new Exception('Relation Primary key not found in table!');
             }
             $relation['relationColumnList'] = $relationColumnList;
@@ -643,6 +667,13 @@ class Crud extends Command
 
         //如果是关联模型
         foreach ($relations as $index => &$relation) {
+            $relation['relationMode'] = strtolower($relation['relationMode']);
+            if (!in_array($relation['relationMode'], ['hasone', 'belongsto', 'hasmany'])) {
+                throw new Exception('relation mode not supported');
+            }
+            if ($relation['relationFields'] && array_diff($relation['relationFields'], $relation['relationFieldList'])) {
+                throw new Exception('relation fields not found in table');
+            }
             if ($relation['relationMode'] == 'hasone') {
                 $relationForeignKey = $relation['relationForeignKey'] ?: $table . "_id";
                 $relationPrimaryKey = $relation['relationPrimaryKey'] ?: $priKey;
@@ -919,6 +950,9 @@ class Crud extends Command
                                 }
                             } catch (\Exception $e) {
                             }
+                            if ($selectpageField) {
+                                $attrArr['data-field'] = $selectpageField;
+                            }
                             if (!$selectpageField) {
                                 foreach ($this->fieldSelectpageMap as $m => $n) {
                                     if (in_array($field, $n)) {
@@ -1016,7 +1050,15 @@ class Crud extends Command
                     //echo "php think crud -t {$relation['relationTableName']} -c {$relation['relationController']} -m {$relation['relationModel']} -i " . implode(',', $relation['relationFields']);
                     //不存在关联表控制器的情况下才进行生成
                     if (!is_file($realtionControllerFile)) {
-                        exec("php think crud -t {$relation['relationTableName']} -c {$relation['relationController']} -m {$relation['relationModel']} -i " . implode(',', $relation['relationFields']));
+                        // 同进程执行，关联控制器继承当前数据库连接和模型位置。
+                        (new self())->run(new Input([
+                            '--table=' . $relation['relationTableName'],
+                            '--controller=' . $relation['relationController'],
+                            '--model=' . $relation['relationModel'],
+                            '--fields=' . implode(',', $relation['relationFields']),
+                            '--db=' . $db,
+                            '--local=' . $local,
+                        ]), $output);
                     }
                 }
                 foreach ($relation['relationColumnList'] as $k => $v) {
@@ -1048,13 +1090,13 @@ class Crud extends Command
             //数组等号对齐
             $langList = array_filter(explode(",\n", $langList . ",\n"));
             foreach ($langList as &$line) {
-                if (preg_match("/^\s+'([^']+)'\s*=>\s*'([^']+)'\s*/is", $line, $matches)) {
+                if (preg_match("/^\s+'([^']+)'\s*=>\s*'([^']+)'\s*$/is", $line, $matches)) {
                     $line = "    '{$matches[1]}'" . str_pad('=>', ($this->fieldMaxLen - strlen($matches[1]) + 3), ' ', STR_PAD_LEFT) . " '{$matches[2]}'";
                 }
             }
             unset($line);
             $langList = implode(",\n", array_filter($langList));
-            $fixedcolumns = count($columnList) >= 10 ? 1 : $fixedcolumns;
+            $fixedcolumns = $fixedcolumns === null && count($columnList) >= 10 ? 1 : $fixedcolumns;
 
             $fixedColumnsJs = '';
             if (is_numeric($fixedcolumns) && $fixedcolumns) {
@@ -1071,7 +1113,7 @@ class Crud extends Command
             }
 
             $data = [
-                'modelConnection'         => $db == 'database' ? '' : "protected \$connection = '{$db}';",
+                'modelConnection'         => $db == Config::get('database.default') ? '' : "protected \$connection = '{$db}';",
                 'controllerNamespace'     => $controllerNamespace,
                 'modelNamespace'          => $modelNamespace,
                 'validateNamespace'       => $validateNamespace,
@@ -1147,20 +1189,20 @@ class Crud extends Command
 
                     //如果设置了显示主表字段，则必须显式将关联表字段显示
                     if ($fields) {
-                        $relationVisibleFieldList[] = "\$row->visible(['{$relation['relationMethod']}']);";
+                        $relationVisibleFieldList[] = "\$row->visible(['{$relation['relationMethod']}'], true);";
                     }
 
                     //显示的字段
                     if ($relation['relationFields']) {
-                        $relationVisibleFieldList[] = "\$row->getRelation('" . $relation['relationMethod'] . "')->visible(['" . implode("','", $relation['relationFields']) . "']);";
+                        $relationVisibleFieldList[] = "if (\$row->getRelation('" . $relation['relationMethod'] . "')) { \$row->getRelation('" . $relation['relationMethod'] . "')->visible(['" . implode("','", $relation['relationFields']) . "']); }";
                     }
                 }
 
-                $data['relationWithList'] = "->with(['" . implode("','", $relationWithList) . "'])";
+                $data['relationWithList'] = $relationWithList ? "->with(['" . implode("','", $relationWithList) . "'])" : '';
                 $data['relationMethodList'] = implode("\n\n", $relationMethodList);
                 $data['relationVisibleFieldList'] = implode("\n\t\t\t\t", $relationVisibleFieldList);
 
-                if ($relationWithList) {
+                if ($relationWithList || $fields) {
                     //需要重写index方法
                     $data['controllerIndex'] = $this->getReplacedStub('controllerindex', $data);
                 }
@@ -1178,6 +1220,7 @@ class Crud extends Command
             if ($relations) {
                 foreach ($relations as $i => $relation) {
                     $relation['modelNamespace'] = $relation['relationNamespace'];
+                    $relation['modelConnection'] = $data['modelConnection'];
                     if (!is_file($relation['relationFile'])) {
                         // 生成关联模型文件
                         $this->writeToFile('relationmodel', $relation, $relation['relationFile']);
@@ -1206,7 +1249,7 @@ class Crud extends Command
 
         //继续生成菜单
         if ($menu) {
-            exec("php think menu -c {$controllerUrl}");
+            (new Menu())->run(new Input(['--controller=' . str_replace('.', '/', $controllerUrl)]), $output);
         }
 
         $output->info("Build Successed");
@@ -1378,6 +1421,11 @@ EOD;
 
         $name = str_replace(['.', '/', '\\'], '/', $name);
         $arr = explode('/', $name);
+        foreach ($arr as $part) {
+            if (!preg_match('/^[a-z_][a-z0-9_]*$/i', $part)) {
+                throw new Exception('Invalid class name: ' . $name);
+            }
+        }
         $parseName = ucfirst(array_pop($arr));
         $parseArr = $arr;
         array_push($parseArr, $parseName);
@@ -1385,7 +1433,13 @@ EOD;
         if (in_array(strtolower($parseName), $this->internalKeywords)) {
             throw new Exception('Unable to use internal variable:' . $parseName);
         }
-        $appNamespace = Config::get('app.app_namespace');
+        // 由当前 PHP 解析器检查关键字，兼容不同 PHP 版本的保留字。
+        try {
+            token_get_all('<?php class ' . $parseName . ' {}', TOKEN_PARSE);
+        } catch (\ParseError $e) {
+            throw new Exception('Invalid class name: ' . $name, 0, $e);
+        }
+        $appNamespace = Config::get('app.app_namespace') ?: 'app';
         $parseNamespace = "{$appNamespace}\\{$module}\\{$type}" . ($arr ? "\\" . implode("\\", $arr) : "");
         $moduleDir = app()->getBasePath() . $module . DIRECTORY_SEPARATOR;
         $parseFile = $moduleDir . $type . DIRECTORY_SEPARATOR . ($arr ? implode(DIRECTORY_SEPARATOR, $arr) . DIRECTORY_SEPARATOR : '') . $parseName . '.php';
@@ -1410,7 +1464,11 @@ EOD;
         if (!is_dir(dirname($pathname))) {
             mkdir(dirname($pathname), 0755, true);
         }
-        return file_put_contents($pathname, $content);
+        $result = file_put_contents($pathname, $content);
+        if ($result === false) {
+            throw new Exception('Cannot write file: ' . $pathname);
+        }
+        return $result;
     }
 
     /**
@@ -1450,6 +1508,12 @@ EOD;
         return __DIR__ . DIRECTORY_SEPARATOR . 'Crud' . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . $name . '.stub';
     }
 
+    /**
+     * 生成安全转义的语言包条目
+     * @param string $field 字段名
+     * @param string $content 字段备注
+     * @return string
+     */
     protected function getLangItem($field, $content)
     {
         if ($content || !Lang::has($field)) {
@@ -1474,7 +1538,7 @@ EOD;
             }
             $resultArr = [];
             foreach ($itemArr as $k => $v) {
-                $resultArr[] = "    '" . mb_ucfirst($k) . "' => '{$v}'";
+                $resultArr[] = "    " . var_export(mb_ucfirst($k), true) . " => " . var_export($v, true);
             }
             return implode(",\n", $resultArr);
         } else {

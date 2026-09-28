@@ -1,6 +1,6 @@
 <?php
 
-namespace app\admin\controller;
+namespace app\admin\controller\system;
 
 use app\admin\service\UpgradeService;
 use app\common\controller\Backend;
@@ -16,7 +16,7 @@ class Upgrade extends Backend
      *
      * @var array
      */
-    protected $noNeedRight = ['index', 'check', 'run', 'recover', 'logs', 'status', 'del'];
+    protected $noNeedRight = ['index', 'check', 'run', 'recover', 'logs', 'status', 'del', 'detail', 'backup'];
 
     /**
      * 初始化并限制为超级管理员。
@@ -43,6 +43,7 @@ class Upgrade extends Backend
             'currentVersion' => Config::get('rocket.version', ''),
             'upgradeEnabled' => (bool)Config::get('rocket.upgrade.enabled', true),
             'interruptedBatch' => $data['interrupted'],
+            'lastBatch' => $data['history'][0]['batch'] ?? '0',
         ]);
         return $this->view->fetch();
     }
@@ -78,7 +79,68 @@ class Upgrade extends Backend
      */
     public function status()
     {
-        return json((new UpgradeService())->dashboard()['interrupted']);
+        try {
+            $result = (new UpgradeService())->progress(
+                trim((string)$this->request->get('batch', '')),
+                trim((string)$this->request->get('after', ''))
+            );
+        } catch (\Throwable $e) {
+            $this->error($e->getMessage());
+        }
+        return json($result);
+    }
+
+    /**
+     * 查看指定批次的 SQL 执行详情和备份信息。
+     *
+     * @return void
+     */
+    public function detail()
+    {
+        try {
+            $result = (new UpgradeService())->detail(trim((string)$this->request->get('batch', '')));
+        } catch (\Throwable $e) {
+            $this->error($e->getMessage());
+        }
+        $this->success('', null, $result);
+    }
+
+    /**
+     * 仅向超级管理员流式导出指定批次的备份，避免整包载入内存。
+     *
+     * @return \think\Response|null
+     */
+    public function backup()
+    {
+        if (!$this->request->isGet()) {
+            $this->error(__('Invalid parameters'));
+        }
+        @set_time_limit(0);
+        ignore_user_abort(true);
+        try {
+            // 发送过程由服务持锁保护，返回后再清理临时 ZIP 和释放锁。
+            (new UpgradeService())->exportBackup(trim((string)$this->request->get('batch', '')), function ($file, $name) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+                header('Content-Type: application/zip');
+                header('Content-Disposition: attachment; filename="' . $name . '"');
+                header('Cache-Control: no-store');
+                header('Pragma: no-cache');
+                header('Content-Length: ' . filesize($file));
+                if (readfile($file) === false) {
+                    throw new \RuntimeException('备份发送失败。');
+                }
+            });
+            return response('', 200, ['Content-Type' => 'application/zip', 'Cache-Control' => 'no-store']);
+        } catch (\Throwable $e) {
+            if (headers_sent()) {
+                // 已发送 ZIP 时不追加 HTML 或 JSON，以免破坏下载内容。
+                \think\facade\Log::error('升级备份导出失败：' . $e->getMessage());
+                return response('', 200, ['Content-Type' => 'application/zip', 'Cache-Control' => 'no-store']);
+            }
+            $this->error($e->getMessage());
+        }
     }
 
     /**
@@ -144,9 +206,22 @@ class Upgrade extends Backend
         }
 
         try {
-            $result = (new UpgradeService())->run(trim((string)$this->request->post('version', '')));
+            $service = new UpgradeService();
+            $previousBatch = $service->history()[0]['batch'] ?? '';
+            $result = $service->run(trim((string)$this->request->post('version', '')));
         } catch (\Throwable $e) {
-            $this->error($e->getMessage());
+            $batch = '';
+            $message = $e->getMessage();
+            if (isset($service, $previousBatch)) {
+                try {
+                    // 即使轮询尚未看到批次，也能返回这次失败的最终现场。
+                    $latestBatch = $service->history()[0]['batch'] ?? '';
+                    $batch = $latestBatch !== $previousBatch ? $latestBatch : '';
+                } catch (\Throwable $statusError) {
+                    $message .= '；读取升级状态失败：' . $statusError->getMessage();
+                }
+            }
+            $this->error($message, null, ['batch' => $batch]);
         }
         $this->success(__('Upgrade completed'), null, $result);
     }
