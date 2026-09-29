@@ -25,11 +25,11 @@
                 <div class="widget-body no-padding">
                     <div id="toolbar" class="toolbar">
                         {:build_toolbar('refresh,add,edit,del')}
-                        <a class="btn btn-info btn-classify dropdown-toggle btn-disabled disabled {:$auth->check('general/attachment/edit')?'':'hide'}"><i class="fa fa-arrow-right"></i> {:__('Classify')}</a>
+                        <a class="btn btn-info btn-classify dropdown-toggle btn-disabled disabled {:$auth->check('general.attachment/edit')?'':'hide'}"><i class="fa fa-arrow-right"></i> {:__('Classify')}</a>
                     </div>
                     <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
-                           data-operate-edit="{:$auth->check('general/attachment/edit')}"
-                           data-operate-del="{:$auth->check('general/attachment/del')}"
+                           data-operate-edit="{:$auth->check('general.attachment/edit')}"
+                           data-operate-del="{:$auth->check('general.attachment/del')}"
                            width="100%">
                     </table>
                 </div>

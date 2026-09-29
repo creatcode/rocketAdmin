@@ -42,7 +42,7 @@ class Frontend extends BaseController
         //移除HTML标签
         $this->request->filter('trim,strip_tags,htmlspecialchars');
         $modulename = $this->app->http->getName();
-        $controllername = parse_name($this->request->controller(true));
+        $controllername = $this->request->controllerPath;
         $actionname = strtolower($this->request->action());
 
         // 检测IP是否允许
@@ -59,7 +59,7 @@ class Frontend extends BaseController
             $this->request->request('token', \think\facade\Cookie::get('token')) ?: ''
         );
 
-        $path = str_replace('.', '/', $controllername) . '/' . $actionname;
+        $path = $controllername . '/' . $actionname;
         // 设置当前请求的URI
         $this->auth->setRequestUri($path);
         // 检测是否需要验证登录

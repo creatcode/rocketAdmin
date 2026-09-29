@@ -114,10 +114,11 @@ class Backend extends BaseController
     public function initialize()
     {
         $modulename = $this->app->http->getName();
-        $controllername = parse_name($this->request->controller(true));
+        $controllername = $this->request->controllerPath;
         $actionname = strtolower($this->request->action());
 
-        $path = str_replace('.', '/', $controllername) . '/' . $actionname;
+        // 节点名保持点号形态，与 im_auth_rule.name 一致
+        $path = $controllername . '/' . $actionname;
 
         // 定义是否Addtabs请求
         !defined('IS_ADDTABS') && define('IS_ADDTABS', (bool)input("addtabs"));

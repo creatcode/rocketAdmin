@@ -512,7 +512,7 @@ class Crud extends Command
         array_push($baseNameArr, $baseFileName);
         $controllerBaseName = strtolower(implode(DIRECTORY_SEPARATOR, $baseNameArr));
         //$controllerUrl = strtolower(implode('/', $baseNameArr));
-        $controllerUrl = $this->getControllerUrl($moduleName, $baseNameArr);
+        $controllerUrl = $this->getControllerUrl($baseNameArr);
 
         //视图文件
         $viewArr = $controllerArr;
@@ -1346,25 +1346,14 @@ EOD;
     }
 
     /**
-     * 获取控制器URL
-     * @param string $moduleName
-     * @param array  $baseNameArr
+     * 获取控制器URL（多级控制器统一使用点号形态：system.system_group）
+     *
+     * @param array $baseNameArr
      * @return string
      */
-    protected function getControllerUrl($moduleName, $baseNameArr)
+    protected function getControllerUrl($baseNameArr)
     {
-        for ($i = 0; $i < count($baseNameArr) - 1; $i++) {
-            $temp = array_slice($baseNameArr, 0, $i + 1);
-            $temp[$i] = ucfirst($temp[$i]);
-            $controllerFile = app()->getBasePath() . $moduleName . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $temp) . '.php';
-            //检测父级目录同名控制器是否存在，存在则变更URL格式
-            if (is_file($controllerFile)) {
-                $baseNameArr = [implode('.', $baseNameArr)];
-                break;
-            }
-        }
-        $controllerUrl = strtolower(implode('/', $baseNameArr));
-        return $controllerUrl;
+        return strtolower(implode('.', $baseNameArr));
     }
 
     /**

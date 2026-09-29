@@ -9,6 +9,7 @@ use think\exception\HttpResponseException;
 use think\exception\ValidateException;
 use think\facade\Config;
 use think\facade\View;
+use think\helper\Str;
 use think\Response;
 use think\Validate;
 
@@ -57,6 +58,7 @@ abstract class BaseController
         $this->app     = $app;
         $this->request = $this->app->request;
         $this->view    = $this->app->view;
+        $this->request->controllerPath = implode('.', array_map([Str::class, 'snake'], explode('.', $this->request->controller())));
 
         // 控制器初始化
         $this->initialize();

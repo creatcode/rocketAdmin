@@ -104,7 +104,7 @@ if (!function_exists('build_toolbar')) {
     function build_toolbar($btns = null, $attr = [])
     {
         $auth = \app\admin\library\AdminAuth::instance();
-        $controller = str_replace('.', '/', strtolower(think\facade\Request::instance()->controller()));
+        $controller = request()->controllerPath;
         $btns = $btns ?: ['refresh', 'add', 'edit', 'del', 'import'];
         $btns = is_array($btns) ? $btns : explode(',', $btns);
         $index = array_search('delete', $btns);
@@ -129,7 +129,7 @@ if (!function_exists('build_toolbar')) {
             //$extend = $v == 'import' ? 'id="btn-import-file" data-url="ajax/upload" data-mimetype="csv,xls,xlsx" data-multiple="false"' : '';
             //$html[] = '<a href="' . $href . '" class="' . $class . '" title="' . $title . '" ' . $extend . '><i class="' . $icon . '"></i> ' . $text . '</a>';
             if ($v == 'import') {
-                $template = str_replace('/', '_', $controller);
+                $template = str_replace(['/', '.'], '_', $controller);
                 $download = '';
                 if (file_exists("./template/{$template}.xlsx")) {
                     $download .= "<li><a href=\"/template/{$template}.xlsx\" target=\"_blank\">XLSX模版</a></li>";
@@ -178,7 +178,7 @@ if (!function_exists('build_heading')) {
         $title = $content = '';
         if ($path === null) {
             $action = request()->action();
-            $controller = str_replace('.', '/', parse_name(request()->controller()));
+            $controller = request()->controllerPath;
             $path = strtolower($controller . ($action && $action !== 'index' ? '/' . $action : ''));
         }
         // 根据当前的URI自动匹配父节点的标题和备注

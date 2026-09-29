@@ -293,7 +293,8 @@ class Menu extends Command
                 $val = strtolower(trim(preg_replace("/[A-Z]/", "_\\0", $val), "_"));
             }
             unset($val);
-            $name = implode('/', $controllerNameArr);
+            //节点名统一使用点号形态：system.system_group
+            $name = implode('.', $controllerNameArr);
             $title = (!isset($controllerArr[$key]) ? $controllerTitle : '');
             $icon = (!isset($controllerArr[$key]) ? $controllerIcon : 'fa fa-list');
             $remark = (!isset($controllerArr[$key]) ? $controllerRemark : '');

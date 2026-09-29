@@ -438,7 +438,7 @@ if (!function_exists('check_nav_active')) {
         $auth = \app\common\library\Auth::instance();
         $requestUrl = $auth->getRequestUri();
         $url = ltrim($url, '/');
-        return $requestUrl === str_replace(".", "/", $url) ? $classname : '';
+        return $requestUrl === $url ? $classname : '';
     }
 }
 

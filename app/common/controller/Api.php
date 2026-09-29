@@ -109,13 +109,13 @@ class Api extends BaseController
         $this->auth = Auth::instance();
 
         $modulename = app()->http->getName();
-        $controllername = parse_name($this->request->controller(true));
+        $controllername = $this->request->controllerPath;
         $actionname = strtolower($this->request->action());
 
         // 统一解析客户端Token，兼容Bearer、常规Header、请求参数和Cookie
         $token = $this->getRequestToken();
 
-        $path = str_replace('.', '/', $controllername) . '/' . $actionname;
+        $path = $controllername . '/' . $actionname;
         // 设置当前请求的URI
         $this->auth->setRequestUri($path);
 

@@ -59,9 +59,9 @@ class AdminLog extends Model
         // 设置过滤函数
         request()->filter('trim,strip_tags,htmlspecialchars');
 
-        $controllername = parse_name(request()->controller(true));
+        $controllername = request()->controllerPath;
         $actionname = strtolower(request()->action());
-        $path = str_replace('.', '/', $controllername) . '/' . $actionname;
+        $path = $controllername . '/' . $actionname;
         if (self::$ignoreRegex) {
             foreach (self::$ignoreRegex as $index => $item) {
                 if (preg_match($item, $path)) {

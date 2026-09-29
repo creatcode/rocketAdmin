@@ -200,8 +200,6 @@ class SystemGroup extends Backend
     /**
      * 批量更新
      *
-     * 只允许修改状态和排序,字段结构必须通过编辑表单变更。
-     *
      * @param string|null $ids
      * @return void
      * @throws \think\Exception
