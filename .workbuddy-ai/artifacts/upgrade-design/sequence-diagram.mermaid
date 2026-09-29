@@ -1,0 +1,53 @@
+sequenceDiagram
+    autonumber
+    participant U as 管理员(浏览器)
+    participant JS as upgrade.js
+    participant C as Upgrade 控制器
+    participant CFG as config/rocket.php
+    participant HTTP as 远程源(API/包)
+    participant Z as ZipArchive
+    participant FS as runtime/upgrade
+    participant DB as MySQL(im_auth_rule)
+
+    Note over U,DB: 阶段一 预检 check（只取元数据，不下载整包）
+    U->>JS: 选择源类型/仓库, 点击"检查更新"
+    JS->>C: POST /admin/upgrade/check {type,repo,tag,url}
+    C->>C: isValidRemoteUrl() 校验
+    C->>CFG: 读取 upgrade 默认源配置
+    C->>HTTP: GET releases/latest (带 UA/可选 Token)
+    HTTP-->>C: release JSON
+    C->>C: normalizeGitee / normalizeGithub + pickPackageAsset
+    C->>C: version_compare(latest, current, '>')
+    C-->>JS: UpgradePreview{latest,is_newer,changelog,size,package_url}
+    JS-->>U: 展示新版本 / 更新日志 / 包大小
+
+    Note over U,DB: 阶段二 执行 run
+    U->>JS: 点击"立即升级"
+    JS->>C: POST /admin/upgrade/run {type,repo,tag,url,confirm}
+    C->>FS: flock 获取升级锁 (LOCK_EX|LOCK_NB)
+    C->>CFG: resolveSource() 得 package_url + 期望 checksum
+    C->>HTTP: 原生 curl 流式下载 -> runtime/upgrade/<batch>/package.zip
+    C->>C: class_exists(ZipArchive) + verifyChecksum(sha256)
+    C->>Z: open() + isSafeZipName 路径穿越校验 + extractTo
+    Z-->>C: extract/<...>
+    C->>C: readManifest() + resolveBasePath() + collectFiles/SqlFiles
+    C->>C: 空包检测（清单为空 -> 报错）
+    C->>FS: 备份被覆盖文件 -> backup/ + files.json
+    C->>C: applyFiles() 覆盖项目文件（跳过 blockedPaths，保护 protectedPaths）
+    C->>CFG: writeVersion() 写回 version
+    C->>FS: 落盘 upgrade.sql（execute_sql=false 时不执行）
+    C->>FS: 写 status.json(state=done)
+    C->>FS: releaseLock()
+    C-->>JS: UpgradeResult{updated,skipped,backup_path,sql_file,version,batch}
+    JS-->>U: 展示升级结果
+
+    Note over U,DB: 阶段三 回滚 rollback
+    U->>JS: 选择批次, 点击"回滚"
+    JS->>C: POST /admin/upgrade/rollback {batch}
+    C->>FS: flock 获取升级锁
+    C->>FS: 从 backup/ 递归还原文件到项目根目录
+    C->>CFG: writeVersion(from_version) 还原版本号
+    C->>FS: 写 status.json(state=rolled_back)
+    C->>FS: releaseLock()
+    C-->>JS: {restored,version,batch}
+    JS-->>U: 展示回滚结果

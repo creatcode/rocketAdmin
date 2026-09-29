@@ -1,0 +1,132 @@
+# rocket-admin 项目约定
+
+> 按重要性排序：前部为必须遵守的约束，尾部为参考信息。截断时优先保证前部完整。
+
+## 协作铁律
+1. **参考截图 ≠ 授权改动**：用户发截图说「参考下这个」只提供意图参考；改变观感的方案必须先说明「打算改成 X」并获确认。
+2. 改前先 `git show HEAD:<file>` 核对原始值，避免把项目原有设计误判成「我新加的」。
+3. 用户报告「之前没有／怎么变了」→ 第一动作 `git diff HEAD` 确认是否自己所为。
+4. 用户主观负面反馈（"太丑了"）→ **不要直接猜着改**：先给具体的设计层诊断，再用 `show_widget` 渲染 2~3 个方向的**实际预览**（非文字描述），
+   用 `AskUserQuestion` 让其选定，**选定后才动代码**。
+5. **改动范围有歧义时先问，别猜。**
+6. **不要新增文件**（2026-09-21 用户明确要求，连验证脚本也不行）。自检问题：「这个功能系统自带了没有」——自带则复用既有逻辑。
+   上游有对应实现时（本项目为 `tp8-fastadmin`）先 diff 上游再动手，不要自己发明方案。
+
+## 样式铁律：全局元素选择器权重必须 ≤ 0,1,1（三条同源，改皮肤前必读）
+组件链接规则一律 0,1,2（`.dropdown-menu>li>a` bootstrap:3537、`.pagination>li>a`、`.nav-tabs>li>a`、`.breadcrumb>li>a`）；同权重则后加载者胜，
+skin-white.css 由 backend.css 最后 @import → 写 0,1,2 会把整族组件链接静默染成主色。
+```css
+.skin-white a:where(:not(.btn,.text-primary,.text-success,.text-info,.text-warning,.text-danger,.text-muted)),
+.inside-header a:where(:not(.btn,.text-primary,.text-success,.text-info,.text-warning,.text-danger,.text-muted)) { color:#165dff; }
+```
+- `.inside-header a` = 0,1,1；**不要写 `body.inside-header a`**（0,1,2 撞车）。排除类名**必须用 `:where(:not(...))`**（权重 0）；
+  **不要用 `:not(.btn)`**（抬到 0,2,1 反向盖过组件规则）。
+- **不得命中 `.btn`**：FastAdmin 大量用 `<a class="btn ...">` 实现按钮（`require-table.js:93-107`、`:169`），`.btn-*` 字色权重仅 0,1,0，
+  任何 ≥0,1,1 的 `a` 规则都会压过 → 实心按钮白字被刷成链接色。用 `a:where(:not(.btn))` 一次排除，不要逐类补。
+- **`.text-*` 必须列入排除名单**（均 0,1,0，会被 §1 规则压过）：`.text-primary` `#444c69`（**不要收敛成 `#165dff`** —— 权限页「标题」列
+  `<a class="text-primary btn-node-sub">` 会整列变蓝）、`.text-success` `#18bc9c`、`.text-info` `#1688f1`、`.text-warning` `#f39c12`、
+  `.text-danger` `#f75444`、`.text-muted` `#777`。
+
+## 样式体系与作用域
+- 入口 `app/admin/view/common/meta.html:10` 按 `app_debug` 切：调试 `backend.css`（@import 清单）／生产 `backend.min.css`。
+- `bootstrap.css`+`fastadmin.css` = 20 套皮肤共用公共基线，严禁加皮肤前缀或改品牌色。
+- 皮肤隔离唯一手段 = 选择器前缀，**必须成对**：`.skin-white`（外层框架）+ `.inside-header`（iframe 内页 body，定义于
+  `layout/default.html:7`，bootstrap/fastadmin 中无定义，纯钩子）。外层 body 带皮肤名、内页不带 →
+  skin-white.css 的 `.inside-header xxx` 规则在 20 套皮肤下都生效，是事实上的全局作用域。
+- 皮肤文件 `public/assets/css/skins/skin-white.css`（纯手写，**无** `.less` 源）。
+
+## 色值基线（2026-09-21 对齐 Chuiot simple.css）
+本皮肤是 Chuiot `public/assets/css/simple.css`（`sdtheme-body` 作用域）的 TP6 移植版，中性灰语义分工一致，不要自创：
+容器底／表头底色+边框／弹层标题栏／弹层底部分隔线 `#f6f8fb`；hover（侧边栏、折叠菜单、控制栏页签）`#f4f4f5`；
+激活态（菜单、页签、控制栏）`#f0f5ff`；分割线与边框／内容区底色 `#f1f4f6`；主色／hover／浅底／浅描边 `#165dff`/`#0e48d8`/`#f0f5ff`/`#adc6ff`；
+正文／次级／三级文字 `#1d2129`/`#4e5969`/`#86909c`；描边 `#dcdfe6`。
+按钮语义色（bootstrap:2992+ / fastadmin:2393+）：`btn-primary` #fff/#444c69(皮肤改 #165dff)、`btn-success` #fff/#18bc9c、
+`btn-danger` #fff/#f75444、`btn-warning` #fff/#f39c12、`btn-info` #fff/#1688f1(皮肤改 #165dff)、`btn-outline` #fff/transparent；`*-light` 分支不动。
+
+## 构建 / 部署
+`php think min -m backend -r css`（`app/admin/command/Min.php`）。`.env` 当前 `APP_DEBUG=true`（改 skin-white.css 即时生效）；
+生产读 backend.min.css，**必须重建**，实测输出 `Build Successed!`，`:where(:not(.btn))` 未被压缩器改写。
+回退 `git checkout -- public/assets/css/backend.min.css`。**不要用** `Gruntfile.js` 的 `backend:css`（TP5 遗留路径且无 node_modules）。
+改 `control.html`/`index.js`/模板**不需要**重建（均不进 backend.min.css）。
+
+## 模板铁律：TP6 已自动 htmlentities
+`{$var|htmlentities}` 会转义两次：数字/中文看不出，但 `·`(U+00B7) → `&amp;middot;`，页面显示 `&middot;`。**写 `{$var}` 即可。**
+
+## 右侧控制栏（common/control.html + index.js）
+顶部齿轮触发，AdminLTE 的 `.control-sidebar`。上游基线 `E:\phpstudy_pro\extraproject\tp8-fastadmin`（同套模板），有疑问先 diff 上游。
+- 面板 = 亮色分组样式改造，**不新增任何 JS 文件**；现有 **6 个开关** + 21 张皮肤卡片，**没有配色/取色器功能**。
+- JS 一律放 `public/assets/js/backend/index.js`；control.html 只含 DOM + 内联 `<style>`，**不得出现 `<script src>`**。
+  index.js 末尾提供 `lcClosePanel()`（同时清 body 与 `.lc-panel` 的 `control-sidebar-open`）、点遮罩关闭、ESC 关闭。
+- 开关靠 index.js 既有绑定工作：`[data-skin]`/`[data-config]`/`[data-layout]`/`[data-enable]`/`[data-menu]`。
+- 面板 340px（原 230），覆盖到顶层：`.lc-panel{z-index:1050;padding-top:0}` 压过 `.main-header` 的 1030。开合走
+  `sidebar.addClass('control-sidebar-open')`（`adminlte.js:563-572` 的 `open()`，`slide` 默认 true），不挤压内容区。
+  **`.main-header{z-index:1030}` 压住面板是缺陷而非设计**，`padding-top:50px` 是对它的迁就。
+- 遮罩：复用 `.control-sidebar-bg` 改造成全屏半透明层（`z-index:1040`）。**前提 DOM 顺序**：`index/index.html` 里
+  `{include file="common/control" /}` 必须在 `<div class="control-sidebar-bg">` **之前**；用 `~` 兄弟选择器（不要 `+`）。
+  **坑**：`fastadmin.css` 的 `.control-sidebar-light/dark + .control-sidebar-bg` 给了不透明底色与边框（0,2,0），
+  只写 `.control-sidebar-bg`（0,1,0）压不过 → 遮罩变实心色块；必须并列同特异性选择器，background 加 `!important`。
+- `index.js` 的 `my_skins` 数组决定切换皮肤时 `removeClass` 能移掉哪些 class，新增皮肤文件**必须同步加进该数组**。
+- `.lc-thumb` 缩略图用三个内联 CSS 变量：`--h` 顶栏主色／`--s` 侧边栏／`--b` 内容区底色（`--b` 仅浅色皮肤给）。
+- `.skin-list li a[data-skin]` 结构必须保留（`index.js` 靠它加选中态）。
+- **body class 的 cookie 驱动机制**（改布局/皮肤前必读）：`Config.cookie.prefix` 为空（`Index.php:57`），cookie 是裸名。
+  `Index.php:37` 用白名单把 `adminskin`/`multiplenav`/`multipletab`/`show_submenu` 写回 `Config::set('rocket.*')`；而
+  `sidebar_collapse`/`fixed`/`layout_boxed` **不走白名单**，模板直读 cookie：`{:$Request.cookie.fixed!='0'?'fixed':''}`（**默认固定**）、
+  `{:$Request.cookie.layout_boxed?'layout-boxed':''}`。`!=` 与三元在模板里均可正常编译（改动见 `index/index.html:7`）。
+- **6 个开关的有效性已逐个实测**（2026-09-23）：盒子布局 ✓（1896→1680px）、多选项卡 ✓（class+cookie）、收起菜单栏 ✓（侧边栏 200→50px）、
+  菜单栏自动展开 ✓（`hoverOpt=1`+localStorage）、多级导航 ✓（cookie→body class）、显示子菜单 ⚠️（链路本身通，但受下述 URL 重复 bug 影响）。
+- **2026-09-23 新增「盒子布局」开关**（面板共 6 项，`[data-layout='layout-boxed']`）：AdminLTE 原生能力（语言包
+  `app/admin/lang/zh-cn/index.php:9` 早有 key、`index.js` 早有回写 checked 逻辑），只缺 DOM + click 绑定（上游 tp8-fastadmin 同样缺）。
+- **盒子布局的限宽已在 control.html 内联 style 里重写**（基线 `fastadmin.css:50` 不可改）：基线固定 `1250px` 在 1920 屏仅占 66%、
+  2560 屏 49%（栅格还会从 3 列降到 2 列），且基线引用的 `../img/boxed-bg.jpg` **资源缺失（404）** → body 与 `.wrapper` 同为白底、
+  "盒子"完全没有边界。现为 `max-width:min(1680px,94%)` + `@media(min-width:2100px)` 放宽到 1920px + 底 `#e9edf2`
+  （**新增色值，介于描边 `#dcdfe6` 与内容区底色 `#f1f4f6` 之间**）+ 轻阴影 `0 0 24px rgba(29,33,41,.10)`。
+  实测占比：1366→94%／1440→94%／1920→88%／2560→75%。移动端不在考虑范围（控制页在移动端隐藏）。
+- **2026-09-23 精简掉 3 个零效果开关**（同步上游时**不要加回来**）：「切换右侧操作栏背景」`[data-sidebarskin]`、「切换右侧操作栏」
+  `[data-controlsidebar]`、「固定布局」`[data-layout='fixed']`。前两个只切 class 而面板样式已被 `.lc-panel` 接管；固定布局因
+  `.wrapper{overflow:hidden}`（基线）+ iframe 固定高度 → **外层永不滚动**，其唯一可见影响只是压制盒子布局（`fastadmin.css:130`），
+  故改由盒子布局**反向派生**（`body` 上 `fixed` 与 `layout-boxed` 二选一，模板 `index/index.html:7` 写
+  `{:$Request.cookie.layout_boxed?'layout-boxed':'fixed'}`）。**判断布局类开关效果前，先确认外层是否会滚动。**
+  判准：配置项没有新功能、只是改模板样式 → 移除。
+
+## 已知非本项目缺陷（勿擅自修）
+- **`location.reload()` 后 URL 重复 `index.php` → cookie 失效**（2026-09-23 实测；`git stash` 归因确认**与本次改动无关**）：
+  reload 后 URL 由 `/index.php/admin/dashboard` 变为 `/index.php/index.php/admin/dashboard`；`createCookie` 的 path = `Config.moduleurl`
+  （`/index.php/admin`）→ 新 URL 前缀不匹配 → **浏览器不发送该 cookie** → 后端 `Index.php:37-43` 读不到 → `multiplenav`/`show_submenu`
+  这类「写 cookie + reload」的开关失效。拼接嫌疑 `fast.js:96` 的 `url = Config.moduleurl + "/" + url`。
+  **修 URL 拼接，或把 cookie path 改为 `/`（作用域放大，需评估）。**
+- **全站水平溢出 15px**：`scrollWidth 1414 > clientWidth 1399`，定位到 `DIV.row`/`DIV.col-xs-12`(1429)，系 Bootstrap `margin:-15px`
+  未配容器所致，所有页面一样。属框架级，改前须评估全站影响。
+- **页头三次「控制台」**：`layout/default.html` 的 `#ribbon` 左侧固定渲染一个「控制台」，右侧再渲染当前页包屑，加顶部 addtab →
+  dashboard 页出现三次。
+
+## 页面增强：水印 + 无操作自动登出（2026-09-23 新增）
+两者都只在 `public/assets/js/backend/index.js` 的 index 初始化末尾实现，配置在 `config/rocket.php`，由 `Index.php::index()` 经 `assignconfig` 传前端。
+- **页面水印**：配置 `watermark`（开关，默认 true）+ `watermark_text`（模板，占位符 `{nickname}` `{username}` `{date}` `{time}`，后端 `strtr` 替换）。
+  canvas 画斜排文字（14px / -22° / 260×150 平铺）→ dataURL 作覆盖层背景；`position:fixed` + **`pointer-events:none`** + `zIndex:100000`
+  → **一次盖住含 iframe 的整个视口，无需改内页**；`MutationObserver` 防删除重建。
+  **多皮肤兼容关键**：水印层不写入任何皮肤文件、不引用皮肤变量，用固定中性色 `rgba(29,33,41,.07)` → 20 套皮肤下行为一致（实测 4 套）。
+  z-index 需 > 控制面板 1050 且 < layer 弹层 19891014。
+- **无操作自动登出**：配置 `auto_logout`（**秒数**，0 = 不启用，默认 1800）。外层 `$(document).on('mousemove keydown click scroll', resetIdle)`；
+  **iframe 内事件不冒泡到外层**，故用同源 `contentDocument` 直接绑定（`doc.__idleBound` 防重复），`setInterval(2000)` 兜住 addtabs 动态新增的 iframe；
+  `resetIdle` 有 1 秒节流。提醒提前量 `min(60, auto_logout * 0.2)` 秒，到时 `location.href = Backend.api.fixurl('index/logout')`
+  （`Index::logout()` 是「GET 返回自动 POST 表单」机制，地址栏会先出现 `/index/logout`）。实测（10 秒配置）全部通过。
+- **用户已明确（2026-09-23）：当前只需「水印 + 无操作自动登出」这两项增强**，其余候选（表格列设置记忆、表单离开确认、全局搜索 Ctrl+K、表格密度等）
+  暂不实施，**不要主动铺开**。另外「列表每页条数记忆」经实测**本来就已实现**（`require-table.js:29` 读、`:121` 写 localStorage），此前建议有误。
+
+## 通用陷阱
+- **`$Think.config.*` 在模板里正常工作**（2026-09-23 核实，**推翻旧结论**）：`{:$Think.config.rocket.multipletab?'multipletab':''}` 编译为
+  `<?php echo config('rocket.multipletab')?'multipletab':''; ?>`，`{$Think.config.x|default='y'}` 编译为 `config('x') ?: 'y'`。
+  **模板配置输出直接看编译产物 `runtime/admin/temp/<hash>.php`，不要凭猜测下结论。**
+- **jQuery `.attr('checked','checked')` 不驱动 CSS `:checked`**（只写 attribute 不改 property）。自定义开关必须 `.prop('checked', bool)`。
+  index.js「重设选项」四处（fixed／layout-boxed／sidebar-collapse／show-submenu）2026-09-21 已由 `.attr` 改 `.prop`，并在
+  `.sidebar-toggle` click 里补同步。**上游 tp8-fastadmin 仍是 `.attr`，这是本项目有意改进，同步上游时不要改回去。**
+- **`Attachment` 模型读出的 `createtime` 已是字符串**（`autoWriteTimestamp='int'`，TP6 读取自动转 `Y-m-d H:i:s`），再 `(int)` 强转得 2017
+  → `date()` 输出 1970-01-01。必须 `is_numeric($v)?(int)$v:strtotime($v)`。`Db::name()` 原生查询无此转换。
+- **并行 Edit 同一文件会互相覆盖**：同一消息里两个 Edit 到同一文件，其一可能报成功但实际被覆盖。**改同一文件必须串行，改完 `grep` 复核落点。**
+- **Edit 报「String not found」时不要反复猜**：Read 输出的行号可能与真实内容有 ±1 行偏差（control.html 实测），用
+  `python -c "s=open(p,encoding='utf-8').read();print(repr(s.split(chr(10))[i]))"` 核对真实字节。本项目 HTML/JS/CSS 均为 **LF**，无 CRLF。
+- **CSS 注释编号批量平移**用 python 正则 `^/\* --- (\d+)` 匹配行首编号再减 1（`(\d+)` 后留 `.` 在组外，`14.1`→`13.1` 与 `4.`→`3.` 同时正确）。
+
+## 参考信息（已移出正文）
+验证方法（headless Edge + CDP 实测要点）与控制台页 dashboard 的实现笔记，见同目录 `2026-09-23.md` 末尾「附：参考笔记」。
+移出原因：MEMORY.md 过长会导致注入截断，故正文只保留约束，参考信息另置。

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>simple.css 色彩体系解剖 · 可借鉴点与落地方案</title>
+<style>
+:root{
+  --ink:#16181d;
+  --ink-2:#4e5969;
+  --ink-3:#8b93a1;
+  --rule:#e7e9ee;
+  --rule-strong:#d3d7e0;
+  --paper:#ffffff;
+  --paper-2:#f8f9fb;
+  --paper-3:#f6f8fb;
+  --brand:#165dff;
+  --brand-deep:#0e48d8;
+  --brand-wash:#f0f5ff;
+  --ok:#128f76;
+  --warn:#b9760a;
+  --bad:#c33a2b;
+  --sans:"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --serif:Georgia,"Source Han Serif SC","Noto Serif SC","Songti SC",serif;
+  --mono:"JetBrains Mono","Cascadia Mono",Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.78;
+  font-feature-settings:"kern" 1;
+}
+.doc{max-width:1020px;margin:0 auto;padding:72px 56px 120px}
+
+/* ---------- masthead ---------- */
+.kicker{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 18px;
+}
+h1{
+  font-family:var(--serif);font-weight:400;font-size:44px;line-height:1.2;
+  letter-spacing:-.01em;margin:0 0 20px;color:var(--ink);
+}
+h1 em{font-style:normal;color:var(--brand)}
+.lede{
+  font-size:17px;line-height:1.75;color:var(--ink-2);margin:0 0 32px;max-width:64ch;
+}
+.meta{
+  display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--rule-strong);
+  border-bottom:1px solid var(--rule-strong);
+}
+.meta div{
+  flex:1 1 150px;padding:14px 20px 14px 0;border-right:1px solid var(--rule);
+}
+.meta div:last-child{border-right:0}
+.meta dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:0 0 4px}
+.meta dd{margin:0;font-size:14px;color:var(--ink)}
+.meta dd code{font-family:var(--mono);font-size:12.5px;background:var(--paper-3);padding:1px 5px;border-radius:3px}
+
+/* ---------- sections ---------- */
+section{margin-top:72px}
+.sec-head{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--ink);padding-bottom:12px;margin-bottom:32px}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--brand);letter-spacing:.08em;flex:none}
+.sec-head h2{font-family:var(--serif);font-weight:400;font-size:27px;margin:0;letter-spacing:-.005em}
+.sec-head .note{margin-left:auto;font-size:12.5px;color:var(--ink-3);font-family:var(--mono)}
+
+h3{font-family:var(--sans);font-size:16px;font-weight:600;margin:40px 0 12px;color:var(--ink)}
+h3 .h-n{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-right:10px}
+h4{font-size:14px;font-weight:600;margin:24px 0 8px}
+p{margin:0 0 16px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+ul,ol{margin:0 0 16px;padding-left:20px;color:var(--ink-2)}
+li{margin-bottom:7px}
+code{font-family:var(--mono);font-size:12.5px;background:var(--paper-3);padding:1px 5px;border-radius:3px;color:#2b3445}
+a{color:var(--brand);text-decoration:none;border-bottom:1px solid rgba(22,93,255,.3)}
+
+/* ---------- callout ---------- */
+.callout{
+  border-left:2px solid var(--brand);background:var(--brand-wash);
+  padding:18px 22px;margin:0 0 24px;border-radius:0 6px 6px 0;
+}
+.callout p:last-child{margin-bottom:0}
+.callout .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-deep);display:block;margin-bottom:6px}
+.callout.warn{border-left-color:var(--warn);background:#fdf7ec}
+.callout.warn .tag{color:var(--warn)}
+.callout.bad{border-left-color:var(--bad);background:#fdf1ef}
+.callout.bad .tag{color:var(--bad)}
+.callout.ok{border-left-color:var(--ok);background:#eef8f5}
+.callout.ok .tag{color:var(--ok)}
+
+/* ---------- TLDR ---------- */
+.tldr{counter-reset:t;margin:0;padding:0;list-style:none}
+.tldr li{
+  counter-increment:t;position:relative;padding:14px 0 14px 52px;
+  border-bottom:1px solid var(--rule);margin:0;
+}
+.tldr li:first-child{border-top:1px solid var(--rule)}
+.tldr li::before{
+  content:counter(t,decimal-leading-zero);
+  position:absolute;left:0;top:14px;font-family:var(--mono);font-size:12px;
+  color:var(--brand);letter-spacing:.04em;
+}
+.tldr b{color:var(--ink);font-weight:600}
+
+/* ---------- swatches ---------- */
+.sw-row{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 24px}
+.sw{width:112px}
+.sw .box{
+  height:74px;border-radius:7px;border:1px solid rgba(0,0,0,.07);
+  display:flex;align-items:flex-end;padding:7px;
+}
+.sw .box span{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em}
+.sw .lb{font-size:11.5px;color:var(--ink-2);margin-top:7px;line-height:1.4}
+.sw .lb em{display:block;font-style:normal;color:var(--ink-3);font-size:10.5px;font-family:var(--mono)}
+
+/* ladder */
+.ladder{display:flex;margin:0 0 10px;border-radius:8px;overflow:hidden;border:1px solid var(--rule)}
+.ladder div{flex:1;height:56px;position:relative}
+.ladder div span{
+  position:absolute;left:0;right:0;bottom:5px;text-align:center;
+  font-family:var(--mono);font-size:10px;
+}
+.ladder-cap{display:flex;margin:0 0 26px;font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+.ladder-cap span{flex:1;text-align:center}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse;margin:0 0 24px;font-size:13.5px}
+th{
+  text-align:left;font-weight:600;font-size:11.5px;font-family:var(--mono);
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px solid var(--rule-strong);padding:0 12px 9px 0;vertical-align:bottom;
+}
+td{padding:11px 12px 11px 0;border-bottom:1px solid var(--rule);color:var(--ink-2);vertical-align:top}
+td:first-child{color:var(--ink)}
+td code{background:transparent;padding:0;color:#2b3445}
+th:last-child,td:last-child{padding-right:0}
+.tight td{padding-top:9px;padding-bottom:9px}
+
+/* ---------- contrast bars ---------- */
+.bars{margin:0 0 8px}
+.bar-row{display:grid;grid-template-columns:1fr 240px 74px;gap:16px;align-items:center;padding:7px 0;border-bottom:1px solid var(--rule)}
+.bar-row:first-child{border-top:1px solid var(--rule)}
+.bar-lb{font-size:12.5px;color:var(--ink)}
+.bar-lb em{display:block;font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.track{position:relative;height:9px;background:var(--paper-3);border-radius:5px;overflow:hidden}
+.track i{position:absolute;inset:0 auto 0 0;border-radius:5px;display:block}
+.track::after{content:"";position:absolute;top:-3px;bottom:-3px;left:28.1%;width:1px;background:var(--rule-strong)}
+.val{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2)}
+.bar-legend{display:flex;gap:20px;font-size:11.5px;color:var(--ink-3);font-family:var(--mono);margin-bottom:28px}
+.bar-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+/* ---------- cluster viz ---------- */
+.cluster{margin:0 0 26px;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.cluster-head{background:var(--paper-3);padding:10px 16px;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);border-bottom:1px solid var(--rule)}
+.cluster-body{display:flex;flex-wrap:wrap;gap:0}
+.cl{flex:1 1 120px;padding:14px 16px;border-right:1px solid var(--rule)}
+.cl:last-child{border-right:0}
+.cl .sq{height:44px;border-radius:5px;border:1px solid rgba(0,0,0,.07)}
+.cl .hx{font-family:var(--mono);font-size:12px;margin-top:8px;color:var(--ink)}
+.cl .ct{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:2px}
+.cluster-foot{padding:10px 16px;font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--rule);background:var(--paper-2)}
+
+/* ---------- mapping cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0;border-top:1px solid var(--rule)}
+.card{padding:24px 26px 24px 0;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule)}
+.card:nth-child(2n){padding-right:0;padding-left:26px;border-right:0}
+.card h4{margin:0 0 4px;font-size:15px}
+.card .scene-id{font-family:var(--mono);font-size:10.5px;color:var(--brand);letter-spacing:.1em;display:block;margin-bottom:8px}
+.card dl{margin:14px 0 0;font-size:13px}
+.card dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+.card dd{margin:0 0 12px;color:var(--ink-2);line-height:1.7}
+.card dd:last-child{margin-bottom:0}
+
+/* ---------- footer ---------- */
+footer{margin-top:88px;padding-top:24px;border-top:1px solid var(--rule-strong);font-size:12.5px;color:var(--ink-3)}
+footer code{font-size:11.5px}
+
+@media (max-width:820px){
+  .doc{padding:44px 22px 80px}
+  h1{font-size:32px}
+  .card,.card:nth-child(2n){padding:22px 0;border-right:0}
+  .bar-row{grid-template-columns:1fr 110px 60px;gap:10px}
+}
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <p class="kicker">配色体系审查 · Chuiot → rocket-admin</p>
+  <h1>simple.css 的色彩体系：<em>值得借鉴的 8 处</em>，与必须避开的 7 个坑</h1>
+  <p class="lede">
+    以「整体性与协调性」为标尺，逐行解剖 Chuiot <code>simple.css</code> 的配色方案、色彩搭配手法与视觉统一性机制。
+    所有对比度数字均为实测计算值，不是估计。文末给出「场景 → 借鉴点 → 效果」映射表与落地建议。
+  </p>
+
+  <div class="meta">
+    <div><dt>分析对象</dt><dd><code>simple.css</code></dd></div>
+    <div><dt>体量</dt><dd>911 行 / 21.6 KB</dd></div>
+    <div><dt>色值统计</dt><dd>28 个独立 hex，119 次引用</dd></div>
+    <div><dt>CSS 变量</dt><dd><code>0</code> 个</dd></div>
+    <div><dt>!important</dt><dd>117 处（占声明数 35%）</dd></div>
+  </div>
+
+  <!-- ============ 0 ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2></div>
+
+    <ol class="tldr">
+      <li><b>这套配色的真正内核不是「颜色好看」，而是「面退后、文字前进」。</b>
+        所有容器、表头、hover、激活底之间的对比度只有 <b>1.005 : 1 ~ 1.10 : 1</b> —— 几乎不可见。
+        视觉重量被刻意全部让给文字层与主色。这是它「轻、干净、不花」的根因。</li>
+      <li><b>单一主色强锚定是统一性的最大来源。</b>
+        <code>#165dff</code> 在 119 次颜色引用中占 27 次，且交互、选中、强调三种语义全部收敛到它，没有第二个蓝。</li>
+      <li><b>中性灰是「四档语义分工」，不是随手取的四个灰。</b>
+        <code>#f6f8fb</code>（结构性面）→ <code>#f4f4f5</code>（瞬时 hover）→ <code>#f0f5ff</code>（激活态，带主色倾向）→ <code>#f1f4f6</code>（1px 分割线）。
+        「越靠近结构越冷，越靠近交互越带主色」—— 这是可以直接搬走的规则。</li>
+      <li><b>语义色一律「同色浅底」而非「实心色块 + 白字」。</b>
+        状态标签走 <code>color: 语义色 + background: rgba(同色, .1)</code>。
+        <span style="color:var(--bad)">但实测这套取值本身不达 AA</span>（绿 2.20:1、橙 2.03:1、红 2.96:1），
+        <b>照搬时必须同时把文字色降到 700 档</b>。详见 §3.3。</li>
+      <li><b>交互反馈有 60% 靠几何而非颜色。</b>
+        菜单 hover 从「整行铺满」变成「内缩 10px 圆角胶囊」，Tab 激活用 4px 主色下划线 —— 形状与颜色双通道反馈。</li>
+      <li><b>最该学的反面教材：38 个色值全部硬编码，0 个 CSS 变量。</b>
+        直接后果是出现了 <code>#323639</code> 与 <code>#323638</code> 这种对比度 <b>1.001 : 1</b> 的孪生值，
+        以及 <code>#0054fe</code> 与 <code>#165dff</code> 这种「肉眼同色、取值不同」的主色变体。</li>
+    </ol>
+  </section>
+
+  <!-- ============ 1 ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>色彩体系解剖：8 处值得借鉴</h2><span class="note">按可迁移性排序</span></div>
+
+    <h3><span class="h-n">1.1</span>单主色锚定 —— 27 / 119 的绝对集中度</h3>
+    <p>
+      <code>#165dff</code> 是文件里唯一的品牌蓝。它同时承担三种语义：
+    </p>
+    <div class="sw-row">
+      <div class="sw"><div class="box" style="background:#165dff"><span style="color:#fff">#165dff</span></div><div class="lb">实心强调<em>按钮底 / 图标底</em></div></div>
+      <div class="sw"><div class="box" style="background:#f0f5ff"><span style="color:#165dff">#f0f5ff</span></div><div class="lb">选中态浅底<em>约 8% 主色</em></div></div>
+      <div class="sw"><div class="box" style="background:rgba(22,93,255,.8)"><span style="color:#fff">.8 透明度</span></div><div class="lb">次级实心<em>hover / 弱化</em></div></div>
+      <div class="sw"><div class="box" style="background:#fff"><span style="color:#165dff;border-top:3px solid #165dff;width:100%;padding-top:6px">下划线</span></div><div class="lb">激活指示<em>4px 圆角条</em></div></div>
+    </div>
+    <p>
+      关键在于它<b>没有引入第二个蓝</b>。对比 rocket-admin 现状：除了主色 <code>#165dff</code>，
+      公共基线里还留着 <code>#4397fd</code>（fastadmin 链接色）、<code>#1688f1</code>（btn-info）。
+      三个蓝的色差小到「看起来像没对齐」，这正是界面显脏的常见来源。
+    </p>
+
+    <h3><span class="h-n">1.2</span>中性灰的四档语义分工</h3>
+    <p>
+      这是整套体系里最可直接复用的一条规则。四个灰不是深浅梯度，而是<b>按「离用户的远近」分工</b>：
+    </p>
+    <table>
+      <thead><tr><th style="width:96px">色值</th><th style="width:150px">语义槽</th><th>用在哪些元素</th><th style="width:118px">色相倾向</th></tr></thead>
+      <tbody>
+        <tr><td><code>#f6f8fb</code></td><td>结构性面</td><td>表头底色+边框、弹层标题栏、弹层底部分隔线</td><td>最冷（B−R = +5）</td></tr>
+        <tr><td><code>#f4f4f5</code></td><td>瞬时反馈</td><td>侧边栏 hover、折叠菜单底、控制栏页签</td><td>中性（B−R = +1）</td></tr>
+        <tr><td><code>#f0f5ff</code></td><td>激活 / 选中</td><td>菜单选中、页签激活、Tab active</td><td>带主色倾向</td></tr>
+        <tr><td><code>#f1f4f6</code></td><td>1px 结构线</td><td>内容区左边框、表格行分割线</td><td>冷灰</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <span class="tag">可迁移规则</span>
+      <p>
+        <b>静止的面 → 冷而亮；被操作的面 → 带主色。</b>
+        这样「当前选中」与「鼠标划过」在<b>色相</b>上就能区分，不必依赖深浅 ——
+        而深浅差只有 1.01 : 1，肉眼本来就分辨不出来。
+      </p>
+    </div>
+
+    <h3><span class="h-n">1.3</span>面层刻意「几乎不可见」—— 这是取向，不是缺陷</h3>
+    <p>实测所有「面 vs 面」的对比度：</p>
+    <div class="bars">
+      <div class="bar-row"><div class="bar-lb">表头底 / 白底<em>#f6f8fb on #fff</em></div><div class="track"><i style="width:6.6%;background:#c9d3e6"></i></div><div class="val">1.06:1</div></div>
+      <div class="bar-row"><div class="bar-lb">hover 底 / 白底<em>#f4f4f5 on #fff</em></div><div class="track"><i style="width:6.9%;background:#c9d3e6"></i></div><div class="val">1.10:1</div></div>
+      <div class="bar-row"><div class="bar-lb">激活底 / 白底<em>#f0f5ff on #fff</em></div><div class="track"><i style="width:6.8%;background:#c9d3e6"></i></div><div class="val">1.09:1</div></div>
+      <div class="bar-row"><div class="bar-lb">容器底 / hover 底<em>#f6f8fb on #f4f4f5</em></div><div class="track"><i style="width:6.4%;background:#c9d3e6"></i></div><div class="val">1.03:1</div></div>
+      <div class="bar-row"><div class="bar-lb">hover 底 / 激活底<em>#f4f4f5 on #f0f5ff</em></div><div class="track"><i style="width:6.3%;background:#c9d3e6"></i></div><div class="val">1.01:1</div></div>
+    </div>
+    <div class="bar-legend">
+      <span><i style="background:#c9d3e6"></i>面层对比度</span>
+      <span><i style="background:#165dff"></i>文字层对比度（见 §2）</span>
+      <span>｜ 竖线 = WCAG AA 阈值 4.5:1</span>
+    </div>
+    <p>
+      这些数字远低于任何无障碍阈值。但把它们放在「面」这个角色上看，反而是<b>刻意的克制</b>：
+      1.03 ~ 1.10 : 1 刚好在屏幕可辨阈值附近，眼睛能感到「有一层底」，但不会被色块切割版面。
+      代价是<b>灰度打印或低质量屏幕上面层会完全消失</b>，所以这套体系必须保证「不依赖面层也能读懂」——
+      它做到了，因为文字层全部达标（§2）。
+    </p>
+
+    <h3><span class="h-n">1.4</span>语义色的「同色浅底」容器化</h3>
+    <p>状态标签一律写成「语义色文字 + 同色 10% 底」，而不是实心色块：</p>
+    <div class="sw-row">
+      <div class="sw"><div class="box" style="background:#e8f8f5;border-color:#cdeee7"><span style="color:#18bc9c">label-success</span></div><div class="lb">rgba(24,188,156,.1)<em>文字 #18bc9c</em></div></div>
+      <div class="sw"><div class="box" style="background:#fef5e7;border-color:#fbe6c4"><span style="color:#f39c12">label-warning</span></div><div class="lb">rgba(243,156,18,.1)<em>文字 #f39c12</em></div></div>
+      <div class="sw"><div class="box" style="background:#feeeec;border-color:#fbd6d2"><span style="color:#f75444">label-danger</span></div><div class="lb">rgba(247,84,68,.1)<em>文字 #f75444</em></div></div>
+      <div class="sw"><div class="box" style="background:rgba(0,0,0,.6)"><span style="color:#fff">label-primary</span></div><div class="lb">rgba(0,0,0,.6)<em>唯一例外</em></div></div>
+    </div>
+    <p>
+      <b>为什么值得借鉴：</b>一个列表页同时出现「已完成 / 进行中 / 已失败」三种状态时，
+      实心色块方案会形成三个高饱和色块互抢注意力，页面看起来「彩虹爆炸」；
+      浅底方案里状态信息的<b>视觉重量被降到与正文同级</b>，只在需要时被扫到。
+      这也是为什么它能容忍页面上同时存在多个状态而不显乱。
+    </p>
+    <div class="callout bad">
+      <span class="tag">但取值必须改</span>
+      <p>
+        实测这三组「语义色文字 on 其 10% 浅底」的对比度分别是
+        <b>2.20 : 1 / 2.03 : 1 / 2.96 : 1</b>，全部不达 AA 4.5:1。
+        照搬这个模式时，文字色必须换成同色系的 700 档，例如
+        <code>#128f76</code> / <code>#b9760a</code> / <code>#c33a2b</code>。
+        顺带一提：<code>#128f76</code> 在 simple.css 里<b>已经存在</b>，只是被用在了按钮 hover 底上，没用在标签文字上。
+      </p>
+    </div>
+
+    <h3><span class="h-n">1.5</span>状态图标：让颜色退位，让形状承担区分</h3>
+    <p>
+      弹层的成功 / 警告 / 信息三种状态图标（<code>.layui-layer-ico0/1/3</code>）
+      被统一压成<b>同一个 <code>#165dff</code> 圆形徽标</b>，仅靠 FontAwesome 字形区分：
+    </p>
+    <ul class="tight">
+      <li><code>\f058</code> 实心对勾 —— 成功</li>
+      <li><code>\f12a</code> 感叹号 —— 警告</li>
+      <li><code>\f00c</code> 空心对勾 —— 信息</li>
+    </ul>
+    <p>
+      <b>效果：</b>弹层里不会出现红 / 黄 / 蓝三个色块；对红绿色觉障碍用户，
+      信息由字形而非颜色承载，可辨识性反而更高。这是「颜色不是唯一信息通道」原则的正面案例，
+      也是整份文件里<b>唯一符合无障碍色彩规范的一处设计</b>。
+    </p>
+
+    <h3><span class="h-n">1.6</span>弱化边框，用明度和留白分层</h3>
+    <p>三条具体手法：</p>
+    <ul>
+      <li><code>border-color: transparent !important</code> 被批量用在工具条按钮、侧栏、logo、页签上 —— 该有边的地方主动去掉边。</li>
+      <li>弹层标题栏与内容区之间<b>没有 1px 描边</b>，靠 <code>#f6f8fb</code> → <code>#fff</code> 的明度差分层。</li>
+      <li>表格只保留纵向分割线：<code>border-left-width:0; border-right-width:0</code>，横线交给 <code>#f1f4f6</code>（1.10 : 1）。</li>
+    </ul>
+    <p>
+      <b>效果：</b>版面里没有一堆灰线把内容切碎，信息区看起来更「整」。
+      代价是必须靠留白和字重来建立层次 —— 这套配色与「大内边距 + 表格化排版」是配套的，单独抄颜色不会有效果。
+    </p>
+
+    <h3><span class="h-n">1.7</span>交互反馈有 60% 交给几何</h3>
+    <p>
+      最典型的是侧边栏菜单项：
+    </p>
+    <div class="callout ok">
+      <span class="tag">原文手法</span>
+      <p>
+        静止态：整行铺满、无圆角。<br>
+        hover 态：<code>padding-left:5px; margin:0 10px; border-radius:8px; background:#f4f4f5</code> —— 变成<b>内缩 10px 的圆角胶囊</b>。<br>
+        激活态：同几何 + <code>color:#165dff; background:#f0f5ff</code>。
+      </p>
+    </div>
+    <p>
+      在 20 项以上的长菜单里，「鼠标在哪」和「当前在哪」是两种必须区分的状态。
+      纯靠底色区分时，<code>#f4f4f5</code> 与 <code>#f0f5ff</code> 的差异只有 <b>1.01 : 1</b>，几乎不可辨；
+      加上「内缩 + 圆角」这个几何变化后，两种状态立刻分得开。
+      页签激活用 <code>::after</code> 画 4px 主色圆角下划线，是同一个思路。
+    </p>
+
+    <h3><span class="h-n">1.8</span>深浅双态共用语义槽位，主色恒定</h3>
+    <p>
+      深色主题不是另起一套配色，而是把<b>同一批槽位</b>映射到暗色梯度，品牌主色保持不变：
+    </p>
+    <table class="tight">
+      <thead><tr><th style="width:180px">语义槽</th><th style="width:120px">浅色态</th><th style="width:120px">深色态</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>容器底 / 表头</td><td><code>#f6f8fb</code></td><td><code>#262626</code></td><td>槽位一致，只换梯度</td></tr>
+        <tr><td>hover / 条纹行</td><td><code>#f4f4f5</code></td><td><code>#404040</code></td><td>—</td></tr>
+        <tr><td>面板底</td><td><code>#fff</code></td><td><code>#333333</code></td><td>—</td></tr>
+        <tr><td>面板标题栏</td><td><code>#fff</code></td><td><code>#3a3a3a</code></td><td>—</td></tr>
+        <tr><td>侧边栏</td><td><code>#fff</code></td><td><code>#070707</code></td><td>—</td></tr>
+        <tr><td><b>品牌主色</b></td><td><code>#165dff</code></td><td><code>#165dff</code></td><td><b>两态完全相同</b></td></tr>
+      </tbody>
+    </table>
+    <p>
+      <b>值得借鉴的：</b>槽位化思维 —— 切换主题时只换值不换结构，品牌识别不丢失。
+      <b>但深色态实现有硬伤：</b>主色 <code>#165dff</code> 在 <code>#262626</code> 上只有 <b>2.91 : 1</b>，
+      在 <code>#404040</code> 上只有 <b>2.00 : 1</b> —— 做正文链接会明显看不清。深色态需要一档提亮的主色（如 <code>#4d84ff</code>）。
+    </p>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>实测对比度：文字层全部达标，这是体系的承重墙</h2><span class="note">WCAG 2.1 相对亮度公式</span></div>
+
+    <p>
+      因为面层对比度只有 1.0x，整套配色能不能读，完全取决于文字层。
+      实测结果说明它是<b>经过反推的</b>：
+    </p>
+
+    <div class="bars">
+      <div class="bar-row"><div class="bar-lb">正文 / 白底<em>#1d2129 on #fff</em></div><div class="track"><i style="width:100%;background:#165dff"></i></div><div class="val">16.13:1</div></div>
+      <div class="bar-row"><div class="bar-lb">次级文字 / 白底<em>#4e5969 on #fff</em></div><div class="track"><i style="width:44.4%;background:#165dff"></i></div><div class="val">7.10:1</div></div>
+      <div class="bar-row"><div class="bar-lb">表头文字 / 表头底<em>#4e5969 on #f6f8fb</em></div><div class="track"><i style="width:41.8%;background:#165dff"></i></div><div class="val">6.68:1</div></div>
+      <div class="bar-row"><div class="bar-lb">弹层次要按钮字 / 其底<em>#666 on #f6f8fb</em></div><div class="track"><i style="width:33.8%;background:#165dff"></i></div><div class="val">5.40:1</div></div>
+      <div class="bar-row"><div class="bar-lb">主色 / 白底<em>#165dff on #fff</em></div><div class="track"><i style="width:32.4%;background:#165dff"></i></div><div class="val">5.19:1</div></div>
+      <div class="bar-row"><div class="bar-lb">主色 / 激活底<em>#165dff on #f0f5ff</em></div><div class="track"><i style="width:29.7%;background:#165dff"></i></div><div class="val">4.75:1</div></div>
+      <div class="bar-row"><div class="bar-lb">三级文字 / 白底<em>#86909c on #fff</em></div><div class="track"><i style="width:20.3%;background:#c9a227"></i></div><div class="val">3.24:1</div></div>
+      <div class="bar-row"><div class="bar-lb">语义红文字 / 其浅底<em>#f75444 on #feeeec</em></div><div class="track"><i style="width:18.5%;background:#c33a2b"></i></div><div class="val">2.96:1</div></div>
+      <div class="bar-row"><div class="bar-lb">主色 / 深色容器<em>#165dff on #262626</em></div><div class="track"><i style="width:18.2%;background:#c33a2b"></i></div><div class="val">2.91:1</div></div>
+      <div class="bar-row"><div class="bar-lb">语义绿文字 / 其浅底<em>#18bc9c on #e8f8f5</em></div><div class="track"><i style="width:13.8%;background:#c33a2b"></i></div><div class="val">2.20:1</div></div>
+      <div class="bar-row"><div class="bar-lb">语义橙文字 / 其浅底<em>#f39c12 on #fef5e7</em></div><div class="track"><i style="width:12.7%;background:#c33a2b"></i></div><div class="val">2.03:1</div></div>
+      <div class="bar-row"><div class="bar-lb">主色 / 深色 hover<em>#165dff on #404040</em></div><div class="track"><i style="width:12.5%;background:#c33a2b"></i></div><div class="val">2.00:1</div></div>
+    </div>
+    <div class="bar-legend">
+      <span><i style="background:#165dff"></i>达标 ≥ 4.5:1</span>
+      <span><i style="background:#c9a227"></i>仅大字号 3.0–4.5:1</span>
+      <span><i style="background:#c33a2b"></i>不达标 &lt; 3.0:1</span>
+      <span>｜ 竖线 = 4.5:1</span>
+    </div>
+
+    <p>
+      <b>结论：</b>正文、次级、表头、主色、主色叠激活底 —— 五组核心文字组合全部落在 4.75 : 1 以上，
+      说明「深灰正文 + 蓝主色 + 极浅面」这个组合是<b>自洽且经过验证的</b>，可以放心作为主力方案。
+      不达标的三类全部集中在「语义色当文字」与「深色态主色」这两个边缘场景。
+    </p>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>七个不能照搬的坑</h2><span class="note">含可验证的实测证据</span></div>
+
+    <h3><span class="h-n">3.1</span>零 CSS 变量，38 个色值全部硬编码</h3>
+    <p>
+      全文件 911 行，<code>0</code> 个自定义属性。改一次主色需要全局替换 27 处。
+      这是「可借鉴性」上最大的减分项 —— 它的<b>配色思路值得抄，实现方式不值得抄</b>。
+    </p>
+
+    <h3><span class="h-n">3.2</span>近似色簇：同一意图写出了多个几乎相同的值</h3>
+    <p>实测「对比度 &lt; 1.35 : 1」的孪生色对，最典型的三组：</p>
+
+    <div class="cluster">
+      <div class="cluster-head">深灰文字簇 —— 6 个值承担同一种「深灰正文」意图</div>
+      <div class="cluster-body">
+        <div class="cl"><div class="sq" style="background:#333333"></div><div class="hx">#333333</div><div class="ct">5 次</div></div>
+        <div class="cl"><div class="sq" style="background:#323639"></div><div class="hx">#323639</div><div class="ct">3 次</div></div>
+        <div class="cl"><div class="sq" style="background:#323638"></div><div class="hx">#323638</div><div class="ct">1 次</div></div>
+        <div class="cl"><div class="sq" style="background:#222222"></div><div class="hx">#222222</div><div class="ct">4 次</div></div>
+        <div class="cl"><div class="sq" style="background:#3a3a3a"></div><div class="hx">#3a3a3a</div><div class="ct">1 次</div></div>
+        <div class="cl"><div class="sq" style="background:#404040"></div><div class="hx">#404040</div><div class="ct">2 次</div></div>
+      </div>
+      <div class="cluster-foot">
+        最极端的一对：<code>#323639</code> 与 <code>#323638</code> —— 对比度 <b>1.001 : 1</b>，
+        即逐位相差 1 的「打字误差级」不一致。肉眼永远看不出差别，但它证明了没有 token 层的代价。
+      </div>
+    </div>
+
+    <div class="cluster">
+      <div class="cluster-head">主色簇 —— 同一个蓝写出了 4 种表示</div>
+      <div class="cluster-body">
+        <div class="cl"><div class="sq" style="background:#165dff"></div><div class="hx">#165dff</div><div class="ct">27 次 · 主色</div></div>
+        <div class="cl"><div class="sq" style="background:#0054fe"></div><div class="hx">#0054fe</div><div class="ct">1 次 · 分页激活</div></div>
+        <div class="cl"><div class="sq" style="background:rgba(22,93,255,.8)"></div><div class="hx">rgba(22,93,255,.8)</div><div class="ct">4 次 · hover</div></div>
+        <div class="cl"><div class="sq" style="background:#f0f5ff"></div><div class="hx">#f0f5ff</div><div class="ct">9 次 · 浅底</div></div>
+      </div>
+      <div class="cluster-foot">
+        <code>#0054fe</code> 与 <code>#165dff</code> 的对比度只有 <b>1.093 : 1</b> —— 肉眼完全同色，
+        但取值不同。这种「看不出差别的不一致」正是设计系统最该消灭的噪音。
+      </div>
+    </div>
+
+    <h3><span class="h-n">3.3</span>语义色当文字时不达 AA（已在上文给出实测值）</h3>
+    <p>
+      这是最容易在照搬时踩进去的坑：<b>模式对，取值错</b>。
+      浅底方案本身是优秀的，但 <code>#18bc9c</code> / <code>#f39c12</code> 这类 500 档饱和色
+      天生不适合做小字号文字。迁移时必须成对替换（文字降档 + 浅底保持 10%）。
+    </p>
+
+    <h3><span class="h-n">3.4</span>深色态主色对比度崩到 2.0 : 1</h3>
+    <p>
+      深浅两态共用 <code>#165dff</code> 这个决定在浅色态是对的（5.19 : 1），
+      在深色态却是硬伤（2.00 ~ 2.91 : 1）。正确做法是深色态用一档提亮的主色，
+      而不是「为了品牌一致硬扛」。
+    </p>
+
+    <h3><span class="h-n">3.5</span><code>!important</code> 占声明数 35%</h3>
+    <p>
+      117 处 <code>!important</code> / 约 337 条声明。这是为了压制 FastAdmin 基线的必然结果，
+      但也意味着<b>后续任何覆盖都要继续加 <code>!important</code></b>，样式表会不可逆地劣化。
+      rocket-admin 的 <code>skin-white.css</code> 有同样倾向，值得警惕。
+    </p>
+
+    <h3><span class="h-n">3.6</span>逐字重复的规则</h3>
+    <p>
+      第 732–738 行与第 740–746 行<b>完全一致</b>（已用 <code>diff</code> 验证）：
+    </p>
+    <p><code>body.sdtheme-white .treeview-menu > li.active > a { color:#165dff; background:#f0f5ff; margin:0 10px; border-radius:8px; padding-left:15px }</code></p>
+    <p>
+      同类问题还有：<code>#f0f5ff</code> 相关的激活态规则散落在 6 个互不相邻的位置。
+      缺少分层，是「补丁式演进」的典型痕迹。
+    </p>
+
+    <h3><span class="h-n">3.7</span>语义色被主色污染</h3>
+    <p>
+      第 461 行：<code>.sdtheme-body .text-success { color: #165dff }</code> ——
+      把「成功」刷成了蓝色。这是 bug 不是设计取向，会让「成功」与「链接」在语义上无法区分。
+      rocket-admin 已修正为 <code>#18bc9c</code>，<b>不要回退</b>。
+    </p>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>场景 → 借鉴点 → 效果</h2><span class="note">按落地优先级</span></div>
+
+    <div class="cards">
+      <div class="card">
+        <span class="scene-id">SCENE 01</span>
+        <h4>状态标记：订单状态 / 设备在线离线 / 审核结果</h4>
+        <dl>
+          <dt>借鉴</dt><dd>§1.4 同色 10% 浅底 + 语义色文字；<b>文字色改用 700 档</b>（#128f76 / #b9760a / #c33a2b）。</dd>
+          <dt>效果</dt><dd>一屏 20 行数据不再「彩虹爆炸」，扫描速度明显提升；灰度打印时仍能靠文字色与文案区分，不依赖底色。</dd>
+          <dt>适用</dt><dd>IoT 设备列表、工单列表、审批流、日志级别标记。</dd>
+        </dl>
+      </div>
+
+      <div class="card">
+        <span class="scene-id">SCENE 02</span>
+        <h4>数据表格：列表页 / 报表页</h4>
+        <dl>
+          <dt>借鉴</dt><dd>§1.2 + §1.6 —— <code>#f6f8fb</code> 表头、<code>#f1f4f6</code> 1px 行分割线、<code>rgba(主色,.05)</code> 行 hover、去掉左右边框。</dd>
+          <dt>效果</dt><dd>表头「退后」、数据「前进」，长表格横向扫描不累；行 hover 用主色 5% 而非灰，能明确提示「这一行可操作」。</dd>
+          <dt>适用</dt><dd>所有 Bootstrap-Table 列表页。</dd>
+        </dl>
+      </div>
+
+      <div class="card">
+        <span class="scene-id">SCENE 03</span>
+        <h4>侧边导航 / 多级菜单</h4>
+        <dl>
+          <dt>借鉴</dt><dd>§1.7 —— hover 内缩圆角胶囊（<code>margin:0 10px; border-radius:8px</code>）；激活态用 <code>#f0f5ff</code> + 主色文字。</dd>
+          <dt>效果</dt><dd>长菜单里「鼠标在哪」与「当前在哪」靠几何 + 色相双通道区分。这一条<b>不能只抄颜色</b>，几何必须一起抄。</dd>
+          <dt>适用</dt><dd>20 项以上的后台侧栏、树形菜单、多级 Tab。</dd>
+        </dl>
+      </div>
+
+      <div class="card">
+        <span class="scene-id">SCENE 04</span>
+        <h4>弹层 / 对话框</h4>
+        <dl>
+          <dt>借鉴</dt><dd><code>#f6f8fb</code> 标题栏、标题与内容间不加 1px 描边（靠明度分层）、次要按钮用 <code>#f6f8fb</code> 浅底而非纯白。</dd>
+          <dt>效果</dt><dd>弹层与页面层次清晰但不「厚重」；确定 / 取消的主次关系靠底色差异一眼可辨。</dd>
+          <dt>适用</dt><dd>FastAdmin 的 layer 弹层、表单弹窗、确认框。</dd>
+        </dl>
+      </div>
+
+      <div class="card">
+        <span class="scene-id">SCENE 05</span>
+        <h4>深浅双主题产品</h4>
+        <dl>
+          <dt>借鉴</dt><dd>§1.8 槽位化思维 —— 结构不变、只换梯度、品牌主色恒定。</dd>
+          <dt>效果</dt><dd>主题切换不破坏品牌识别。但<b>必须修正主色在深色态提亮一档</b>，否则链接不可读。</dd>
+          <dt>适用</dt><dd>需要夜间模式的后台、监控大屏。</dd>
+        </dl>
+      </div>
+
+      <div class="card">
+        <span class="scene-id">SCENE 06</span>
+        <h4>BI 看板 / 数据大屏</h4>
+        <dl>
+          <dt>借鉴</dt><dd>中性灰容器 + 单一主色 + 语义色<b>只用于异常</b>（§1.1 + §1.4）。</dd>
+          <dt>效果</dt><dd>在信息密度高的看板上，「颜色即优先级」—— 满屏中性灰里出现一个橙色，用户会立刻看过去。若日常数据也用高饱和色，异常就失去了信号价值。</dd>
+          <dt>适用</dt><dd>Dashboard、设备态势页、运营看板。</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:32px">
+      <span class="tag">适用边界</span>
+      <p>
+        这套配色的舒适区是<b>「工具型、长时间注视、信息密集」</b>的界面 —— 它通过压低一切非文字元素的对比度来换取耐看。
+        <b>不适合</b>营销落地页、活动页、产品官网首页：那些场景需要大色块与高饱和对比来制造冲击力，
+        用这套配色会显得寡淡、缺乏行动召唤力。判断标准很简单：<b>这个页面是让人「读」还是让人「动」。</b>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>落到 rocket-admin 的具体建议</h2></div>
+
+    <table>
+      <thead><tr><th style="width:52px">优先级</th><th style="width:230px">动作</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>P1</code></td>
+          <td>抽 token 层</td>
+          <td>在 <code>skin-white.css</code> 顶部加 <code>:root</code> 变量（<code>--brand-500 / --brand-50 / --neutral-surface / --neutral-hover / --neutral-active / --line</code>），把现有硬编码替换为变量引用。这是<code>simple.css</code> 最该学、却没做的一件事。</td>
+        </tr>
+        <tr>
+          <td><code>P1</code></td>
+          <td>语义色标签成对降档</td>
+          <td>若引入「同色浅底」标签，文字色用 <code>#128f76 / #b9760a / #c33a2b / #165dff</code>，浅底保持同色 10%。<b>不要</b>直接抄 <code>#18bc9c / #f39c12</code> 做小字。</td>
+        </tr>
+        <tr>
+          <td><code>P2</code></td>
+          <td>收敛多余蓝色</td>
+          <td><code>#4397fd</code>（fastadmin 链接基线）、<code>#1688f1</code>（btn-info 基线）与主色 <code>#165dff</code> 色差过小。若要统一需评估影响面 —— 注意 <code>.text-primary</code> 保持 <code>#444c69</code>、<code>.text-info</code> 保持 <code>#1688f1</code> 是<b>有意为之</b>的基线决策，不要误改。</td>
+        </tr>
+        <tr>
+          <td><code>P2</code></td>
+          <td>菜单 hover 加几何变化</td>
+          <td>把侧栏 hover 从「只变底色」升级为「内缩 + 圆角 + 变底色」。这是投入产出比最高的一处改动。</td>
+        </tr>
+        <tr>
+          <td><code>P3</code></td>
+          <td>核对深色态（若有）</td>
+          <td><code>skin-white.css:719-723</code> 已有 <code>darktheme</code> 分支（表头 <code>#262626</code>）。若后续要启用，主色需提亮一档。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    数据来源：<code>E:\phpstudy_pro\extraproject\Chuiot\test.chuiot.com\public\assets\css\simple.css</code>（911 行）。
+    对比度按 WCAG 2.1 相对亮度公式实测计算，非估计值。
+    色值统计与近似色检测由脚本遍历全部 <code>#hex</code> 与 <code>rgba()</code> 声明得出。
+    关联改动见 <code>rocket-admin\public\assets\css\skins\skin-white.css</code>。
+  </footer>
+
+</div>
+</body>
+</html>

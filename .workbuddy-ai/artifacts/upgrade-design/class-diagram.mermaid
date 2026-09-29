@@ -1,0 +1,85 @@
+classDiagram
+    class Backend {
+        <<abstract>>
+        +initialize() void
+        +loadlang(string name) void
+        #noNeedRight
+        #auth
+        #view
+        #request
+    }
+    class Upgrade {
+        -array blockedPaths
+        -array protectedPaths
+        +initialize() void
+        +index() string
+        +check() void
+        +run() void
+        +rollback() void
+        -resolveSource(array src) array
+        -fetchRelease(string type, string repo, string tag) array
+        -normalizeGitee(array json, string tag) array
+        -normalizeGithub(array json) array
+        -pickPackageAsset(array assets, string type) array
+        -httpOptions(bool binary) array
+        -downloadPackage(string url, string target) void
+        -verifyChecksum(string file, string sha256) void
+        -extractPackage(string file, string dir) void
+        -readManifest(string dir) array
+        -resolveBasePath(string dir, array manifest) string
+        -collectFiles(string base) array
+        -collectSqlFiles(string dir, string base, array manifest) array
+        -applyFiles(string base, string batch) array
+        -executeSql(string file) void
+        -writeVersion(string version) void
+        -acquireLock() resource
+        -releaseLock(resource fp) void
+        -saveStatus(string batch, array status) void
+        -loadStatus(string batch) array
+        -listBatches() array
+        -isSafeZipName(string name) bool
+        -normalizeRelativePath(string path) string
+    }
+    class SourceDescriptor {
+        +string type
+        +string repo
+        +string tag
+        +string url
+    }
+    class UpgradePreview {
+        +string type
+        +string currentVersion
+        +string latestVersion
+        +bool isNewer
+        +string changelog
+        +string packageUrl
+        +string packageName
+        +int packageSize
+        +bool hasManifest
+        +bool prerelease
+    }
+    class UpgradeResult {
+        +int updated
+        +int skipped
+        +string backupPath
+        +string sqlFile
+        +string version
+        +bool sqlExecuted
+    }
+    class BatchStatus {
+        +string batch
+        +string state
+        +string source
+        +string fromVersion
+        +string toVersion
+        +int updated
+        +string backupPath
+        +string createdAt
+    }
+    Backend <|-- Upgrade
+    Upgrade ..> SourceDescriptor : 构建
+    Upgrade ..> UpgradePreview : check() 返回
+    Upgrade ..> UpgradeResult : run() 返回
+    Upgrade ..> BatchStatus : 持久化(runtime)
+    Upgrade ..> ZipArchive : 解压/备份
+    Upgrade ..> Http : 元数据请求
