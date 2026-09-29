@@ -1,0 +1,79 @@
+<form id="add-form" class="form-horizontal form-ajax" role="form" data-toggle="validator" method="POST" action="">
+    {:token_field()}
+    <div class="form-group">
+        <label for="title" class="control-label col-xs-12 col-sm-2">{:__('Title')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input type="text" class="form-control" id="title" name="row[title]" value="" data-rule="required" placeholder="{:__('Group title tips')}"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="name" class="control-label col-xs-12 col-sm-2">{:__('Name')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input type="text" class="form-control" id="name" name="row[name]" value="" data-rule="required" placeholder="{:__('Group name tips')}"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="tip" class="control-label col-xs-12 col-sm-2">{:__('Tip')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input type="text" class="form-control" id="tip" name="row[tip]" value="" data-rule="required" placeholder="{:__('Group tip tips')}"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Fields')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <table class="table table-striped fieldlist" data-name="row[fields]" data-template="systemgroupfieldstpl">
+                <tr>
+                    <td width="20%">{:__('Field title')}</td>
+                    <td width="20%">{:__('Field name')}</td>
+                    <td width="15%">{:__('Field type')}</td>
+                    <td width="28%">{:__('Field param')}</td>
+                    <td width="110">{:__('Operate')}</td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <a href="javascript:;" class="btn btn-sm btn-success btn-append"><i class="fa fa-plus"></i> {:__('Add field')}</a>
+                        <textarea name="row[fields]" class="form-control hide" cols="30" rows="5">{$fieldsValue}</textarea>
+                    </td>
+                </tr>
+            </table>
+            <div class="help-block">{:__('Field param tips')}</div>
+        </div>
+    </div>
+    <script type="text/html" id="systemgroupfieldstpl">
+        <tr>
+            <td><input type="text" name="<%=name%>[<%=index%>][title]" class="form-control" value="<%=row['title']%>"/></td>
+            <td><input type="text" name="<%=name%>[<%=index%>][name]" class="form-control" value="<%=row['name']%>" placeholder="{:__('Field name tips')}"/></td>
+            <td>
+                <select name="<%=name%>[<%=index%>][type]" class="form-control">
+                    {foreach name="fieldTypeList" item="typeTitle"}
+                    <option value="{$key}"<%=row.type=='{$key}'?' selected':''%>>{$typeTitle}</option>
+                    {/foreach}
+                </select>
+            </td>
+            <td><textarea name="<%=name%>[<%=index%>][param]" class="form-control" rows="1" style="resize:vertical" placeholder="{:__('Field options tips')}"><%=row['param']%></textarea></td>
+            <td>
+                <span class="btn btn-sm btn-danger btn-remove"><i class="fa fa-times"></i></span>
+                <span class="btn btn-sm btn-primary btn-dragsort"><i class="fa fa-arrows"></i></span>
+            </td>
+        </tr>
+    </script>
+    <div class="form-group">
+        <label for="weigh" class="control-label col-xs-12 col-sm-2">{:__('Weigh')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input type="text" class="form-control" id="weigh" name="row[weigh]" value="0"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Status')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            {:build_radios('row[status]', ['normal'=>__('Normal'), 'hidden'=>__('Hidden')])}
+        </div>
+    </div>
+    <div class="form-group hidden layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+            <button type="reset" class="btn btn-default btn-embossed">{:__('Reset')}</button>
+        </div>
+    </div>
+</form>

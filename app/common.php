@@ -630,3 +630,4 @@ if (!function_exists('model')) {
         throw new \think\Exception('model not found');
     }
 }
+

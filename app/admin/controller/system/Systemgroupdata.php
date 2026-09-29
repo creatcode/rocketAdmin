@@ -1,7 +1,5 @@
 <?php
 
-// 原有注释中的 ConfigData、ConfigDataItem 为历史名称,现分别对应 SystemGroup、SystemGroupData。
-
 namespace app\admin\controller\system;
 
 use app\common\controller\Backend;
@@ -16,10 +14,10 @@ use think\facade\Db;
  * @icon   fa fa-list-alt
  * @remark 按所属数据组的字段定义维护组内记录,记录归属由数据组的ID确定
  */
-class Systemgroupdata extends Backend
+class SystemGroupData extends Backend
 {
     /**
-     * @var \app\common\model\ConfigDataItem
+     * @var \app\common\model\SystemGroupData
      */
     protected $model = null;
 
@@ -52,7 +50,7 @@ class Systemgroupdata extends Backend
     /**
      * 读取当前请求的数据组
      *
-     * @return \app\common\model\ConfigData
+     * @return \app\common\model\SystemGroup
      * @throws \think\Exception
      */
     protected function getGroup()
@@ -78,22 +76,20 @@ class Systemgroupdata extends Backend
         $result = [];
         foreach ($fields as $field) {
             $name = $field['name'];
-            $value = array_key_exists($name, (array)$values)
-                ? $values[$name]
-                : (in_array($field['type'], ['number', 'switch'], true) ? 0 : '');
-            $value = is_scalar($value) ? (string)$value : '';
+            $type = $field['type'];
+            if (array_key_exists($name, (array)$values)) {
+                $value = $values[$name];
+            } else {
+                $value = in_array($type, ['number', 'switch'], true) ? 0 : ($type === 'checkbox' ? [] : '');
+            }
+            //多选值保持数组供复选框组回填,其余类型转字符串
+            $value = $type === 'checkbox' ? (array)$value : (is_scalar($value) ? (string)$value : '');
             $result[] = [
-                'name'          => $name,
-                'title'         => $field['title'],
-                'type'          => $field['type'],
-                'required_rule' => !empty($field['required']) ? 'required' : '',
-                'value'         => $value,
-                'maxlength'     => isset($field['maxlength']) ? (int)$field['maxlength'] : 255,
-                'min'           => isset($field['min']) ? (string)$field['min'] : '',
-                'max'           => isset($field['max']) ? (string)$field['max'] : '',
-                'has_min'       => isset($field['min']),
-                'has_max'       => isset($field['max']),
-                'options'       => isset($field['options']) && is_array($field['options']) ? $field['options'] : [],
+                'name'    => $name,
+                'title'   => $field['title'],
+                'type'    => $type,
+                'value'   => $value,
+                'options' => isset($field['param']) && is_array($field['param']) ? $field['param'] : [],
             ];
         }
         return $result;

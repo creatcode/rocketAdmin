@@ -9,11 +9,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'system.systemgroupdata/index' + groupQuery,
-                    add_url: 'system.systemgroupdata/add' + groupQuery,
-                    edit_url: 'system.systemgroupdata/edit' + groupQuery,
-                    del_url: 'system.systemgroupdata/del' + groupQuery,
-                    multi_url: 'system.systemgroupdata/multi' + groupQuery,
+                    index_url: 'system.system_group_data/index' + groupQuery,
+                    add_url: 'system.system_group_data/add' + groupQuery,
+                    edit_url: 'system.system_group_data/edit' + groupQuery,
+                    del_url: 'system.system_group_data/del' + groupQuery,
+                    multi_url: 'system.system_group_data/multi' + groupQuery,
                     table: 'system_group_data'
                 }
             });
@@ -72,11 +72,26 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         if (field.type === 'image') {
                             return value === '' ? '' : '<a href="' + Fast.api.cdnurl(value) + '" target="_blank"><img src="' + Fast.api.cdnurl(value) + '" class="img-sm img-center"/></a>';
                         }
+                        if (field.type === 'uploads') {
+                            if (value === '') return '';
+                            var html = '';
+                            $.each(value.split(','), function (i, path) {
+                                html += '<a href="' + Fast.api.cdnurl(path) + '" target="_blank"><img src="' + Fast.api.cdnurl(path) + '" class="img-sm img-center"/></a> ';
+                            });
+                            return html;
+                        }
                         if (field.type === 'switch') {
                             return value === '1' ? __('Yes') : __('No');
                         }
-                        if (field.type === 'select') {
-                            value = field.options && typeof field.options[value] !== 'undefined' ? Fast.api.escape(field.options[value]) : value;
+                        if (field.type === 'select' || field.type === 'radio') {
+                            value = field.param && typeof field.param[value] !== 'undefined' ? Fast.api.escape(field.param[value]) : value;
+                        }
+                        if (field.type === 'checkbox') {
+                            var keys = value === '' ? [] : value.split(',');
+                            value = $.map(keys, function (k) {
+                                return field.param && typeof field.param[k] !== 'undefined' ? field.param[k] : k;
+                            }).join(',');
+                            return Fast.api.escape(value);
                         }
                         return Table.api.formatter.content.call(this, value, row, index);
                     };

@@ -23,6 +23,8 @@ class SystemGroupData extends Model
     /**
      * 按字段定义校验记录值并补全缺省值
      *
+     * 各类型按固定规则校验,不再支持逐字段限制配置。
+     *
      * @param array $fields 已规范化的字段定义
      * @param array $values 提交的字段值
      * @return array 与字段定义一致的记录值
@@ -41,19 +43,18 @@ class SystemGroupData extends Model
             $name = $field['name'];
             $title = $field['title'];
             $type = $field['type'];
-            $required = !empty($field['required']);
             $value = array_key_exists($name, $values) ? $values[$name] : null;
-            if (is_array($value)) {
+            //多选类型的值是数组,其余类型必须是标量
+            if ($type === 'checkbox') {
+                $value = is_array($value) ? $value : (is_scalar($value) && (string)$value !== '' ? explode(',', (string)$value) : []);
+            } elseif (is_array($value)) {
                 throw new ValidateException(__('Value of field %s must be a scalar', $name));
+            } else {
+                $value = is_string($value) ? trim($value) : $value;
             }
-            $value = is_string($value) ? trim($value) : $value;
             // 0 和 false 是有效值，不能作为空值处理
-            $empty = $value === null || $value === '';
-            if ($required && $empty) {
-                throw new ValidateException(__('%s can not be empty', $title));
-            }
-            if ($empty) {
-                $result[$name] = in_array($type, ['number', 'switch'], true) ? 0 : '';
+            if ($value === null || $value === '' || (is_array($value) && !$value)) {
+                $result[$name] = in_array($type, ['number', 'switch'], true) ? 0 : ($type === 'checkbox' ? [] : '');
                 continue;
             }
             switch ($type) {
@@ -61,14 +62,7 @@ class SystemGroupData extends Model
                     if (!is_numeric($value)) {
                         throw new ValidateException(__('%s must be numeric', $title));
                     }
-                    $value = $value + 0;
-                    if (isset($field['min']) && $value < $field['min']) {
-                        throw new ValidateException(__('%s can not be less than %s', $title, $field['min']));
-                    }
-                    if (isset($field['max']) && $value > $field['max']) {
-                        throw new ValidateException(__('%s can not be greater than %s', $title, $field['max']));
-                    }
-                    $result[$name] = $value;
+                    $result[$name] = $value + 0;
                     break;
                 case 'switch':
                     if (!in_array((string)$value, ['0', '1'], true)) {
@@ -77,24 +71,49 @@ class SystemGroupData extends Model
                     $result[$name] = (int)$value;
                     break;
                 case 'select':
-                    $options = isset($field['options']) && is_array($field['options']) ? $field['options'] : [];
+                case 'radio':
+                    $options = isset($field['param']) && is_array($field['param']) ? $field['param'] : [];
                     if (!array_key_exists((string)$value, $options)) {
                         throw new ValidateException(__('%s is not in the options', $title));
                     }
                     $result[$name] = (string)$value;
                     break;
-                case 'image':
-                    //图片只保存原始路径,拒绝可执行协议
-                    if (preg_match('/^\s*(javascript|vbscript|data)\s*:/i', (string)$value)) {
-                        throw new ValidateException(__('%s is not a valid path', $title));
+                case 'checkbox':
+                    $options = isset($field['param']) && is_array($field['param']) ? $field['param'] : [];
+                    $checked = [];
+                    foreach ($value as $key) {
+                        $key = (string)$key;
+                        if (!array_key_exists($key, $options)) {
+                            throw new ValidateException(__('%s is not in the options', $title));
+                        }
+                        $checked[] = $key;
                     }
-                    if (mb_strlen((string)$value) > 500) {
-                        throw new ValidateException(__('%s can not exceed %s characters', $title, 500));
+                    $result[$name] = $checked;
+                    break;
+                case 'image':
+                case 'uploads':
+                    //图片/多图只保存原始路径,拒绝可执行协议;多图是逗号分隔的路径列表
+                    $paths = $type === 'uploads' ? array_filter(explode(',', (string)$value), 'strlen') : [(string)$value];
+                    foreach ($paths as $path) {
+                        if (preg_match('/^\s*(javascript|vbscript|data)\s*:/i', $path)) {
+                            throw new ValidateException(__('%s is not a valid path', $title));
+                        }
+                        if (mb_strlen($path) > 500) {
+                            throw new ValidateException(__('%s can not exceed %s characters', $title, 500));
+                        }
+                    }
+                    $result[$name] = implode(',', $paths);
+                    break;
+                case 'date':
+                case 'datetime':
+                    if (strtotime((string)$value) === false) {
+                        throw new ValidateException(__('%s is not a valid datetime', $title));
                     }
                     $result[$name] = (string)$value;
                     break;
                 default:
-                    $maxlength = isset($field['maxlength']) ? (int)$field['maxlength'] : ($type === 'string' ? 255 : 65535);
+                    //文本按 65535 限制,其余标量类型按 255
+                    $maxlength = $type === 'text' ? 65535 : 255;
                     if (mb_strlen((string)$value) > $maxlength) {
                         throw new ValidateException(__('%s can not exceed %s characters', $title, $maxlength));
                     }

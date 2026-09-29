@@ -62,11 +62,6 @@ body.inside-header button {
     outline: none !important;
 }
 
-.skin-white .btn,
-body.inside-header .btn {
-    padding: 6px 20px !important;
-}
-
 /* 默认按钮 */
 .skin-white .btn-default,
 body.inside-header .btn-default {

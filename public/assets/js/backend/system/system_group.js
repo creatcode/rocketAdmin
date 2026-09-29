@@ -5,11 +5,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'system.systemgroup/index',
-                    add_url: 'system.systemgroup/add',
-                    edit_url: 'system.systemgroup/edit',
-                    del_url: 'system.systemgroup/del',
-                    multi_url: 'system.systemgroup/multi',
+                    index_url: 'system.system_group/index',
+                    add_url: 'system.system_group/add',
+                    edit_url: 'system.system_group/edit',
+                    del_url: 'system.system_group/del',
+                    multi_url: 'system.system_group/multi',
                     table: 'system_group'
                 }
             });
@@ -48,7 +48,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                     title: __('Manage data'),
                                     text: __('Manage data'),
                                     classname: 'btn btn-xs btn-primary btn-dialog',
-                                    url: 'system.systemgroupdata/index?group_id={id}'
+                                    url: 'system.system_group_data/index?group_id={id}'
                                 }
                             ]
                         }
@@ -60,30 +60,10 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Table.api.bindevent(table);
         },
         add: function () {
-            Controller.api.bindevent();
+            Form.api.bindevent($("form[role=form]"));
         },
         edit: function () {
-            Controller.api.bindevent();
-        },
-        api: {
-            bindevent: function () {
-                var form = $("form[role=form]");
-                var fieldlist = $(".fieldlist", form);
-                //按字段类型显示对应的限制和选项
-                var refreshLimit = function (row) {
-                    var type = $("select[name$='[type]']", row).val();
-                    $("input[name$='[maxlength]']", row).toggle(type === 'string' || type === 'text');
-                    $("input[name$='[min]'],input[name$='[max]']", row).toggle(type === 'number');
-                    $("textarea[name$='[options]']", row).toggle(type === 'select');
-                };
-                fieldlist.on('change', "select[name$='[type]']", function () {
-                    refreshLimit($(this).closest('tr'));
-                });
-                fieldlist.on('fa.event.appendfieldlist', function (e, row) {
-                    refreshLimit(row);
-                });
-                Form.api.bindevent(form);
-            }
+            Form.api.bindevent($("form[role=form]"));
         }
     };
     return Controller;

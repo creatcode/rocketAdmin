@@ -135,7 +135,11 @@ define(['jquery', 'bootstrap', 'toastr', 'layer', 'lang'], function ($, undefine
                 title = options && options.title ? options.title : (title ? title : "");
                 url = Fast.api.fixurl(url);
                 url = url + (url.indexOf("?") > -1 ? "&" : "?") + "dialog=1";
-                var area = Fast.config.openArea != undefined ? Fast.config.openArea : [$(window).width() > 800 ? '800px' : '95%', $(window).height() > 600 ? '600px' : '95%'];
+                //默认弹窗尺寸:按视口自适应(视口宽高各减40px,居中后四周各留20px),上限1120x800;视口过矮时高度保底320
+                var area = Fast.config.openArea != undefined ? Fast.config.openArea : [
+                    Math.min($(window).width() - 40, 1120) + 'px',
+                    Math.min(Math.max($(window).height() - 40, 320), 800) + 'px'
+                ];
                 var success = options && typeof options.success === 'function' ? options.success : $.noop;
                 if (options && typeof options.success === 'function') {
                     delete options.success;

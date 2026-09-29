@@ -7,10 +7,7 @@ return [
     // 记录值校验
     'Data can not be empty'       => '数据不能为空',
     'Value of field %s must be a scalar' => '字段 %s 的值必须是标量',
-    '%s can not be empty'         => '%s 不能为空',
     '%s must be numeric'          => '%s 必须是数字',
-    '%s can not be less than %s'  => '%s 不能小于 %s',
-    '%s can not be greater than %s' => '%s 不能大于 %s',
     '%s must be 0 or 1'           => '%s 只能是0或1',
     '%s is not in the options'    => '%s 不在已定义的选项中',
     '%s is not a valid path'      => '%s 不是合法的路径',

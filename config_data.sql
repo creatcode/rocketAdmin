@@ -39,42 +39,42 @@ SET `name` = CONCAT('system/', `name`), `updatetime` = UNIX_TIMESTAMP()
 WHERE `name` IN ('about', 'upgrade') OR `name` REGEXP '^(about|upgrade)/';
 
 UPDATE `im_auth_rule`
-SET `name` = CONCAT('system/', SUBSTRING(`name`, 9)), `updatetime` = UNIX_TIMESTAMP()
+SET `name` = CONCAT('system/', REPLACE(REPLACE(SUBSTRING(`name`, 9), 'systemgroupdata', 'system_group_data'), 'systemgroup', 'system_group')), `updatetime` = UNIX_TIMESTAMP()
 WHERE `name` REGEXP '^general[/.]systemgroup(data)?(/|$)';
 
 UPDATE `im_auth_rule` AS child
 JOIN `im_auth_rule` AS parent ON parent.`name` = 'system'
 SET child.`pid` = parent.`id`
-WHERE child.`name` IN ('system/about', 'system/upgrade', 'system/systemgroup');
+WHERE child.`name` IN ('system/about', 'system/upgrade', 'system/system_group');
 
 INSERT INTO `im_auth_rule` (`pid`, `name`, `title`, `icon`, `ismenu`, `status`, `createtime`, `updatetime`, `weigh`)
-SELECT parent.`id`, 'system/systemgroup', '组合数据', 'fa fa-th-large', 1, 'normal', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 50
+SELECT parent.`id`, 'system/system_group', '组合数据', 'fa fa-th-large', 1, 'normal', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 50
 FROM `im_auth_rule` AS parent
 WHERE parent.`name` = 'system'
-AND NOT EXISTS (SELECT 1 FROM `im_auth_rule` WHERE `name` = 'system/systemgroup');
+AND NOT EXISTS (SELECT 1 FROM `im_auth_rule` WHERE `name` = 'system/system_group');
 
 INSERT INTO `im_auth_rule` (`pid`, `name`, `title`, `icon`, `ismenu`, `status`, `createtime`, `updatetime`)
 SELECT parent.`id`, CONCAT(parent.`name`, '/', actions.`name`), actions.`title`, 'fa fa-circle-o', 0, 'normal', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()
 FROM `im_auth_rule` AS parent
 JOIN (SELECT 'index' AS `name`, '查看' AS `title` UNION ALL SELECT 'add', '添加' UNION ALL SELECT 'edit', '编辑' UNION ALL SELECT 'del', '删除' UNION ALL SELECT 'multi', '批量更新') AS actions
-WHERE parent.`name` = 'system/systemgroup'
+WHERE parent.`name` = 'system/system_group'
 AND NOT EXISTS (SELECT 1 FROM `im_auth_rule` WHERE `name` = CONCAT(parent.`name`, '/', actions.`name`));
 
 INSERT INTO `im_auth_rule` (`pid`, `name`, `title`, `icon`, `ismenu`, `status`, `createtime`, `updatetime`)
-SELECT parent.`id`, 'system/systemgroupdata', '组合数据记录', 'fa fa-list-alt', 0, 'normal', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()
+SELECT parent.`id`, 'system/system_group_data', '组合数据记录', 'fa fa-list-alt', 0, 'normal', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()
 FROM `im_auth_rule` AS parent
-WHERE parent.`name` = 'system/systemgroup'
-AND NOT EXISTS (SELECT 1 FROM `im_auth_rule` WHERE `name` = 'system/systemgroupdata');
+WHERE parent.`name` = 'system/system_group'
+AND NOT EXISTS (SELECT 1 FROM `im_auth_rule` WHERE `name` = 'system/system_group_data');
 
 UPDATE `im_auth_rule` AS child
-JOIN `im_auth_rule` AS parent ON parent.`name` = 'system/systemgroup'
+JOIN `im_auth_rule` AS parent ON parent.`name` = 'system/system_group'
 SET child.`pid` = parent.`id`
-WHERE child.`name` = 'system/systemgroupdata';
+WHERE child.`name` = 'system/system_group_data';
 
 INSERT INTO `im_auth_rule` (`pid`, `name`, `title`, `icon`, `ismenu`, `status`, `createtime`, `updatetime`)
 SELECT parent.`id`, CONCAT(parent.`name`, '/', actions.`name`), actions.`title`, 'fa fa-circle-o', 0, 'normal', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()
 FROM `im_auth_rule` AS parent
 JOIN (SELECT 'index' AS `name`, '查看' AS `title` UNION ALL SELECT 'add', '添加' UNION ALL SELECT 'edit', '编辑' UNION ALL SELECT 'del', '删除' UNION ALL SELECT 'multi', '批量更新') AS actions
-WHERE parent.`name` = 'system/systemgroupdata'
+WHERE parent.`name` = 'system/system_group_data'
 AND NOT EXISTS (SELECT 1 FROM `im_auth_rule` WHERE `name` = CONCAT(parent.`name`, '/', actions.`name`));
 COMMIT;

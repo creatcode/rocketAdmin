@@ -1,7 +1,5 @@
 <?php
 
-// 原有注释中的 ConfigData、ConfigDataItem 为历史名称,现分别对应 SystemGroup、SystemGroupData。
-
 namespace app\admin\controller\system;
 
 use app\common\controller\Backend;
@@ -14,12 +12,12 @@ use think\facade\Db;
  * 组合数据组管理
  *
  * @icon   fa fa-th-large
- * @remark 维护多条记录共用一套字段的数据组,例如友情链接、轮播图,数据读取使用 ConfigDataItem::getDataList
+ * @remark 维护多条记录共用一套字段的数据组,例如友情链接、轮播图,数据读取使用 SystemGroupData::getDataList
  */
-class Systemgroup extends Backend
+class SystemGroup extends Backend
 {
     /**
-     * @var \app\common\model\ConfigData
+     * @var \app\common\model\SystemGroup
      */
     protected $model = null;
 
@@ -77,7 +75,7 @@ class Systemgroup extends Backend
     public function add()
     {
         if (false === $this->request->isPost()) {
-            //新增时字段定义为空,由fieldlist自行追加行
+            //新增时字段定义为空,由JS逐个添加字段
             $this->view->assign('fieldsValue', '[]');
             return $this->view->fetch();
         }
@@ -102,7 +100,7 @@ class Systemgroup extends Backend
     /**
      * 编辑数据组
      *
-     * 标识是业务读取依据,创建后不可修改;组内已有记录时字段结构不可修改。
+     * 标识是业务读取依据,创建后不可修改。
      *
      * @param int|null $ids
      * @return string
@@ -139,10 +137,6 @@ class Systemgroup extends Backend
             $locked = $this->model->where('id', $row['id'])->lock(true)->find();
             if (!$locked) {
                 throw new ValidateException(__('No Results were found'));
-            }
-            if (SystemGroupDataModel::where('group_id', $locked['id'])->count()
-                && SystemGroupModel::fieldsSignature($fields) !== SystemGroupModel::fieldsSignature($locked['fields'])) {
-                throw new ValidateException(__('Field structure can not be changed when the group has data'));
             }
             $locked->save([
                 'title'  => $params['title'],

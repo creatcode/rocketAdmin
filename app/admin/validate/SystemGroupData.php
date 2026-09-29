@@ -1,7 +1,5 @@
 <?php
 
-// 原有注释中的 ConfigData、ConfigDataItem 为历史名称,现分别对应 SystemGroup、SystemGroupData。
-
 namespace app\admin\validate;
 
 use think\Validate;
@@ -9,7 +7,7 @@ use think\Validate;
 /**
  * 组合数据记录验证器
  *
- * 只校验记录的管理字段,动态字段值由 \app\common\model\ConfigDataItem::normalizeValue 校验。
+ * 只校验记录的管理字段,动态字段值由 \app\common\model\SystemGroupData::normalizeValue 校验。
  */
 class SystemGroupData extends Validate
 {
