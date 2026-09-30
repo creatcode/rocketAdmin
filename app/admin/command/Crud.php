@@ -3,6 +3,7 @@
 namespace app\admin\command;
 
 use think\Exception;
+use think\helper\Str;
 use think\facade\Db;
 use think\facade\Lang;
 use think\console\Input;
@@ -507,17 +508,13 @@ class Crud extends Command
         list($validateNamespace, $validateName, $validateFile, $validateArr) = $this->getValidateData($validateModuleName, $validate, $table);
 
         //处理基础文件名，取消所有下划线并转换为小写
-        $baseNameArr = $controllerArr;
-        $baseFileName = parse_name(array_pop($baseNameArr), 0);
-        array_push($baseNameArr, $baseFileName);
+        $baseNameArr = array_map([Str::class, 'snake'], $controllerArr);
         $controllerBaseName = strtolower(implode(DIRECTORY_SEPARATOR, $baseNameArr));
         //$controllerUrl = strtolower(implode('/', $baseNameArr));
         $controllerUrl = $this->getControllerUrl($baseNameArr);
 
         //视图文件
-        $viewArr = $controllerArr;
-        $lastValue = array_pop($viewArr);
-        $viewArr[] = parse_name($lastValue, 0);
+        $viewArr = $baseNameArr;
         array_unshift($viewArr, 'view');
         $viewDir = $adminPath . strtolower(implode(DIRECTORY_SEPARATOR, $viewArr)) . DIRECTORY_SEPARATOR;
 
@@ -1037,10 +1034,7 @@ class Crud extends Command
                     $relationTableName = stripos($relationTableName, $prefix) === 0 ? substr($relationTableName, strlen($prefix)) : $relationTableName;
 
                     list($realtionControllerNamespace, $realtionControllerName, $realtionControllerFile, $realtionControllerArr) = $this->getControllerData($moduleName, $relation['relationController'], $relationTableName);
-                    $realtionControllerArr = array_map("strtolower", $realtionControllerArr);
-                    if (count($realtionControllerArr) > 1) {
-                        $realtionControllerArr = [implode('.', $realtionControllerArr)];
-                    }
+                    $realtionControllerArr = [$this->getControllerUrl($realtionControllerArr)];
                     $realtionControllerArr[] = 'index';
                     $realtionControllerArr[] = $relation['relationForeignKey'] . '/{ids}';
                     $relationControllerUrl = implode('/', $realtionControllerArr);
@@ -1353,7 +1347,7 @@ EOD;
      */
     protected function getControllerUrl($baseNameArr)
     {
-        return strtolower(implode('.', $baseNameArr));
+        return implode('.', array_map([Str::class, 'snake'], $baseNameArr));
     }
 
     /**
@@ -1415,7 +1409,11 @@ EOD;
                 throw new Exception('Invalid class name: ' . $name);
             }
         }
-        $parseName = ucfirst(array_pop($arr));
+        $parseName = Str::studly(array_pop($arr));
+        // 控制器目录与运行时路由、模板和资源标识统一，模型及验证器保留自定义目录。
+        if ($type == 'controller') {
+            $arr = array_map([Str::class, 'snake'], $arr);
+        }
         $parseArr = $arr;
         array_push($parseArr, $parseName);
         //类名不能为内部关键字

@@ -3,6 +3,7 @@
 namespace app\admin\command;
 
 use ReflectionClass;
+use think\helper\Str;
 use think\Exception;
 use ReflectionMethod;
 use think\facade\Cache;
@@ -65,18 +66,8 @@ class Menu extends Command
             $ids = [];
             $list = $this->model->where(function ($query) use ($controller, $equal) {
                 foreach ($controller as $index => $item) {
-                    if (stripos($item, '_') !== false) {
-                        $item = parse_name($item, 1);
-                    }
-                    if (stripos($item, '/') !== false) {
-                        $controllerArr = explode('/', $item);
-                        end($controllerArr);
-                        $key = key($controllerArr);
-                        $controllerArr[$key] = parse_name($controllerArr[$key]);
-                    } else {
-                        $controllerArr = [parse_name($item)];
-                    }
-                    $item = strtolower(implode('/', $controllerArr));
+                    $controllerArr = explode('/', str_replace(['.', '\\'], '/', $item));
+                    $item = implode('.', array_map([Str::class, 'snake'], $controllerArr));
                     if ($equal) {
                         $query->whereOr('name', 'eq', $item);
                     } else {
@@ -107,24 +98,6 @@ class Menu extends Command
 
         if (!in_array('all-controller', $controller)) {
             foreach ($controller as $index => $item) {
-                if (stripos($item, '_') !== false) {
-                    $item = parse_name($item, 1);
-                }
-                if (stripos($item, '/') !== false) {
-                    $controllerArr = explode('/', $item);
-                    end($controllerArr);
-                    $key = key($controllerArr);
-                    $controllerArr[$key] = ucfirst($controllerArr[$key]);
-                } else {
-                    $controllerArr = [ucfirst($item)];
-                }
-                $adminPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . implode(
-                    DIRECTORY_SEPARATOR,
-                    $controllerArr
-                ) . '.php';
-                if (!is_file($adminPath)) {
-                    throw new Exception("controller not found: " . $item);
-                }
                 Db::transaction(function () use ($item) {
                     $this->importRule($item);
                 });
@@ -205,22 +178,23 @@ class Menu extends Command
      */
     protected function importRule($controller)
     {
-        $controller = str_replace('\\', '/', $controller);
-        if (stripos($controller, '/') !== false) {
-            $controllerArr = explode('/', $controller);
-            end($controllerArr);
-            $key = key($controllerArr);
-            $controllerArr[$key] = ucfirst($controllerArr[$key]);
-        } else {
-            $key = 0;
-            $controllerArr = [ucfirst($controller)];
-        }
+        $controllerArr = explode('/', str_replace(['.', '\\'], '/', $controller));
+        $key = count($controllerArr) - 1;
+        $controllerArr[$key] = Str::studly($controllerArr[$key]);
         $classSuffix = Config::get('route.controller_suffix') ? ucfirst(Config::get('route.controller_layer')) : '';
         $className = "\\app\\admin\\controller\\" . implode("\\", $controllerArr) . $classSuffix;
 
         $pathArr = $controllerArr;
         array_unshift($pathArr, '', 'app', 'admin', 'controller');
         $classFile = app()->getRootPath() . implode(DIRECTORY_SEPARATOR, $pathArr) . $classSuffix . ".php";
+        // 优先读取现有目录，未找到时按 CRUD 的下划线目录规则定位。
+        if (!is_file($classFile)) {
+            $controllerArr = array_merge(array_map([Str::class, 'snake'], array_slice($controllerArr, 0, $key)), [$controllerArr[$key]]);
+            $classFile = app()->getBasePath() . 'admin' . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $controllerArr) . $classSuffix . '.php';
+        }
+        if (!is_file($classFile)) {
+            throw new Exception('controller not found: ' . $controller);
+        }
         $classContent = file_get_contents($classFile);
         $uniqueName = uniqid("FastAdmin") . $classSuffix;
         $classContent = str_replace("class " . $controllerArr[$key] . $classSuffix . " ", 'class ' . $uniqueName . ' ', $classContent);
@@ -289,10 +263,7 @@ class Menu extends Command
             $key = $k + 1;
             //驼峰转下划线
             $controllerNameArr = array_slice($controllerArr, 0, $key);
-            foreach ($controllerNameArr as &$val) {
-                $val = strtolower(trim(preg_replace("/[A-Z]/", "_\\0", $val), "_"));
-            }
-            unset($val);
+            $controllerNameArr = array_map([Str::class, 'snake'], $controllerNameArr);
             //节点名统一使用点号形态：system.system_group
             $name = implode('.', $controllerNameArr);
             $title = (!isset($controllerArr[$key]) ? $controllerTitle : '');
