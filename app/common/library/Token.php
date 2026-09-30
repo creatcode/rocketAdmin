@@ -3,6 +3,7 @@
 namespace app\common\library;
 
 use app\common\library\token\Driver;
+use app\common\library\token\Manager;
 use think\facade\App;
 use think\facade\Config;
 use think\facade\Log;
@@ -29,32 +30,20 @@ class Token
      * @param bool|string $name    Token连接标识 true 强制重新连接
      * @return Driver
      */
-    public static function connect(array $options = [], $name = false)
+    public static function connect(array $options = [], $name = false): Driver
     {
+        $manager = self::manager();
         $type = $options['type'] ?? 'File';
-
-        if (false === $name) {
-            $name = md5(serialize($options));
+        // 记录初始化信息
+        $key = $name === false ? md5(serialize($options)) : $name;
+        if (($name === true || !isset(self::$instance[$key])) && App::isDebug()) {
+            Log::record('[ TOKEN ] INIT ' . $type, 'info');
         }
-
-        if (true === $name || !isset(self::$instance[$name])) {
-            $class = false === strpos($type, '\\') ?
-                '\\app\\common\\library\\token\\driver\\' . ucwords($type) :
-                $type;
-
-            // 记录初始化信息
-            if (App::isDebug()) {
-                Log::record('[ TOKEN ] INIT ' . $type, 'info');
-            }
-
-            if (true === $name) {
-                return new $class($options);
-            }
-
-            self::$instance[$name] = new $class($options);
+        $driver = $manager->connect($options, $name);
+        if ($name !== true) {
+            self::$instance[$key] = $driver;
         }
-
-        return self::$instance[$name];
+        return $driver;
     }
 
     /**
@@ -65,6 +54,7 @@ class Token
      */
     public static function init(array $options = [])
     {
+        self::manager();
         if (self::$handler === null) {
             if (empty($options) && Config::get('token.type') === 'complex') {
                 $default = Config::get('token.default');
@@ -160,4 +150,20 @@ class Token
         return self::init()->clear($user_id);
     }
 
+
+    /**
+     * 每个请求单独持有驱动管理器，旧静态属性仅保留兼容读取。
+     *
+     * @return Manager 当前请求的 Token 驱动管理器
+     */
+    protected static function manager(): Manager
+    {
+        $request = request();
+        if (!isset($request->tokenManager)) {
+            $request->tokenManager = new Manager(app());
+            self::$instance = [];
+            self::$handler = null;
+        }
+        return $request->tokenManager;
+    }
 }

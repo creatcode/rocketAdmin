@@ -379,7 +379,7 @@ class Api extends BaseController
         }
         // 使用回调验证
         if ($callback && is_callable($callback)) {
-            call_user_func_array($callback, [$v, &$data]);
+            $callback($v, $data);
         }
 
         if (!$v->failException($this->failException)->check($data)) {

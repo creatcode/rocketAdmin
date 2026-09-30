@@ -43,11 +43,12 @@ class Auth
      */
     public static function instance($options = [])
     {
-        if (is_null(self::$instance)) {
-            self::$instance = new static($options);
-        }
+        $request = request();
+        $instances = $request->authInstances ?? [];
+        $instance = $instances[static::class] ??= new static($options);
+        $request->authInstances = $instances;
 
-        return self::$instance;
+        return $instance;
     }
 
     /**

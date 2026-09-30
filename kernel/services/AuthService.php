@@ -28,6 +28,15 @@ class AuthService
      */
     protected static $instance;
 
+    /** @var array 当前鉴权对象的用户组缓存 */
+    protected array $groupCache = [];
+
+    /** @var array 当前鉴权对象的规则缓存 */
+    protected array $ruleListCache = [];
+
+    /** @var array 当前鉴权对象的用户信息缓存 */
+    protected array $userInfoCache = [];
+
     protected $rules = [];
 
     // 默认配置
@@ -55,15 +64,17 @@ class AuthService
      */
     public static function instance($options = [])
     {
-        if (is_null(self::$instance)) {
-            self::$instance = new static();
-        }
+        // 按请求和具体鉴权类隔离实例，避免平台、租户共用登录状态。
+        $request = request();
+        $instances = $request->authInstances ?? [];
+        $instance = $instances[static::class] ??= new static();
+        $request->authInstances = $instances;
 
         if (!empty($options) && is_array($options)) {
-            self::$instance->config = array_merge(self::$instance->config, $options);
+            $instance->config = array_merge($instance->config, $options);
         }
 
-        return self::$instance;
+        return $instance;
     }
 
     /**
@@ -146,7 +157,7 @@ class AuthService
      */
     public function getGroups($uid)
     {
-        static $groups = [];
+        $groups = &$this->groupCache;
         if (isset($groups[$uid])) {
             return $groups[$uid];
         }
@@ -170,12 +181,13 @@ class AuthService
      */
     public function getRuleList($uid)
     {
-        static $_rulelist = []; // 保存用户验证通过的权限列表
+        $_rulelist = &$this->ruleListCache; // 保存用户验证通过的权限列表
         if (isset($_rulelist[$uid])) {
             return $_rulelist[$uid];
         }
-        if (2 == $this->config['auth_type'] && Session::has('_rule_list_' . $uid)) {
-            return Session::get('_rule_list_' . $uid);
+        $sessionKey = '_rule_list_' . $this->config['auth_rule'] . '_' . $uid;
+        if (2 == $this->config['auth_type'] && Session::has($sessionKey)) {
+            return Session::get($sessionKey);
         }
 
         // 读取用户规则节点
@@ -229,7 +241,7 @@ class AuthService
 
         // 登录认证需要保存规则列表
         if (2 == $this->config['auth_type']) {
-            Session::set('_rule_list_' . $uid, $rulelist);
+            Session::set($sessionKey, $rulelist);
         }
 
         return array_unique($rulelist);
@@ -258,7 +270,7 @@ class AuthService
      */
     protected function getUserInfo($uid)
     {
-        static $user_info = [];
+        $user_info = &$this->userInfoCache;
 
         $user = Db::name($this->config['auth_user']);
         // 获取用户表主键

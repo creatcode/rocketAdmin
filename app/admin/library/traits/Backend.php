@@ -49,7 +49,7 @@ trait Backend
             $result = $callback();
             Db::commit();
             return $result;
-        } catch (ValidateException | PDOException | Exception $e) {
+        } catch (\Throwable $e) {
             Db::rollback();
             $this->error($failMsg ?: $e->getMessage());
         }
@@ -130,7 +130,7 @@ trait Backend
             if ($this->modelValidate) {
                 $name = str_replace("\\model\\", "\\validate\\", get_class($this->model));
                 $validate = is_bool($this->modelValidate) ? ($this->modelSceneValidate ? $name . '.add' : $name) : $this->modelValidate;
-                $this->model->validate($validate);
+                validate($validate)->failException(true)->check($params);
             }
             $result = $this->model->allowField(true)->save($params);
             if ($result === false) {
@@ -175,7 +175,7 @@ trait Backend
             if ($this->modelValidate) {
                 $name = str_replace("\\model\\", "\\validate\\", get_class($this->model));
                 $validate = is_bool($this->modelValidate) ? ($this->modelSceneValidate ? $name . '.edit' : $name) : $this->modelValidate;
-                validate($validate)->check($params);
+                validate($validate)->failException(true)->check($params);
             }
             $result = $row->save($params);
             if (false === $result) {
