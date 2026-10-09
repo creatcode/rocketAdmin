@@ -5,7 +5,7 @@ namespace creatcode\easyaddons\addons\command;
 use creatcode\easyaddons\addons\AddonException;
 use creatcode\easyaddons\addons\Service;
 use creatcode\easyaddons\addons\support\File;
-use think\Exception;
+use Exception;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
@@ -14,17 +14,32 @@ use think\db\exception\PDOException;
 use think\facade\Config;
 use think\facade\Db;
 
+/**
+ * 插件管理命令的公共实现。
+ */
 abstract class BaseAddonCommand extends Command
 {
+    /**
+     * 获取命令名称。
+     * @return string
+     */
     abstract protected function getCommandName();
 
+    /**
+     * 加载宿主应用上下文。
+     * @return void
+     */
     abstract protected function loadContext();
 
+    /**
+     * 定义插件命令及参数。
+     * @return void
+     */
     protected function configure()
     {
         $this->setName($this->getCommandName())
             ->addOption('name', 'a', Option::VALUE_REQUIRED, 'addon name', null)
-            ->addOption('action', 'c', Option::VALUE_REQUIRED, 'action(create/enable/disable/uninstall/refresh/package/move)', 'create')
+            ->addOption('action', 'c', Option::VALUE_REQUIRED, 'action(create/install/enable/disable/upgrade/uninstall/refresh/package/move)', 'create')
             ->addOption('force', 'f', Option::VALUE_OPTIONAL, 'force override', null)
             ->addOption('release', 'r', Option::VALUE_OPTIONAL, 'addon release version', null)
             ->addOption('uid', 'u', Option::VALUE_OPTIONAL, 'fastadmin uid', null)
@@ -34,6 +49,12 @@ abstract class BaseAddonCommand extends Command
             ->setDescription('Addon manager');
     }
 
+    /**
+     * 执行插件管理操作。
+     * @param Input $input 命令输入
+     * @param Output $output 命令输出
+     * @return void
+     */
     protected function execute(Input $input, Output $output)
     {
         $this->loadContext();
@@ -44,7 +65,7 @@ abstract class BaseAddonCommand extends Command
             $name = explode(DIRECTORY_SEPARATOR, $name)[1];
         }
         // 强制覆盖
-        $force = $input->getOption('force');
+        $force = filter_var($input->getOption('force'), FILTER_VALIDATE_BOOLEAN);
         // 版本号
         $release = $input->getOption('release') ?: '';
         // FastAdmin 用户ID
@@ -63,7 +84,9 @@ abstract class BaseAddonCommand extends Command
         }
 
         // 查询一次SQL，判断数据库连接是否正常
-        Db::execute("SELECT 1");
+        if (in_array($action, ['create', 'disable', 'enable', 'install', 'uninstall', 'upgrade'])) {
+            Db::query("SELECT 1");
+        }
 
         $addonDir = ADDON_PATH . $name . DIRECTORY_SEPARATOR;
         switch ($action) {
@@ -80,8 +103,7 @@ abstract class BaseAddonCommand extends Command
                 mkdir($addonDir . DIRECTORY_SEPARATOR . 'controller', 0755, true);
                 $menuList = \app\common\library\Menu::export($name);
                 $createMenu = $this->getCreateMenu($menuList);
-                $default = Config::get('database.default');
-                $prefix = Config::get('database.connections.' . $default . '.prefix');
+                $prefix = get_addon_database_config('prefix', '');
                 $createTableSql = '';
 
                 try {
@@ -89,7 +111,7 @@ abstract class BaseAddonCommand extends Command
                     if (isset($result[0]) && isset($result[0]['Create Table'])) {
                         $createTableSql = $result[0]['Create Table'];
                     }
-                } catch (PDOException $e) {
+                } catch (PDOException | \think\exception\PDOException $e) {
                 }
 
                 $data = [
@@ -107,10 +129,26 @@ abstract class BaseAddonCommand extends Command
                 $this->writeToFile("controller", $data, $addonDir . 'controller' . DIRECTORY_SEPARATOR . 'Index.php');
                 if ($createTableSql) {
                     $createTableSql = str_replace("`" . $prefix, '`__PREFIX__', $createTableSql);
-                    file_put_contents($addonDir . 'install.sql', $createTableSql);
+                    if (file_put_contents($addonDir . 'install.sql', $createTableSql . ";\n") === false) {
+                        throw new Exception('Unable to write addon SQL file');
+                    }
                 }
 
                 $output->info("Create Successed!");
+                break;
+            case 'install':
+            case 'upgrade':
+                $extend = ['uid' => $uid, 'token' => $token, 'version' => $release];
+                $local = $input->getOption('local');
+                if ($local && !is_file($local)) {
+                    throw new Exception('Addon package does not exist');
+                }
+                if ($action === 'install') {
+                    Service::install($name, $force, $extend, $local ?: '');
+                } else {
+                    Service::upgrade($name, $extend, $local ?: false);
+                }
+                $output->info(ucfirst($action) . " Successed!");
                 break;
             case 'disable':
             case 'enable':
@@ -185,7 +223,7 @@ abstract class BaseAddonCommand extends Command
                     throw new Exception(__('Addon info file data incorrect'));
                 }
                 $infoname = $info['name'] ?? '';
-                if (!$infoname || !preg_match("/^[a-z]+$/i", $infoname) || $infoname != $name) {
+                if (!$infoname || !preg_match("/^[a-z0-9]+$/i", $infoname) || $infoname != $name) {
                     throw new Exception(__('Addon info name incorrect'));
                 }
 
@@ -194,7 +232,7 @@ abstract class BaseAddonCommand extends Command
                     throw new Exception(__('Addon info version incorrect'));
                 }
 
-                $addonTmpDir = app()->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . 'addons' . DIRECTORY_SEPARATOR;
+                $addonTmpDir = app()->getRuntimePath() . 'addons' . DIRECTORY_SEPARATOR;
                 if (!is_dir($addonTmpDir)) {
                     @mkdir($addonTmpDir, 0755, true);
                 }
@@ -203,7 +241,9 @@ abstract class BaseAddonCommand extends Command
                     throw new Exception(__('ZinArchive not install'));
                 }
                 $zip = new \ZipArchive;
-                $zip->open($addonFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+                if ($zip->open($addonFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                    throw new Exception('Unable to create addon archive');
+                }
 
                 $files = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator($addonDir),
@@ -219,11 +259,16 @@ abstract class BaseAddonCommand extends Command
                     }
                     $relativePath = substr($filePath, strlen($addonDir));
                     if (!in_array($file->getFilename(), ['.DS_Store', 'Thumbs.db'])) {
-                        $zip->addFile($filePath, $relativePath);
+                        if (!$zip->addFile($filePath, $relativePath)) {
+                            $zip->close();
+                            throw new Exception('Unable to add file to addon archive');
+                        }
                     }
                 }
 
-                $zip->close();
+                if (!$zip->close()) {
+                    throw new Exception('Unable to save addon archive');
+                }
                 $output->info("Package Resource Path:" . $addonFile);
                 $output->info("Package Successed!");
                 break;
@@ -234,7 +279,7 @@ abstract class BaseAddonCommand extends Command
                     'publicDir'        => ['public/assets/addons', 'public/assets/js/backend']
                 ];
                 $paths = [];
-                $appPath = str_replace('/', DIRECTORY_SEPARATOR, app()->getBasePath());
+                $appPath = str_replace('/', DIRECTORY_SEPARATOR, class_exists('think\\Service') ? app()->getBasePath() : app()->getAppPath());
                 $rootPath = str_replace('/', DIRECTORY_SEPARATOR, app()->getRootPath());
                 foreach ($movePath as $k => $items) {
                     switch ($k) {
@@ -276,7 +321,9 @@ abstract class BaseAddonCommand extends Command
                             // 强制模式下先清理旧的插件目标目录
                             File::rmdirs($newPath);
                         }
-                        File::copydirs($oldPath, $newPath);
+                        if (!File::copydirs($oldPath, $newPath)) {
+                            throw new Exception('Unable to copy addon files');
+                        }
                     }
                 }
                 break;
@@ -292,6 +339,9 @@ abstract class BaseAddonCommand extends Command
      */
     protected function loadContextFiles($contextPath)
     {
+        if (!class_exists('think\\Service')) {
+            app(\creatcode\easyaddons\AddonService::class)->run();
+        }
         Config::load($contextPath . 'config.php');
 
         $commonFile = $contextPath . 'common.php';
@@ -347,7 +397,11 @@ abstract class BaseAddonCommand extends Command
         if (!is_dir(dirname($pathname))) {
             mkdir(dirname($pathname), 0755, true);
         }
-        return file_put_contents($pathname, $content);
+        $written = file_put_contents($pathname, $content);
+        if ($written !== strlen($content)) {
+            throw new Exception('Unable to write addon file: ' . $pathname);
+        }
+        return $written;
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace creatcode\easyaddons\addons;
 
-use think\Exception;
+use Exception;
 use Throwable;
 
 /**
@@ -11,6 +11,9 @@ use Throwable;
  */
 class AddonException extends Exception
 {
+    /** @var mixed 插件操作返回的业务数据，不使用框架的调试数据结构。 */
+    protected $data;
+
     /**
      * 构造插件异常
      *
@@ -23,8 +26,16 @@ class AddonException extends Exception
     {
         parent::__construct((string) $message, (int) $code, $previous);
 
-        if ($data !== '') {
-            $this->setData('插件异常数据', is_array($data) ? $data : ['data' => $data]);
-        }
+        $this->data = $data;
+    }
+
+    /**
+     * 获取插件操作的业务数据。
+     *
+     * @return mixed
+     */
+    public function getData()
+    {
+        return $this->data;
     }
 }

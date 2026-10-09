@@ -3,7 +3,6 @@
 
 namespace creatcode\easyaddons;
 
-use think\facade\View;
 use think\facade\Config;
 
 /**
@@ -44,8 +43,12 @@ abstract class Addons
 
         // 初始化视图模型
         $config = ['view_path' => $this->addons_path . 'view' . DIRECTORY_SEPARATOR];
-        $config = array_merge(Config::get('view'), $config);
-        $this->view = View::instance($config);
+        if (class_exists('think\\Service')) {
+            $this->view = new \think\View(app());
+            $this->view->config($config);
+        } else {
+            $this->view = (new \think\View())->init(array_merge(get_addon_config_group('template'), $config));
+        }
 
         // 控制器初始化（兼容 FastAdmin 旧版 _initialize 写法）
         foreach (['initialize', '_initialize'] as $method) {
@@ -248,9 +251,12 @@ abstract class Addons
             $template = '/' . $template;
         }
         // 关闭模板布局
-        $this->view->engine->layout(false);
+        $this->view->config(array_merge($config, ['layout_on' => false]));
+        if ($replace) {
+            $this->view->config(['tpl_replace_string' => $replace]);
+        }
 
-        return $this->view->fetch($template, $vars, $replace, $config);
+        return $this->view->fetch($template, $vars);
     }
 
     /**
@@ -266,9 +272,12 @@ abstract class Addons
     public function display($content, $vars = [], $replace = [], $config = [])
     {
         // 关闭模板布局
-        $this->view->engine->layout(false);
+        $this->view->config(array_merge($config, ['layout_on' => false]));
+        if ($replace) {
+            $this->view->config(['tpl_replace_string' => $replace]);
+        }
 
-        return $this->view->display($content, $vars, $replace, $config);
+        return $this->view->display($content, $vars);
     }
 
     /**
@@ -282,9 +291,9 @@ abstract class Addons
     public function show($content, $vars = [])
     {
         // 关闭模板布局
-        $this->view->engine->layout(false);
+        $this->view->config(['layout_on' => false]);
 
-        return $this->view->fetch($content, $vars, [], [], true);
+        return $this->view->display($content, $vars);
     }
 
     /**

@@ -22,7 +22,7 @@ class Command extends Backend
     protected $noNeedRight = ['get_controller_list', 'get_field_list'];
 
     /**
-     * 初始化在线命令模型和状态选项
+     * 初始化
      * @return void
      */
     public function initialize()

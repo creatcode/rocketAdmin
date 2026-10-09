@@ -3,13 +3,13 @@
 
 namespace creatcode\easyaddons\addons;
 
-use app\BaseController;
 use think\App;
 use think\facade\Lang;
-use think\facade\View;
-use think\facade\Event;
 use think\facade\Config;
 use app\common\library\Auth;
+
+// TP5.1 使用框架控制器，TP6+ 使用 FastAdmin 风格宿主提供的基础控制器。
+class_alias(class_exists('think\\Controller') ? 'think\\Controller' : 'app\\BaseController', __NAMESPACE__ . '\\BaseController');
 
 /**
  * 插件基类控制器.
@@ -60,11 +60,11 @@ class Controller extends BaseController
         app()->request->filter('trim,strip_tags,htmlspecialchars');
 
         // 是否自动转换控制器和操作名
-        $convert = Config::get('url_convert');
+        $convert = Config::get('app.url_convert', true);
 
         $filter = $convert ? 'strtolower' : 'trim';
         // 处理路由参数
-        $var = $param = app()->request->param();
+        $var = app()->request->route();
         $addon = isset($var['addon']) ? $var['addon'] : '';
         $controller = isset($var['controller']) ? $var['controller'] : '';
         $action = isset($var['action']) ? $var['action'] : '';
@@ -73,11 +73,16 @@ class Controller extends BaseController
         $this->controller = $controller ? call_user_func($filter, $controller) : 'index';
         $this->action = $action ? call_user_func($filter, $action) : 'index';
         // 重置配置
-        Config::set(['view_path' => ADDON_PATH . $this->addon . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR], 'view');
+        $viewConfig = class_exists('think\\Service') ? 'view' : 'template';
+        Config::set(['view_path' => ADDON_PATH . $this->addon . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR], $viewConfig);
         // 父类的调用必须放在设置模板路径之后
         parent::__construct($app);
     }
 
+    /**
+     * 初始化插件模板、语言及用户权限。
+     * @return void
+     */
     protected function initialize()
     {
         // 检测IP是否允许
@@ -91,7 +96,7 @@ class Controller extends BaseController
         $this->view->assign('config', $config);
 
         // 加载系统语言包
-        $lang = (string) Lang::getLangset();
+        $lang = (string) (class_exists('think\\Service') ? Lang::getLangset() : $this->request->langset());
         $lang = preg_match('/^([a-zA-Z\-_]{2,10})$/i', $lang) ? $lang : 'zh-cn';
         Lang::load([
             ADDON_PATH . $this->addon . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . $lang . '.php',
@@ -99,7 +104,8 @@ class Controller extends BaseController
 
         // 插件资源路径
         $cdnurl = Config::get('site.cdnurl');
-        $replace = (array) Config::get('view.tpl_replace_string', []);
+        $viewConfig = class_exists('think\\Service') ? 'view' : 'template';
+        $replace = (array) Config::get($viewConfig . '.tpl_replace_string', []);
         $replace['__ADDON__'] = $cdnurl . '/assets/addons/' . $this->addon;
         $this->view->config(['tpl_replace_string' => $replace]);
 
@@ -137,17 +143,17 @@ class Controller extends BaseController
 
         // 如果有使用模板布局
         if ($this->layout) {
-            $this->view->layout('layout/' . $this->layout);
+            $this->view->config(['layout_on' => true, 'layout_name' => 'layout/' . $this->layout]);
         }
         $this->view->assign('user', $this->auth->getUser());
 
-        $site = Config::get('site');
+        $site = get_addon_config_group('site');
 
         $upload = \app\common\model\Config::upload();
 
         // 上传信息配置后
-        Event::trigger('upload_config_init', $upload);
-        Config::set(array_merge(Config::get('upload'), $upload), 'upload');
+        $upload = addon_event('upload_config_init', $upload, true) ?: $upload;
+        Config::set(array_merge(get_addon_config_group('upload'), $upload), 'upload');
 
         // 加载当前控制器语言包
         $this->view->assign('site', $site);
@@ -166,7 +172,7 @@ class Controller extends BaseController
     protected function fetch($template = '', $vars = [], $replace = [], $config = [])
     {
         $controller = parse_name($this->controller);
-        $depr = Config::get('view.view_depr', DIRECTORY_SEPARATOR);
+        $depr = Config::get((class_exists('think\\Service') ? 'view' : 'template') . '.view_depr', DIRECTORY_SEPARATOR);
 
         if ($controller && 0 !== strpos($template, '/')) {
             $template = str_replace(['/', ':'], $depr, $template);
@@ -178,7 +184,13 @@ class Controller extends BaseController
             }
         }
 
-        return $this->view->fetch($template, $vars, $replace, $config);
+        if ($config) {
+            $this->view->config($config);
+        }
+        if ($replace) {
+            $this->view->config(['tpl_replace_string' => $replace]);
+        }
+        return $this->view->fetch($template, $vars);
     }
 
     /**
@@ -205,11 +217,16 @@ class Controller extends BaseController
         $token = (string) $this->request->param('__token__');
 
         // 验证Token
-        if (!$this->request->checkToken('__token__', ['__token__' => $token])) {
-            $this->error(__('Token verification error'), '', ['__token__' => $this->request->buildToken()]);
+        $legacy = !class_exists('think\\Service');
+        $valid = $legacy
+            ? (new \think\Validate())->check(['__token__' => $token], ['__token__' => 'require|token'])
+            : $this->request->checkToken('__token__', ['__token__' => $token]);
+        if (!$valid) {
+            $nextToken = $legacy ? $this->request->token() : $this->request->buildToken();
+            $this->error(__('Token verification error'), '', ['__token__' => $nextToken]);
         }
 
         // 刷新Token
-        $this->request->buildToken();
+        $legacy ? $this->request->token() : $this->request->buildToken();
     }
 }

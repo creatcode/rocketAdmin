@@ -108,7 +108,7 @@ class Attachment extends Backend
     }
 
     /**
-     * 删除附件
+     * 删除
      * @param array $ids
      */
     public function del($ids = "")

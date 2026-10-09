@@ -10,7 +10,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use creatcode\easyaddons\addons\AddonException;
 use creatcode\easyaddons\addons\support\File;
-use think\Exception;
+use Exception;
 use think\facade\Cache;
 use think\facade\Db;
 
@@ -152,31 +152,38 @@ class Service
     {
         self::assertValidAddonName($name);
         $addonsTempDir = self::getAddonsBackupDir();
-        $tmpFile = $addonsTempDir . $name . ".zip";
+        $tmpFile = $addonsTempDir . $name . '-' . bin2hex(random_bytes(8)) . '.zip';
         try {
             $client = self::getClient();
             $response = $client->get('addon/download', ['query' => array_merge(['name' => $name], $extend)]);
+            if ($response->getStatusCode() !== 200) {
+                throw new Exception('Addon package download failed: HTTP ' . $response->getStatusCode());
+            }
             $body = $response->getBody();
             $content = $body->getContents();
-            if (substr($content, 0, 1) === '{') {
+            if (substr(ltrim($content), 0, 1) === '{') {
                 $json = (array)json_decode($content, true);
                 //如果传回的是一个下载链接,则再次下载
-                if ($json['data'] && isset($json['data']['url'])) {
+                if (!empty($json['data']['url'])) {
                     $response = $client->get($json['data']['url']);
+                    if ($response->getStatusCode() !== 200) {
+                        throw new Exception('Addon package download failed: HTTP ' . $response->getStatusCode());
+                    }
                     $body = $response->getBody();
                     $content = $body->getContents();
                 } else {
                     //下载返回错误，抛出异常
-                    throw new AddonException($json['msg'], $json['code'], $json['data']);
+                    throw new AddonException($json['msg'] ?? 'Unknown data format', $json['code'] ?? 0, $json['data'] ?? []);
                 }
             }
         } catch (TransferException $e) {
-            throw new Exception("Addon package download failed");
+            throw new Exception("Addon package download failed", 0, $e);
         }
 
         if (($write = fopen($tmpFile, 'wb')) !== false) {
-            if (fwrite($write, $content) === false) {
+            if (fwrite($write, $content) !== strlen($content)) {
                 fclose($write);
+                @unlink($tmpFile);
                 throw new Exception("No permission to write temporary files");
             }
             fclose($write);
@@ -212,14 +219,17 @@ class Service
             throw new Exception('Unable to open the zip file');
         }
 
-        $dir = self::getAddonDir($name);
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
-        }
-
         // 解压插件压缩包
         try {
             self::assertSafeZipEntries($zip);
+            $info = self::getInfoIni($zip);
+            if ($info['name'] != $name) {
+                throw new Exception('Addon info name incorrect');
+            }
+            $dir = self::getAddonDir($name);
+            if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+                throw new Exception('Unable to create addon directory');
+            }
             $zip->extractTo($dir);
         } catch (ZipException $e) {
             throw new Exception('Unable to extract the file');
@@ -241,22 +251,29 @@ class Service
         if (!$file || !$file instanceof \think\File) {
             throw new Exception('No file upload or server upload limit exceeded');
         }
-        $validate = validate(
-            ['zip' => 'filesize:102400000|fileExt:zip,fastaddon'],
-            [
-                'zip.filesize' => 'File is too big (%sMiB), Max filesize: %sMiB',
-                'zip.fileExt' => 'Uploaded file format is limited'
-            ],
-            false,
-            false
-        );
-        if (!$validate->check(['zip' => $file])) {
-            // 文件验证错误
-            throw new Exception(__($validate->getError(), round($file->getSize() / pow(1024, 2), 2), 100));
-        }
-        // $uploadFile = Filesystem::disk()->putFile('addons', $file, 'md5');
+        if (!class_exists('think\\Service')) {
+            if (!$file->check(['size' => 102400000, 'ext' => 'zip,fastaddon'])) {
+                throw new Exception($file->getError());
+            }
+            $uploadFile = $file->move($addonsTempDir, $file->hash('md5'));
+        } else {
+            $validate = validate(
+                ['zip' => 'filesize:102400000|fileExt:zip,fastaddon'],
+                [
+                    'zip.filesize' => 'File is too big (%sMiB), Max filesize: %sMiB',
+                    'zip.fileExt' => 'Uploaded file format is limited'
+                ],
+                false,
+                false
+            );
+            if (!$validate->check(['zip' => $file])) {
+                // 文件验证错误
+                throw new Exception(__($validate->getError(), round($file->getSize() / pow(1024, 2), 2), 100));
+            }
+            // $uploadFile = Filesystem::disk()->putFile('addons', $file, 'md5');
 
-        $uploadFile = $file->move($addonsTempDir, $file->hashName('md5'));
+            $uploadFile = $file->move($addonsTempDir, $file->hashName('md5'));
+        }
         if (!$uploadFile) {
             // 上传失败获取错误信息
             throw new Exception(__($file->getError()));
@@ -378,6 +395,7 @@ class Service
                 ->saveAsFile($file)
                 ->close();
         } catch (ZipException $e) {
+            throw new Exception('Addon backup failed: ' . $e->getMessage(), 0, $e);
         } finally {
             $zipFile->close();
         }
@@ -443,27 +461,47 @@ class Service
         $fileName = is_null($fileName) ? 'install.sql' : $fileName;
         $sqlFile = self::getAddonDir($name) . $fileName;
         if (is_file($sqlFile)) {
-            $default = \think\facade\Config::get('database.default');
-            $prefix = \think\facade\Config::get('database.connections.' . $default . '.prefix', '');
+            $prefix = get_addon_database_config('prefix', '');
+            //惰性连接下 getPdo() 未连接时返回 false，先查一次确保连接已建立
+            Db::query('SELECT 1');
+            $pdo = Db::getPdo();
 
             $lines = file($sqlFile);
+            if ($lines === false) {
+                throw new Exception('Unable to read SQL file');
+            }
+            /**
+             * 执行一条 SQL，仅替换语句开头的 INSERT，避免修改字段中的文本。
+             * @param string $sql SQL 语句
+             * @return void
+             */
+            $execute = static function ($sql) use ($prefix, $pdo) {
+                $sql = str_ireplace('__PREFIX__', (string) $prefix, $sql);
+                $sql = preg_replace('/^(\s*)INSERT\s+INTO\b/i', '$1INSERT IGNORE INTO', $sql);
+                try {
+                    //用 PDO::exec() 执行：Db::execute() 会留下未关闭游标，导致后续语句报 2014
+                    $pdo->exec($sql);
+                } catch (\Throwable $e) {
+                    throw new Exception('SQL导入失败：' . $e->getMessage(), 0, $e);
+                }
+            };
+            // ponytail: 沿用行末分号分隔的普通 SQL 脚本约定；需要 DELIMITER 时再引入完整解析器。
             $templine = '';
             foreach ($lines as $line) {
-                if (substr($line, 0, 2) == '--' || $line == '' || substr($line, 0, 2) == '/*') {
+                $line = preg_replace('/^\xEF\xBB\xBF/', '', $line);
+                if (substr(ltrim($line), 0, 2) == '--' || trim($line) == '' || substr(ltrim($line), 0, 2) == '/*') {
                     continue;
                 }
 
                 $templine .= $line;
                 if (substr(trim($line), -1, 1) == ';') {
-                    $templine = str_ireplace('__PREFIX__', (string)$prefix, $templine);
-                    $templine = str_ireplace('INSERT INTO ', 'INSERT IGNORE INTO ', $templine);
-                    try {
-                        Db::getPdo()->exec($templine);
-                    } catch (\PDOException | \Error $e) {
-                        throw new Exception('SQL导入失败：' . $e->getMessage());
-                    }
+                    $execute($templine);
                     $templine = '';
                 }
+            }
+            // SHOW CREATE TABLE 和部分插件脚本的最后一条语句没有分号。
+            if (trim($templine) !== '') {
+                $execute($templine);
             }
         }
         return true;
@@ -538,7 +576,8 @@ EOD;
     public static function install($name, $force = false, $extend = [], $tmpFile = '')
     {
         self::assertValidAddonName($name);
-        if (!$name || (is_dir(ADDON_PATH . $name) && !$force)) {
+        $exists = is_dir(ADDON_PATH . $name);
+        if (!$name || ($exists && !$force)) {
             throw new Exception('Addon already exists');
         }
 
@@ -550,6 +589,9 @@ EOD;
         $tmpFile = $tmpFile ?: self::download($name, $extend);
 
         $addonDir = self::getAddonDir($name);
+        if ($exists) {
+            self::backup($name);
+        }
 
         try {
             // 解压插件压缩包到插件目录
@@ -563,10 +605,14 @@ EOD;
                 self::noconflict($name);
             }
         } catch (AddonException $e) {
-            @File::rmdirs($addonDir);
+            if (!$exists) {
+                @File::rmdirs($addonDir);
+            }
             throw new AddonException($e->getMessage(), $e->getCode(), $e->getData());
         } catch (Exception $e) {
-            @File::rmdirs($addonDir);
+            if (!$exists) {
+                @File::rmdirs($addonDir);
+            }
             throw new Exception($e->getMessage());
         } finally {
             // 移除临时文件
@@ -575,14 +621,11 @@ EOD;
 
         // 默认启用该插件
         $info = get_addon_info($name);
+        $info['state'] = 0;
+        set_addon_info($name, $info);
 
         Db::startTrans();
         try {
-            if (!$info['state']) {
-                $info['state'] = 1;
-                set_addon_info($name, $info);
-            }
-
             // 导入
             self::importsql($name);
 
@@ -593,9 +636,11 @@ EOD;
                 $addon->install();
             }
             Db::commit();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Db::rollback();
-            @File::rmdirs($addonDir);
+            if (!$exists) {
+                @File::rmdirs($addonDir);
+            }
             throw new Exception($e->getMessage());
         }
 
@@ -603,11 +648,12 @@ EOD;
             // 启用插件
             self::enable($name, true);
         } catch (\Throwable $e) {
-            @File::rmdirs($addonDir);
-            throw new Exception($e->getMessage());
+            // 启用可能已经发布部分全局文件，保留插件目录供禁用或重试。
+            throw new Exception($e->getMessage(), 0, $e);
         }
 
 
+        $info = get_addon_info($name);
         $info['config'] = get_addon_config($name) ? 1 : 0;
         $info['bootstrap'] = is_file(self::getBootstrapFile($name));
         $info['testdata'] = is_file(self::getTestdataFile($name));
@@ -708,6 +754,7 @@ EOD;
                     $addonsBackupDir = self::getAddonsBackupDir();
                     $zip->saveAsFile($addonsBackupDir . $name . "-conflict-enable-" . date("YmdHis") . ".zip");
                 } catch (Exception $e) {
+                    throw new Exception('Addon backup failed: ' . $e->getMessage(), 0, $e);
                 } finally {
                     $zip->close();
                 }
@@ -725,23 +772,16 @@ EOD;
         }
 
         // 复制文件
-        if (is_dir($sourceAssetsDir)) {
-            File::copydirs($sourceAssetsDir, $destAssetsDir);
+        if (is_dir($sourceAssetsDir) && !File::copydirs($sourceAssetsDir, $destAssetsDir)) {
+            throw new Exception('Unable to copy addon assets');
         }
 
         // 复制application和public到全局
         foreach (self::getCheckDirs() as $k => $dir) {
             if (is_dir($addonDir . $k)) {
-                File::copydirs($addonDir . $k, app()->getRootPath() . $dir);
-            }
-        }
-
-        //插件纯净模式时将插件目录下的application、public和assets删除
-        if (self::addonConfig('addon_pure_mode', true)) {
-            // 删除插件目录已复制到全局的文件
-            @File::rmdirs($sourceAssetsDir);
-            foreach (self::getCheckDirs() as $k => $dir) {
-                @File::rmdirs($addonDir . $k);
+                if (!File::copydirs($addonDir . $k, app()->getRootPath() . $dir)) {
+                    throw new Exception('Unable to copy addon files');
+                }
             }
         }
 
@@ -763,6 +803,15 @@ EOD;
         unset($info['url']);
 
         set_addon_info($name, $info);
+
+        //插件纯净模式时将插件目录下的application、public和assets删除
+        if (self::addonConfig('addon_pure_mode', true)) {
+            // 删除插件目录已复制到全局的文件
+            @File::rmdirs($sourceAssetsDir);
+            foreach (self::getCheckDirs() as $k => $dir) {
+                @File::rmdirs($addonDir . $k);
+            }
+        }
 
         // 刷新
         self::refresh();
@@ -810,6 +859,7 @@ EOD;
                     $addonsBackupDir = self::getAddonsBackupDir();
                     $zip->saveAsFile($addonsBackupDir . $name . "-conflict-disable-" . date("YmdHis") . ".zip");
                 } catch (Exception $e) {
+                    throw new Exception('Addon backup failed: ' . $e->getMessage(), 0, $e);
                 } finally {
                     $zip->close();
                 }
@@ -833,7 +883,8 @@ EOD;
                 foreach ($config['files'] as $index => $item) {
                     //避免切换不同服务器后导致路径不一致
                     $item = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $item);
-                    $item_tp5 = str_replace('app' . DIRECTORY_SEPARATOR, 'application' . DIRECTORY_SEPARATOR, $item);
+                    $appDir = self::getCheckDirs()['application'];
+                    $item_tp5 = str_replace($appDir . DIRECTORY_SEPARATOR, 'application' . DIRECTORY_SEPARATOR, $item);
 
                     //插件资源目录，无需重复复制
                     if (stripos($item, str_replace(app()->getRootPath(), '', $destAssetsDir)) === 0) {
@@ -841,29 +892,31 @@ EOD;
                     }
                     //检查目录是否存在，不存在则创建
                     $itemBaseDir = dirname($addonDir . $item_tp5);
-                    if (!is_dir($itemBaseDir)) {
-                        @mkdir($itemBaseDir, 0755, true);
+                    if (!is_dir($itemBaseDir) && !mkdir($itemBaseDir, 0755, true)) {
+                        throw new Exception('Unable to create addon directory');
                     }
-                    if (is_file(app()->getRootPath() . $item)) {
-                        @copy(app()->getRootPath() . $item, $addonDir . $item_tp5);
+                    if (is_file(app()->getRootPath() . $item) && !copy(app()->getRootPath() . $item, $addonDir . $item_tp5)) {
+                        throw new Exception('Unable to restore addon files');
                     }
                 }
                 $list = $config['files'];
             }
 
             //复制插件目录资源
-            if (is_dir($destAssetsDir)) {
-                @File::copydirs($destAssetsDir, $addonDir . 'assets' . DIRECTORY_SEPARATOR);
+            if (is_dir($destAssetsDir) && !File::copydirs($destAssetsDir, $addonDir . 'assets' . DIRECTORY_SEPARATOR)) {
+                throw new Exception('Unable to restore addon assets');
             }
         }
 
         $dirs = [];
         foreach ($list as $k => $v) {
             $v = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $v);
-            $v_tp6 = str_replace('application' . DIRECTORY_SEPARATOR, 'app' . DIRECTORY_SEPARATOR, $v);
+            $v_tp6 = str_replace('application' . DIRECTORY_SEPARATOR, self::getCheckDirs()['application'] . DIRECTORY_SEPARATOR, $v);
             $file = app()->getRootPath() . $v_tp6;
             $dirs[] = dirname($file);
-            @unlink($file);
+            if (is_file($file) && !unlink($file)) {
+                throw new Exception('Unable to remove addon file: ' . $v);
+            }
         }
 
         // 移除插件空目录
@@ -918,6 +971,19 @@ EOD;
         // 远程下载插件(如果为本地文件则使用本地文件)
         $tmpFile = $tmpFile ? $tmpFile : self::download($name, $extend);
 
+        // 在备份和清理旧目录之前验证升级包，损坏或错名的包不能破坏旧版本。
+        $zip = new ZipFile();
+        try {
+            $zip->openFile($tmpFile);
+            self::assertSafeZipEntries($zip);
+            $newInfo = self::getInfoIni($zip);
+            if ($newInfo['name'] != $name) {
+                throw new Exception('Addon info name incorrect');
+            }
+        } finally {
+            $zip->close();
+        }
+
         // 备份插件文件
         self::backup($name);
 
@@ -941,12 +1007,12 @@ EOD;
 
         if ($config) {
             $configFile = ADDON_PATH . $name . DIRECTORY_SEPARATOR . 'config.php';
-            $bakFile = ADDON_PATH . $name . DIRECTORY_SEPARATOR . 'config_tmp.php';
-            @copy($configFile, $bakFile);
-            $fullConfig = include($bakFile);
-            @unlink($bakFile);
+            $fullConfig = is_file($configFile) ? include $configFile : [];
+            if (!is_array($fullConfig)) {
+                throw new Exception('Addon config file data incorrect');
+            }
             foreach ($fullConfig as $index => &$item) {
-                if (isset($config[$item['name']])) {
+                if (array_key_exists($item['name'], $config)) {
                     $item['value'] = $config[$item['name']];
                 }
             }
@@ -992,7 +1058,7 @@ EOD;
         self::refresh();
 
         // 升级成功后写回插件版本
-        $info['version'] = $extend['version'] ?? $info['version'];
+        $info = array_merge($newInfo, ['state' => 0]);
         unset($info['url']);
         set_addon_info($name, $info);
 
@@ -1018,6 +1084,15 @@ EOD;
             $config = is_array($decoded) ? $decoded : [];
         }
         $config = array_merge($config, $changed);
+        // .addonrc 可能来自压缩包，禁止资源清单越过宿主目录，避免禁用或卸载误删外部文件。
+        if (isset($config['files']) && !is_array($config['files'])) {
+            throw new Exception('Invalid addon resource list');
+        }
+        foreach ($config['files'] ?? [] as $file) {
+            if (!is_string($file) || $file === '' || preg_match('#^(?:[a-zA-Z]:|/)|(^|/)\.\.(/|$)#', str_replace('\\', '/', $file))) {
+                throw new Exception('Invalid addon resource path');
+            }
+        }
         if ($changed) {
             $json = json_encode($config, JSON_UNESCAPED_UNICODE);
             if ($json === false || file_put_contents($addonConfigFile, $json, LOCK_EX) === false) {
@@ -1121,7 +1196,7 @@ EOD;
                         $path = str_replace($addonDir, '', $filePath);
                         // tp6
                         $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-                        $path = str_replace('application' . DIRECTORY_SEPARATOR, 'app' . DIRECTORY_SEPARATOR, $path);
+                        $path = str_replace('application' . DIRECTORY_SEPARATOR, $dirName_tp6 . DIRECTORY_SEPARATOR, $path);
                     }
 
                     if ($onlyconflict) {
@@ -1187,7 +1262,7 @@ EOD;
 
         // CLI 模式下没有可靠域名，直接放行并记录授权标识
         if ($request->isCli()) {
-            $request->setRoute(['authorized' => 'cli']);
+            set_addon_route_vars(['authorized' => 'cli']);
             return true;
         }
 
@@ -1210,7 +1285,7 @@ EOD;
             $validation = md5(md5($domain) . $licensecode);
 
             if (in_array($validation, $validations, true)) {
-                $request->setRoute(['authorized' => $domain]);
+                set_addon_route_vars(['authorized' => $domain]);
                 return true;
             }
         }
@@ -1229,7 +1304,7 @@ EOD;
                 substr_compare($domain, '.' . $item, -strlen('.' . $item)) === 0
                 && in_array($validation, $validations, true)
             ) {
-                $request->setRoute(['authorized' => $domain]);
+                set_addon_route_vars(['authorized' => $domain]);
                 return true;
             }
         }
@@ -1245,7 +1320,11 @@ EOD;
     public static function getRootDomain($domain)
     {
         $host = strtolower(trim((string) $domain));
+        if (filter_var(trim($host, '[]'), FILTER_VALIDATE_IP)) {
+            return trim($host, '[]');
+        }
         $host = preg_replace('/:\d+$/', '', $host);
+        $host = trim($host, '[]');
 
         if ($host === '' || $host === 'localhost' || filter_var($host, FILTER_VALIDATE_IP)) {
             return $host;
@@ -1307,8 +1386,8 @@ EOD;
     public static function getAddonsBackupDir()
     {
         $dir = app()->getRuntimePath() . 'addons' . DIRECTORY_SEPARATOR;
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
+        if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+            throw new Exception('Unable to create addon backup directory');
         }
         return $dir;
     }
@@ -1356,8 +1435,9 @@ EOD;
      */
     protected static function getCheckDirs()
     {
+        $appPath = class_exists('think\\Service') ? app()->getBasePath() : app()->getAppPath();
         return [
-            'application' => 'app',
+            'application' => trim(str_replace(app()->getRootPath(), '', $appPath), '/\\'),
             'public'     => 'public',
         ];
     }
@@ -1429,7 +1509,15 @@ EOD;
         // 读取插件信息
         try {
             $info = $zip->getEntryContents('info.ini');
-            $config = parse_ini_string($info);
+            $config = parse_ini_string($info, true, INI_SCANNER_TYPED);
+            if (!is_array($config)) {
+                throw new Exception('Addon info file data incorrect');
+            }
+            foreach (['name', 'title', 'intro', 'author', 'version', 'state'] as $key) {
+                if (!array_key_exists($key, $config)) {
+                    throw new Exception('Addon info file data incorrect');
+                }
+            }
         } catch (ZipException $e) {
             throw new Exception('Unable to extract the file');
         }

@@ -116,26 +116,26 @@
         },
         {
             "name": "creatcode/easyaddons",
-            "version": "v1.5.2",
-            "version_normalized": "1.5.2.0",
+            "version": "v1.6.8",
+            "version_normalized": "1.6.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/creatcode/easyaddons.git",
-                "reference": "4e7d2cde2421cb4a67f3245931e0240bcc73fa6d"
+                "reference": "ba6e070fcf85111e5a88a5b9715474cdcb526d72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/creatcode/easyaddons/zipball/4e7d2cde2421cb4a67f3245931e0240bcc73fa6d",
-                "reference": "4e7d2cde2421cb4a67f3245931e0240bcc73fa6d",
+                "url": "https://api.github.com/repos/creatcode/easyaddons/zipball/ba6e070fcf85111e5a88a5b9715474cdcb526d72",
+                "reference": "ba6e070fcf85111e5a88a5b9715474cdcb526d72",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.0",
                 "nelexa/zip": "^3.3 || ^4.0",
                 "php": ">=7.2.5",
-                "topthink/framework": "^6.1|^7.0|^8.0"
+                "topthink/framework": "^5.1 || ^6.0 || ^7.0 || ^8.0"
             },
-            "time": "2026-09-20T08:27:48+00:00",
+            "time": "2026-10-09T03:47:55+00:00",
             "type": "library",
             "extra": {
                 "think": {
@@ -146,6 +146,10 @@
                     "services": [
                         "creatcode\\easyaddons\\AddonService"
                     ]
+                },
+                "think-config": {
+                    "addons": "src/config.php",
+                    "easyaddons": "src/easyaddons.php"
                 }
             },
             "installation-source": "dist",
@@ -161,16 +165,17 @@
             "license": [
                 "Apache-2.0"
             ],
-            "description": "TP6+FastAdmin风格项目的专用插件包",
+            "description": "ThinkPHP 5.1+ FastAdmin 风格项目的插件扩展包",
             "keywords": [
                 "addons",
                 "project-package",
+                "thinkphp5",
                 "thinkphp6",
                 "thinkphp8"
             ],
             "support": {
                 "issues": "https://github.com/creatcode/easyaddons/issues",
-                "source": "https://github.com/creatcode/easyaddons/tree/v1.5.2"
+                "source": "https://github.com/creatcode/easyaddons/tree/v1.6.8"
             },
             "install-path": "../creatcode/easyaddons"
         },

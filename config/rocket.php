@@ -55,6 +55,6 @@ return [
         //MySQL 恢复客户端,不在 PATH 时填写完整路径
         'mysql_binary'     => 'mysql',
     ],
-    //插件市场接口地址（插件包读取此配置）
-    'addon_market_api_url'  => 'https://api.fastadmin.net',
+    //插件市场接口地址（插件包读取此配置），以 .json 结尾时按静态清单源处理
+    'addon_market_api_url'  => 'https://gitee.com/willrook/rocket-admin-plugin-repository/raw/master/plugins.json',
 ];

@@ -1,8 +1,9 @@
 {
     "name": "creatcode/easyaddons",
-    "description": "TP6+FastAdmin风格项目的专用插件包",
+    "description": "ThinkPHP 5.1+ FastAdmin 风格项目的插件扩展包",
     "license": "Apache-2.0",
     "keywords": [
+        "thinkphp5",
         "thinkphp6",
         "thinkphp8",
         "addons",
@@ -10,7 +11,7 @@
     ],
     "require": {
         "php": ">=7.2.5",
-        "topthink/framework": "^6.1|^7.0|^8.0",
+        "topthink/framework": "^5.1 || ^6.0 || ^7.0 || ^8.0",
         "guzzlehttp/guzzle": "^7.0",
         "nelexa/zip": "^3.3 || ^4.0"
     },
@@ -23,6 +24,10 @@
         ]
     },
     "extra": {
+        "think-config": {
+            "addons": "src/config.php",
+            "easyaddons": "src/easyaddons.php"
+        },
         "think": {
             "services": [
                 "creatcode\\easyaddons\\AddonService"

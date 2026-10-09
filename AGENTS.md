@@ -9,7 +9,7 @@ Both versions remain unfinished refactors of one system. Synchronize every chang
 
 ## Project Structure & Module Organization
 
-- `app/{admin,api,index}`: applications; `app/common`: shared code; module `view/`: templates; TP8 additionally has `app/{tenant,addonstore}`.
+- `app/{admin,api,index}`: applications; `app/common`: shared code; module `view/`: templates; TP8 additionally has `app/tenant`.
 - `kernel/`: services; `extend/`: utilities; `addons/`: plugins; `config/`/`route/`: configuration/routes.
 - `public/`: web root; `public/assets/{js,css,less,libs}`: assets; `runtime/`: generated files.
 - Schemas: `rocketadmin.sql` (TP6), `数据库.sql` (TP8).

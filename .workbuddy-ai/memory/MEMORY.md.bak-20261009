@@ -1,0 +1,90 @@
+# rocket-admin 项目约定
+
+> 只放硬约束与陷阱；细节见同目录日志（2026-09-21/23/24/28、2026-10-08）。**上限约 1 万字符，新增前先删旧的。**
+> **项目定位**：FastAdmin 的 TP 内核升级版（**官方不做内核升级**，故有此项目；系统准备开源）→ **兼容存量 TP5 插件是核心竞争力，不是过渡功能**。插件兼容策略见 `2026-10-08.md`。
+
+## 协作铁律
+1. 参考截图 ≠ 授权改动：改观感前先说明「打算改成 X」并获确认。
+2. 改前 `git show HEAD:<file>` 核对原值；用户说「之前没有／怎么变了」→ 先 `git diff HEAD`。未跟踪文件无基线 → 反向还原出「改前」再对照。**落笔前必须确认改动真在工作区**（曾出现日志记「已改+已验证」而文件与 HEAD 逐字节相同，疑似被并发会话覆盖）→ 声称修复后要 grep/哈希复核。
+3. 主观负面反馈（"太丑了"）不猜着改：诊断 → 出 2~3 方向 → `AskUserQuestion` 选定后才动代码。用户跳过选择 ≠ 授权。
+4. 用户对位置的描述常与实际指代不符 → 改观感前必须让他指认到具体元素。
+5. 只改用户点到的属性；范围有歧义先问。不新增文件（项目内验证脚本也不行；临时验证页放系统 temp 并清理）。
+6. 注释只标注参数/返回值/关键意图：禁写变更来源（版本号/公告编号/上游出处）、禁复述代码、不为单一调用点抽方法。标点全角，`//` 后不加空格。
+
+## 样式铁律
+- 全局元素选择器 ≤ 0,1,1；组件链接规则一律 0,1,2（`.dropdown-menu>li>a`、`.pagination>li>a`、`.nav-tabs>li>a`、`.breadcrumb>li>a`），同权重后加载者胜。skin-white.css 被 `backend.css:3` @import（在 bootstrap.css/fastadmin.css 之后）且被 `backend.min.css` 内联 → 是**常驻基线**，写 0,1,2 会把整族组件链接静默染成主色。正确写法：`.skin-white a:where(:not(.btn,.text-primary,.text-success,.text-info,.text-warning,.text-danger,.text-muted)), .inside-header a:where(:not(同上)){color:#165dff}`；`.inside-header a` = 0,1,1，**不要**写 `body.inside-header a`。
+- 排除类名必须 `:where(:not(...))`；`:not(.btn)` 会抬到 0,2,1 反向盖过组件规则。不得命中 `.btn`（FastAdmin 用 `<a class="btn">` 做按钮，`.btn-*` 字色仅 0,1,0）。
+- 语义色按钮靠源码顺序决定双类叠加胜负（模板大量 `btn-primary btn-success` 叠加）；皮肤给任一语义色加 `!important` 或抬高特异性会静默打破。补规则顺序须同 bootstrap：primary→success→info→warning→danger。
+- 皮肤不得覆盖 `.text-*` 语义色取值（均 0,1,0）：primary `#444c69`、success `#18bc9c`、info `#1688f1`、warning `#f39c12`、danger `#f75444`、muted `#777`。（`.text-primary` 收敛成 `#165dff` 曾让权限页整列变蓝。）
+- 基线 id 选择器会静默截断皮肤规则（如 `#secondnav .nav-addtabs>li>a{background:none}`，(1,1,2)）。判断「皮肤规则没生效」前先查基线有无 id 抢权重。
+- 皮肤隔离唯一手段 = 前缀且成对：`.skin-white`（外层框架 body）+ `.inside-header`（iframe 内页 body，`layout/default.html:7`）。
+- **弹窗/内页滚动条**：弹窗是 iframe（`fast.js:143` type 2），滚动条属**内页文档**（`fastadmin.css:20-25`）→ `.skin-white` 前缀够不到；规则必须写 `html::`/`body::`/`.inside-header ::` 三个变体。内页读不到皮肤名 → **无法按皮肤隔离**。
+- 皮肤加载：`meta.html:12-13` 一次只加载一个 `skins/{adminskin}.css`；**内页 `adminskin` 恒为 `''`**（白名单只在 `Index::index():37-43`）→ gray-light/sky-light 的 221 条 `body.inside-header` 规则是死代码（2026-09-23 决定不修）；登录页同样读不到。
+- 表格工具栏右侧 = `.fixed-table-toolbar .columns-right` + `.search`；skin-white 的 `.pull-right.columns-right .btn{border-color:transparent !important}` 会吃掉按钮描边。
+- **尺寸类例外只有 `.btn-xs`**：skin-white 只给 `.btn.btn-xs` 补 `padding:1px 5px !important`（`skin-white.css:631`）；`.btn.btn-sm` 无对应规则 → 吃通用 `.btn{padding:6px 20px !important}`（`:65`）。全站 `btn-sm` 仅 7 处，表格单元图标按钮（90px 操作列）会换行堆叠并压到「追加」。**官方 `fieldlist` stub 的 `btn btn-sm` 不是写错类名**（原版基线装得下）；项目内表格单元图标按钮惯例是 `btn-xs`（`require-table.js:107`）。
+- `bootstrap.css`+`fastadmin.css` = 20 套皮肤共用基线，严禁加皮肤前缀或改品牌色。原版 18 个皮肤与 `_all-skins.css` 不要动；`skin-white.css:1141+` 的「色调统一补充」块属皮肤自己的设计层，不要提议回退或审计。
+- 三个自建皮肤不含暗色主题（日后另建皮肤文件）。「原版皮肤判据」只指「皮肤覆盖 `.text-*` 语义色取值」，禁止泛化成「皮肤不得重绘基线组件」——用户反感「啥玩意都扯上原版皮肤」。
+- 同层叠上下文「后续兄弟绘制在上」：外阴影（或 `::after` 覆盖层）指向后续兄弟区域会看不见 → 该元素加 `position: relative`。`rgba(0,0,0,.1)` 配大 blur 的外阴影 ≠ 同色 1px 实线，浅色分隔线用 1px 实线。
+- 三皮肤把 `.btn-info` 与 `.btn-info.active` 写成同色同 `!important` → 选中反馈须靠 `.btn-group:has(>.btn-info.active)>.btn-info:not(.active)` 补描边态（(0,6,0) 会连 hover 一起吃掉，须成对补 `:hover/:focus`）；改描边态会暴露 `.btn:active:focus` 的 5px 黑焦点环（`bootstrap.css:3012`）→ 同组补 `outline:none!important`。
+
+## 色值基线（对齐 Chuiot simple.css，勿自创）
+容器底/表头 `#f6f8fb`（弹层标题栏例外：三皮肤已统一纯白 `#fff`）；hover `#f4f4f5`；激活态 `#f0f5ff`；分割线/内容区底 `#f1f4f6`；主色/hover/浅底/浅描边 `#165dff`/`#0e48d8`/`#f0f5ff`/`#adc6ff`；正文/次级/三级 `#1d2129`/`#4e5969`/`#86909c`；描边 `#dcdfe6`；盒子布局底 `#e9edf2`；**灰底上的分割线 `#e5e6eb`**（`#f1f4f6` 只在白底可见）。
+按钮语义色：primary #fff/#444c69(皮肤改 #165dff)、success #fff/#18bc9c、danger #fff/#f75444、warning #fff/#f39c12、info #fff/#1688f1(皮肤改 #165dff)、outline #fff/transparent；`*-light` 不动。
+
+## 构建 / 模板 / 通用陷阱
+- `php think min -m backend -r css`（`app/admin/command/Min.php`）。生产读 backend.min.css，改 CSS 必须重建；回退 `git checkout -- public/assets/css/backend.min.css`。不要用 `Gruntfile.js` 的 `backend:css`。改 `.html`/`.js`/`.php` 不需重建。**本地 `APP_DEBUG=true` 时加载 `backend.css`（@import 各源文件）** → 改皮肤即时生效。
+- 坑：`php think min` 会触发插件系统重写 `config/addons.php` 与 `public/assets/js/addons.js` → 构建后必须 `git checkout --` 回退这两个文件。
+- TP6 已自动 htmlentities：写 `{$var}` 即可，加 `|htmlentities` 会转义两次。
+- 页面 JS 加载：`Backend.php:204` 令 `jsname='backend/'.$controllername` → 控制器 `Foo` 必须有 `public/assets/js/backend/foo.js`。
+- 行尾为 **CRLF**（实测 `app/admin/view/addon/index.html`、`public/assets/js/backend/addon.js` 均纯 CRLF）→ 改前先探测并保持原行尾；并行 Edit 同一文件会互相覆盖 → 串行改完 grep 复核。
+- **`$Think.config.*` 在模板里不生效**（`think\Template::parseThinkVar()` 只识别 const/now/ldelim/rdelim，其余编译成 `''`）：`{if $Think.config.rocket.x}` **恒假**、`{$Think.config.rocket.x|htmlentities}` **输出空**。必须用助手函数：`{if config('rocket.x')}`、`{:htmlentities(config('rocket.x'))}`。（2026-10-08 离线渲染实测；上游 tp8 用的正是助手函数写法。）
+- jQuery `.attr('checked','checked')` 不驱动 CSS `:checked`，必须 `.prop('checked', bool)`（本项目有意改进，同步时不要改回）。
+- `Attachment` 的 `createtime` 读出已是字符串，`(int)` 强转得 2017 → 必须 `is_numeric($v)?(int)$v:strtotime($v)`。
+- `assignconfig()` 必须放在 `Backend.php:220` 的 `assign('config', $config)` 之后，否则被静默覆盖。
+- `grid` 的 `repeat(auto-fit, minmax(Npx, 1fr))` 只保证铺满、不限制列数 → 要控制列数必须写死 `repeat(3, minmax(0, 1fr))` + 媒体查询降列。
+- think-orm 下「独立一行 `$model->where()/order()`」是死代码（`Model::__call` 每次新建 Query），条件必须并入 `where()` 数组参数（`Backend.php:546-549` 的 selectpage dataLimit 注入即因此失效）。
+- 模板离线渲染见 skill `thinkphp-template-offline-render`：`cache_path` 必须显式给；CLI 下 `{:token_field()}` 必崩；`build_toolbar` 需手动 `require_once app/admin/common.php`。
+- 几何/样式验证：临时页放系统 temp，`<link>` 直指项目 bootstrap.css / fastadmin.css / skins/*.css + font-awesome，body 加 `class="inside-header is-dialog"`，复制目标 DOM 片段，用**内置浏览器**读 `getBoundingClientRect` / `getComputedStyle`（规则由项目自定义指令承载）。本机 `msedge --headless=new --dump-dom` 实测无任何输出，该手法不可用。不碰项目文件、不需要登录与服务。
+
+## 已知非本项目缺陷（勿擅自修）
+`location.reload()` 后 URL 重复 `index.php` → cookie 失效（`createCookie` 的 path = `Config.moduleurl`，嫌疑 `fast.js:96`）；全站水平溢出 15px（Bootstrap `margin:-15px` 未配容器）；页头三次「控制台」（`#ribbon` 左侧固定 + 右侧当前页包屑 + 顶部 addtab）。
+
+## 双项目同步（rocket-admin ↔ tp8-fastadmin）
+- 上游 `E:\phpstudy_pro\extraproject\tp8-fastadmin` = TP8、`1.6.2.20260323`；本项目 = TP6、`1.6.1.20250430`。两仓 git 历史独立（无共同 commit）→ 不可 cherry-pick。
+- 内核差异（照抄上游必崩）：本项目 think-orm 2.0.62 / php ≥7.4.3，上游 4.0.51 / php ≥8.0。① 无 `Db::quote()` → 主键值转义用 `'\''.addslashes((string)$v).'\''`；② `setInc()` 仅 4.x 有 → 用 `->inc('times')->update()`；③ `str_starts_with()` 需 PHP 8 → 用 `strpos($a,$b) === 0`。两版通用：`lock(true)`、`inc()/dec()`、`where([])`。
+- 验证安全类结论必须走真实调用路径（绕过校验层直接调 ORM 会误报漏洞）。
+- 模板语法不同：上游 `{:config('rocket.x')}`／`{:request()->cookie('x')}`，本项目 `{$Think.config.rocket.x}`／`{:$Request.cookie.x}` → 移植保留上游写法，只搬语义。
+- 同步方法：三方合并 `git merge-file -p ours base theirs`（base = 本项目 `HEAD:<file>`，ours = 上游工作区，theirs = 本项目工作区）再人工解冲突。上游行尾不统一、gray-light/sky-light 皮肤带 BOM → 按各文件原状态写入。
+- 上游自身已有差异（勿当作新改动同步）：`Index.php` 的 `$msg ? $msg : ...`；`index.js` 4 处 `.attr('checked','checked')` 且缺「同步右侧布局面板开关状态」；`index.html` 遮罩注释、`config/rocket.php` 版本号与 `lang_switch` 缩进；无 `package.json`/`Gruntfile.js`。
+
+## 插件管理（Addon）
+- 市场可用性由 `config/rocket.php:59 addon_market_api_url` 决定（当前 `https://api.f1astadmin.net`，注意拼写）；`addon.js` 用它作 index_url，失败走 `load-error` → `switch_local()` 弹「插件市场暂不可用」。
+- **2026-10-08 修复**：`view/addon/index.html` 的 `{if $Think.config.rocket.addon_market_api_url}` 恒假 → 市场按钮组、分类 tabs、用户信息**从未渲染**，本地安装按钮改前在该 `{if}` 内也**不渲染**（工具栏只剩「刷新」）→ 已改用 `config()` 助手函数并把按钮移出条件；同文件版本号 `{$Think.config.rocket.version|htmlentities}` 输出空 → 已改 `{:htmlentities(config('rocket.version'))}`。配套 `addon.js` 的 `switch_local()` 隐藏逻辑改 `:not(:first):not(#faupload-addon)`（否则按钮存在时会被连坐隐藏）——**用户已定案：切本地只保留「刷新 + 本地安装」，`.btn-group`（含「本地插件」按钮）与用户信息一并隐藏、不保留**。离线渲染实测：api_url 有值 → 全在；为空 → 仅刷新+本地安装。
+- 上游：tp8 `view/addon/index.html` 本来正确；tp8 `js/backend/addon.js` 已同步同款 JS 修复（保持 CRLF）；tp8 `js/tenant/addon.js` **未改**（tenant 工具栏只有刷新按钮，`marketApiUrl` 硬编码 `''`，无可见影响）。
+- **插件兼容策略（2026-10-08 用户定案）**：**不做自动改写**（自动改写=用复杂度换覆盖面，出错点恰是最难排查处）→ 改为「**info.ini 兼容标识** + **脚手架保证新包规范** + **check 只出报告、由用户自行修改**」。标识字段 **`compatible`**（`tp6` / `tp8` / `tp6,tp8`）；判定三态：**含当前内核→放行 / 不含→阻止 / 无标识→允许安装但后台标注「未声明兼容性」**。check 的执行点在安装流程中「拿到 zip 之后、解压之前」自动执行。详见 `2026-10-08.md`。
+- **静态清单源（2026-10-08 实现）**：`addon_market_api_url` 以 `.json` 结尾 → 静态源（`Addon::isStaticSource()`），走 `readSource()` / `downloadFromSource()` / `online()`；否则按官方市场 API。清单模板见项目根 `addon-source/`（`plugins.json` + `packages/` + `README.md`）。`download` 支持相对路径（按 `dirname(清单URL)` 展开）与绝对 URL；声明 `md5` 时用 `hash_equals` 校验。Gitee raw 会 302 需 `follow_location=1`；**禁用 `/repository/archive/*.zip` 打包地址**（触发人机验证）。
+- **官方插件兼容断点（2026-10-08 实测，方案未落地）**：easyaddons 已覆盖旧命名空间别名、TP5 常量、文件函数、目录映射（`application→app`、`assets→public/assets/addons/<name>/`）、纯净模式、`hook()` 桥接；**未覆盖 TP5 静态调用** —— `Db::name()`、`Config/Env/Cache/Log::get()`、`Session::get()` 全部 fatal，`think\{Loader,Hook,Url}` 类不存在，模板 `$Think.config.*` 静默失效 → 这就是"官方插件装上用不了"的根因。**不能用全局 class_alias 修**（这些类名已被 TP6 真实类占用）。方案与优先级见 `2026-10-08.md`。
+
+## 系统升级（Upgrade）
+逻辑在 `app/admin/service/UpgradeService.php`（`Upgrade.php` 是门面），批次目录 `runtime/admin/upgrade/<YmdHis>/`；细节见 `2026-09-23.md`。
+- `fetchVersionInfo()` 读 `config('rocket.upgrade.version_info_url')`（默认 `/upgrade.json`），只接受恰好 3 键 `version`/`url`/`notes`；升级包要求 `manifest.from_version === config('rocket.version')` 严格相等。两个 `upgrade.json` 别混：根 = 发布清单模板，`public/upgrade.json` = 站点根版本信息。
+- 网络层只能用 PHP stream，**禁 curl**（本机 `curl.cainfo` 为空 → cURL error 60）。`protectedPaths` = `config/{site,database,token,rocket}.php`。关闭态（`enabled=false`）只渲染空状态卡 + 日志表；`recover` 有意不校验 enabled。破坏性动作已加 CSRF，`Fast.api.ajax` 不带 token → JS 必须手动带并回填。
+
+## 页面增强：水印 + 无操作自动登出
+配置在 `config/rocket.php`，由 `Index::index()` 经 `assignconfig` 传前端；**坑见 `2026-09-24.md`**。水印服务端静态渲染（勿改回 JS）：平铺块 320×180、`#1d2129`+`fill-opacity=".07"`、内页不加。自动登出 `auto_logout`（秒，0=关闭）。用户只要这两项。
+
+## 右侧控制栏（common/control.html + index.js）
+- 齿轮触发 AdminLTE `.control-sidebar`。不新增 JS 文件，JS 一律放 `index.js`；control.html 只含 DOM + 内联 `<style>`。`.lc-panel{z-index:1050}` 压过 `.main-header` 的 1030。
+- 绑定靠 `[data-skin]`/`[data-config]`/`[data-layout]`/`[data-enable]`/`[data-menu]`；`my_skins` 数组决定切皮肤能 `removeClass` 哪些 class，新增皮肤必须同步加进去。
+- 坑：遮罩规则必须并列同特异性选择器 + `!important`；`{include file="common/control" /}` 必须在 `.control-sidebar-bg` 之前（用 `~` 兄弟选择器）。详见 `2026-09-21.md`。
+- cookie 裸名；`Index.php:37` 白名单把 `adminskin`/`multiplenav`/`multipletab`/`show_submenu` 写回 `Config::set('rocket.*')`；`sidebar_collapse`/`layout_boxed` 模板直读 cookie。已删的 3 个零效果开关不要加回：`[data-sidebarskin]`、`[data-controlsidebar]`、`[data-layout='fixed']`。
+
+## 首页 dashboard（view/dashboard/index.html）
+- 必须走**文档级滚动**：`.dash-wrap` 只留 `margin:-15px`；`.dashboard-shell{min-height:calc(100vh - 37px)}`（37px = `#ribbon` 高度）。**不要**加 `height`/`overflow-y:auto`；父容器 `height:auto` 时百分比 `min-height` 解析为 0 → 铺满只能用视口值。
+- `.dashboard-shell{overflow:hidden}` 形成**层叠上下文** → 盖住框架页 TP trace；已加 `#think_page_trace{z-index:1000001 !important}`（trace 的 z-index 写在元素内联 style 里，普通规则压不住）。层级基线：弹层 `19891014` > trace `999999` > 水印 `100000`。已知未修：iframe **内页** trace 恒 `999999`，而 `.main-header`(1030)/`.lc-panel`(1050) 在**父文档**里 → 父文档定位元素盖在普通 iframe 之上（只影响本机开发）。
+
+## 组合数据模块（2026-09-28 新增，`system/systemgroup` + `system/systemgroupdata`）
+本项目**新增**功能（上游无），方案见根目录 `COMBINATION_DATA_IMPLEMENTATION_PLAN.md`。`system_group`（`fields` 存字段 JSON）+ `system_group_data`（`value` 存 JSON）；「字段定义」用 `fieldlist` + 模板 `app/admin/view/system/systemgroup/fields.html`（取自官方 stub，不要为它改皮肤）。
+
+## FastAdmin 官方版本同步
+版本基线 `config/rocket.php:42 = 1.6.1.20250430`（不是 `config/site.php` 的 `1.0.3`）。官方 1.x 是 TP5，本项目是 TP6 移植版 → 官方补丁包不可直接套用；官方 1.6.2~1.6.4 的 SelectPage 修复在本项目内联在 `Backend::selectpage()`。2026-09-24 已落地一批（清单见 `2026-09-24.md`）；未做项：验证码改 6 位、`Sms/Ems::check` 加第 4 参 `true`。

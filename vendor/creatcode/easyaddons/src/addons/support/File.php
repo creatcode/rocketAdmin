@@ -55,9 +55,7 @@ class File
      */
     public static function copydirs($source, $dest)
     {
-        if (function_exists('copydirs')) {
-            return copydirs($source, $dest);
-        }
+        // 宿主 copydirs 可能没有返回值且忽略复制失败，统一使用可检查结果的内置实现。
 
         if (!is_dir($source)) {
             return false;

@@ -143,7 +143,7 @@ class Category extends Backend
 
 
     /**
-     * Selectpage搜索
+     * 下拉搜索
      *
      * @internal
      */

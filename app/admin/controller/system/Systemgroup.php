@@ -32,7 +32,7 @@ class SystemGroup extends Backend
     protected $excludeFields = ['id', 'createtime', 'updatetime'];
 
     /**
-     * 初始化组合数据管理模型与页面配置
+     * 初始化
      *
      * @return void
      */
@@ -67,7 +67,7 @@ class SystemGroup extends Backend
     }
 
     /**
-     * 添加数据组
+     * 添加
      *
      * @return string
      * @throws \think\Exception
@@ -98,9 +98,7 @@ class SystemGroup extends Backend
     }
 
     /**
-     * 编辑数据组
-     *
-     * 标识是业务读取依据,创建后不可修改。
+     * 编辑
      *
      * @param int|null $ids
      * @return string
@@ -154,9 +152,7 @@ class SystemGroup extends Backend
     }
 
     /**
-     * 删除数据组
-     *
-     * 组内存在记录时禁止删除,避免产生孤立记录。
+     * 删除
      *
      * @param string|null $ids
      * @return void
