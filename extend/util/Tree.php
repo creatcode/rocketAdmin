@@ -130,12 +130,7 @@ class Tree
      */
     public function getChildrenIds($myid, $withself = false)
     {
-        $childrenlist = $this->getChildren($myid, $withself);
-        $childrenids = [];
-        foreach ($childrenlist as $k => $v) {
-            $childrenids[] = $v['id'];
-        }
-        return $childrenids;
+        return array_column($this->getChildren($myid, $withself), 'id');
     }
 
     /**
@@ -204,12 +199,7 @@ class Tree
      */
     public function getParentsIds($myid, $withself = false)
     {
-        $parentlist = $this->getParents($myid, $withself);
-        $parentsids = [];
-        foreach ($parentlist as $k => $v) {
-            $parentsids[] = $v['id'];
-        }
-        return $parentsids;
+        return array_column($this->getParents($myid, $withself), 'id');
     }
 
     /**

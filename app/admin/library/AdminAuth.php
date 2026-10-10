@@ -21,11 +21,6 @@ class AdminAuth extends AuthService
     protected $breadcrumb = [];
     protected $logined = false; //登录状态
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function __get($name)
     {
         return Session::get('admin.' . $name);

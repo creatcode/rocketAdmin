@@ -936,7 +936,7 @@ class Crud extends Command
 
                             $tableInfo = null;
                             try {
-                                $tableInfo = Db::name($selectpageTable)->getTableInfo();
+                                $tableInfo = $dbconnect->getTableInfo($prefix . $selectpageTable);
                                 if (isset($tableInfo['fields'])) {
                                     foreach ($tableInfo['fields'] as $m => $n) {
                                         if (in_array($n, ['nickname', 'title', 'name'])) {
@@ -1442,10 +1442,6 @@ EOD;
      */
     protected function writeToFile($name, $data, $pathname)
     {
-        foreach ($data as $index => &$datum) {
-            $datum = is_array($datum) ? '' : $datum;
-        }
-        unset($datum);
         $content = $this->getReplacedStub($name, $data);
 
         if (!is_dir(dirname($pathname))) {

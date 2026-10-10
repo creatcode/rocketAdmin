@@ -65,7 +65,7 @@ class Min extends Command
 
         $minPath = __DIR__ . DIRECTORY_SEPARATOR . 'Min' . DIRECTORY_SEPARATOR;
         $publicPath = app()->getRootPath() . 'public' . DIRECTORY_SEPARATOR;
-        $tempFile = $minPath . uniqid('temp_', true) . '.js';
+        $tempFile = app()->getRuntimePath() . 'min' . DIRECTORY_SEPARATOR . uniqid('temp_', true) . '.js';
 
         $nodeExec = '';
 
