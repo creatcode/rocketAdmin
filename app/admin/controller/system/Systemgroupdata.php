@@ -37,7 +37,7 @@ class SystemGroupData extends Backend
     protected $excludeFields = ['id', 'group_id', 'createtime', 'updatetime'];
 
     /**
-     * 初始化组合数据管理模型与页面配置
+     * 初始化
      *
      * @return void
      */
@@ -63,9 +63,7 @@ class SystemGroupData extends Backend
     }
 
     /**
-     * 构造动态表单需要的字段数据
-     *
-     * 控件类型判断和转义在服务端完成,模板只负责输出。
+     * 构造表单字段
      *
      * @param array $fields 已规范化的字段定义
      * @param array $values 已有记录值
@@ -139,7 +137,7 @@ class SystemGroupData extends Backend
     }
 
     /**
-     * 添加记录
+     * 添加
      *
      * @return string
      * @throws \think\Exception
@@ -188,7 +186,7 @@ class SystemGroupData extends Backend
     }
 
     /**
-     * 编辑记录
+     * 编辑
      *
      * @param int|null $ids
      * @return string
@@ -244,7 +242,7 @@ class SystemGroupData extends Backend
     }
 
     /**
-     * 删除记录
+     * 删除
      *
      * @param string|null $ids
      * @return void
@@ -286,8 +284,6 @@ class SystemGroupData extends Backend
 
     /**
      * 批量更新
-     *
-     * 记录必须全部属于当前数据组,只允许修改状态和排序。
      *
      * @param string|null $ids
      * @return void

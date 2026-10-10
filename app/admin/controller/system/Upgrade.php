@@ -19,7 +19,7 @@ class Upgrade extends Backend
     protected $noNeedRight = ['index', 'check', 'run', 'recover', 'logs', 'status', 'del', 'detail', 'backup'];
 
     /**
-     * 初始化并限制为超级管理员。
+     * 初始化
      *
      * @return void
      */
@@ -32,7 +32,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 显示版本检查和未完成批次状态。
+     * 查看
      *
      * @return string
      */
@@ -49,7 +49,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 升级日志列表。
+     * 升级日志
      *
      * @return \think\response\Json
      */
@@ -73,7 +73,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 当前升级批次进度，供前端轮询。无进行中批次时返回 null。
+     * 升级进度
      *
      * @return \think\response\Json
      */
@@ -91,7 +91,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 查看指定批次的 SQL 执行详情和备份信息。
+     * 详情
      *
      * @return void
      */
@@ -106,7 +106,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 仅向超级管理员流式导出指定批次的备份，避免整包载入内存。
+     * 下载备份
      *
      * @return \think\Response|null
      */
@@ -144,7 +144,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 删除指定升级批次。
+     * 删除
      *
      * @param string $ids 批次编号，多个用逗号分隔
      * @return void
@@ -169,7 +169,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 读取远程版本信息，不下载升级包。
+     * 检查版本
      *
      * @return void
      */
@@ -191,7 +191,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 重新读取版本信息并执行文件与数据库升级。
+     * 执行升级
      *
      * @return void
      */
@@ -227,7 +227,7 @@ class Upgrade extends Backend
     }
 
     /**
-     * 根据本地日志恢复未完成批次。
+     * 恢复升级
      *
      * @return void
      */

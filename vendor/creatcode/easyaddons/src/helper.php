@@ -5,8 +5,72 @@ declare(strict_types=1);
 use think\facade\Event;
 use think\facade\App;
 use think\facade\Config;
-use think\helper\Str;
 use creatcode\easyaddons\addons\support\File;
+
+// TP5.1 的数据库入口仍是 think\Db，统一包内的调用入口。
+if (!class_exists('think\\facade\\Db') && class_exists('think\\Db')) {
+    class_alias('think\\Db', 'think\\facade\\Db');
+}
+
+if (!function_exists('addon_event')) {
+    /**
+     * 使用当前框架的事件系统触发插件事件。
+     *
+     * @param string $event 事件名称
+     * @param mixed $params 事件参数
+     * @param bool $once 是否只获取一个有效结果
+     * @return mixed
+     */
+    function addon_event($event, $params = null, $once = false)
+    {
+        return class_exists('think\\facade\\Event')
+            ? Event::trigger($event, $params, $once)
+            : \think\facade\Hook::listen($event, $params, $once);
+    }
+}
+
+if (!function_exists('get_addon_config_group')) {
+    /**
+     * 读取整组配置，兼容 TP5.1 的默认 app 配置前缀。
+     *
+     * @param string $name 配置组名称
+     * @return array
+     */
+    function get_addon_config_group($name)
+    {
+        return class_exists('think\\Service') ? Config::get($name, []) : Config::pull($name);
+    }
+}
+
+if (!function_exists('get_addon_database_config')) {
+    /**
+     * 读取 TP5.1 单连接或 TP6+ 默认连接的数据库配置。
+     *
+     * @param string $key 配置名称
+     * @param mixed $default 缺省值
+     * @return mixed
+     */
+    function get_addon_database_config($key, $default = null)
+    {
+        $connection = Config::get('database.default');
+        $path = $connection ? 'database.connections.' . $connection . '.' : 'database.';
+        return Config::get($path . $key, $default);
+    }
+}
+
+if (!function_exists('set_addon_route_vars')) {
+    /**
+     * 写入当前框架的路由变量，供插件控制器和授权校验使用。
+     *
+     * @param array $vars 路由变量
+     * @return \think\Request
+     */
+    function set_addon_route_vars(array $vars)
+    {
+        $request = request();
+        return method_exists($request, 'setRoute') ? $request->setRoute($vars) : $request->setRouteVars($vars);
+    }
+}
 
 // 插件类库自动载入
 spl_autoload_register(function ($class) {
@@ -28,6 +92,15 @@ spl_autoload_register(function ($class) {
 
     return false;
 });
+
+// TP5.1 没有服务发现机制，使用原生 app_init 行为接入，不要求宿主增加初始化代码。
+if (!class_exists('think\\Service') && class_exists('think\\facade\\Hook')) {
+    \think\facade\Hook::add('app_init', \creatcode\easyaddons\AddonService::class);
+    \think\Console::addDefaultCommands([
+        \creatcode\easyaddons\addons\command\AddonCommand::class,
+        \creatcode\easyaddons\addons\command\TenantAddonCommand::class,
+    ]);
+}
 
 // FastAdmin 旧版命名空间兼容别名
 (static function () {
@@ -68,8 +141,10 @@ if (!function_exists('hook')) {
         $result = null;
 
         $hooks = (array) Config::get('addons.hooks', []);
-        $method = Str::camel($event);
-        foreach ((array) ($hooks[$event] ?? []) as $name) {
+        $method = parse_name($event, 1, false);
+        $names = $hooks[$event] ?? [];
+        $names = is_string($names) ? explode(',', $names) : (array) $names;
+        foreach (array_unique(array_filter(array_map('trim', $names))) as $name) {
             $class = get_addon_class($name);
             if (!$class || !method_exists($class, $method)) {
                 continue;
@@ -203,7 +278,7 @@ if (!function_exists('get_addon_autoload_config')) {
     function get_addon_autoload_config($truncate = false)
     {
         // 读取addons的配置
-        $config = (array) Config::get('addons');
+        $config = (array) get_addon_config_group('addons');
         if ($truncate) {
             // 清空手动配置的钩子
             $config['hooks'] = [];
@@ -420,8 +495,7 @@ if (!function_exists('get_addon_tables')) {
             return [];
         }
 
-        $default = \think\facade\Config::get('database.default');
-        $prefix = \think\facade\Config::get('database.connections.' . $default . '.prefix', '');
+        $prefix = get_addon_database_config('prefix', '');
 
         $tables = array_map(function ($table) use ($prefix) {
             return str_replace('__PREFIX__', (string)$prefix, $table);
@@ -522,7 +596,8 @@ if (!function_exists('set_addon_info')) {
             throw new Exception('插件不存在');
         }
 
-        $array = $addon->setInfo($name, $array);
+        $array = array_merge($addon->getInfo($name), $array);
+        unset($array['url']);
 
         if (!isset($array['name']) || !isset($array['title']) || !isset($array['version'])) {
             throw new Exception('插件配置写入失败');
@@ -552,10 +627,9 @@ if (!function_exists('set_addon_info')) {
             }
         }
 
-        Event::trigger($name . '_info_before_write', $array);
-        if ($handle = fopen($file, 'w')) {
-            fwrite($handle, implode("\n", $res) . "\n");
-            fclose($handle);
+        addon_event($name . '_info_before_write', $array);
+        $content = implode("\n", $res) . "\n";
+        if (file_put_contents($file, $content, LOCK_EX) === strlen($content)) {
 
             // 清空当前配置缓存
             Config::set([$name => null], 'addoninfo');
@@ -579,10 +653,9 @@ if (!function_exists('set_addon_config')) {
     function set_addon_config($name, $config, $writefile = true)
     {
         $addon = get_addon_instance($name);
-        $addon->setConfig($name, $config);
         $fullconfig = get_addon_fullconfig($name);
         foreach ($fullconfig as $k => &$v) {
-            if (isset($config[$v['name']])) {
+            if (array_key_exists($v['name'], $config)) {
                 $value = $v['type'] !== 'array' && is_array($config[$v['name']]) ? implode(',', $config[$v['name']]) : $config[$v['name']];
                 $v['value'] = $value;
             }
@@ -590,6 +663,8 @@ if (!function_exists('set_addon_config')) {
         if ($writefile) {
             // 写入配置文件
             set_addon_fullconfig($name, $fullconfig);
+        } else {
+            $addon->setConfig($name, $config);
         }
         return true;
     }
@@ -612,12 +687,13 @@ if (!function_exists('set_addon_fullconfig')) {
                 $config[$value['name']] = $value['value'] ?? null;
             }
         }
-        Event::trigger($name . '_config_before_write', ['config' => $config, 'fullconfig' => $array]);
+        addon_event($name . '_config_before_write', ['config' => $config, 'fullconfig' => $array]);
         $file = ADDON_PATH . $name . DIRECTORY_SEPARATOR . 'config.php';
         $ret = file_put_contents($file, "<?php\n\n" . "return " . File::export($array) . ";\n", LOCK_EX);
-        if (!$ret) {
+        if ($ret === false) {
             throw new Exception("配置写入失败");
         }
+        Config::set([$name => null], 'addonconfig');
         return true;
     }
 }

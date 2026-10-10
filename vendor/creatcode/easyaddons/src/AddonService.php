@@ -7,19 +7,61 @@ namespace creatcode\easyaddons;
 use creatcode\easyaddons\addons\command\AddonCommand;
 use creatcode\easyaddons\addons\command\TenantAddonCommand;
 use RuntimeException;
+use think\App;
 use think\facade\Cache;
 use think\facade\Config;
 use think\facade\Event;
 use think\facade\Route;
-use think\helper\Str;
+
+// TP6+ 保留框架服务类型，TP5.1 仅补充行为入口需要的应用实例。
+if (class_exists('think\\Service')) {
+    class_alias('think\\Service', __NAMESPACE__ . '\\AddonServiceBase');
+} else {
+    /**
+     * TP5.1 插件行为的应用上下文。
+     */
+    abstract class AddonServiceBase
+    {
+        /** @var App 当前应用实例。 */
+        protected $app;
+
+        /**
+         * 注入当前应用实例。
+         * @param App $app 当前应用实例
+         */
+        public function __construct(App $app)
+        {
+            $this->app = $app;
+        }
+    }
+}
 
 /**
  * 插件服务注册类
  *
  * 负责初始化插件目录、注册插件事件、注册插件路由和插件管理命令。
  */
-class AddonService extends \think\Service
+class AddonService extends AddonServiceBase
 {
+    /**
+     * TP5.1 的 app_init 行为入口。
+     *
+     * @return void
+     */
+    public function run()
+    {
+        static $initialized = false;
+        if ($initialized) {
+            return;
+        }
+        $initialized = true;
+        foreach (['addons' => 'config', 'easyaddons' => 'easyaddons'] as $name => $file) {
+            Config::set(array_merge(include __DIR__ . '/' . $file . '.php', get_addon_config_group($name)), $name);
+        }
+        $this->register();
+        $this->boot();
+    }
+
     /**
      * 注册插件基础能力
      *
@@ -35,6 +77,22 @@ class AddonService extends \think\Service
         }
         // TP5 兼容常量
         $this->defineLegacyConstants();
+        if (Config::get('addons.autoload', false)) {
+            Config::set(get_addon_autoload_config(true), 'addons');
+        }
+        // 服务列表使用启用插件的当前目录，避免遗留配置注册已禁用的服务。
+        foreach (get_addon_service() as $class) {
+            if (class_exists('think\\Service')) {
+                $this->app->register($class);
+            } else {
+                $service = app($class);
+                foreach (['register', 'boot'] as $method) {
+                    if (method_exists($service, $method)) {
+                        $this->app->invokeMethod([$service, $method]);
+                    }
+                }
+            }
+        }
         //注册插件事件
         $this->addon_event();
     }
@@ -90,7 +148,7 @@ class AddonService extends \think\Service
         // 普遍使用 &$params / &$content 修改传入数据。聚合后只返回一次最终结果，
         // 使宿主使用 Event::trigger(..., true) 时不会跳过同一事件的后续插件。
         foreach ($hooks as $event => $names) {
-            $method = Str::camel($event);
+            $method = parse_name($event, 1, false);
             $listeners = [];
 
             foreach ((array) $names as $name) {
@@ -106,17 +164,25 @@ class AddonService extends \think\Service
                 continue;
             }
 
-            Event::listen($event, function ($params = null) use ($listeners) {
+            $listener = function ($params = null) use ($listeners) {
                 foreach ($listeners as [$class, $method]) {
                     $args = [&$params];
                     call_user_func_array([app($class), $method], $args);
                 }
 
                 return $params;
-            });
+            };
+            if (class_exists('think\\facade\\Event')) {
+                Event::listen($event, $listener);
+            } elseif ($event === 'app_init') {
+                // TP5.1 正在执行 app_init，直接执行插件初始化，避免重入宿主行为。
+                $listener(app());
+            } else {
+                \think\facade\Hook::add($event, $listener);
+            }
         }
 
-        if (isset($hooks['app_init'])) {
+        if (isset($hooks['app_init']) && class_exists('think\\facade\\Event')) {
             Event::trigger('app_init', app());
         }
     }
@@ -246,5 +312,35 @@ class AddonService extends \think\Service
             AddonCommand::class,
             TenantAddonCommand::class,
         ]);
+    }
+
+    /**
+     * 在对应框架的路由加载阶段注册插件路由。
+     *
+     * @param \Closure $callback 路由注册回调
+     * @return void
+     */
+    protected function registerRoutes(\Closure $callback)
+    {
+        if (class_exists('think\\event\\RouteLoaded')) {
+            $this->app->event->listen(\think\event\RouteLoaded::class, $callback);
+        } else {
+            $callback();
+        }
+    }
+
+    /**
+     * 注册当前框架的控制台命令。
+     *
+     * @param array $commands 命令类列表
+     * @return void
+     */
+    protected function commands($commands)
+    {
+        if (class_exists('think\\Service')) {
+            \think\Console::starting(function ($console) use ($commands) {
+                $console->addCommands($commands);
+            });
+        }
     }
 }

@@ -70,7 +70,7 @@
 <div class="panel panel-default panel-intro">
     <div class="panel-heading">
         {:build_heading(null,FALSE)}
-        {if $Think.config.rocket.addon_market_api_url}
+        {if $isMarketSource}
         <ul class="nav nav-tabs nav-category">
             <li class="active"><a href="javascript:;" data-id="">{:__('All')}</a></li>
             <li><a href="javascript:;" data-id="0">{:__('Uncategoried')}</a></li>
@@ -84,10 +84,10 @@
                 <div class="widget-body no-padding">
                     <div id="toolbar" class="toolbar">
                         <a href="javascript:;" class="btn btn-primary btn-refresh" title="{:__('Refresh')}" data-force-refresh="false"><i class="fa fa-refresh"></i> </a>
-                        {if $Think.config.rocket.addon_market_api_url}
                         <button type="button" id="faupload-addon" class="btn btn-danger faupload btn-mini-xs" data-url="addon/local" data-chunking="false" data-mimetype="zip,fastaddon" data-multiple="false"><i class="fa fa-upload"></i>
                             {:__('Local install')}
                         </button>
+                        {if $isMarketSource}
                         <div class="btn-group">
                             <a href="#" class="btn btn-info btn-switch active btn-mini-xs" data-type="all"><i class="fa fa-list"></i> {:__('All')}</a>
                             <a href="#" class="btn btn-info btn-switch btn-mini-xs" data-type="free"><i class="fa fa-gift"></i> {:__('Free')}</a>
@@ -136,7 +136,7 @@
                     <div class="form-group">
                         <label class="control-label">{:__('Version')}</label>
                         <input type="hidden" class="operate" data-name="faversion" value="="/>
-                        <input class="form-control" name="faversion" type="text" value="{$Think.config.rocket.version|htmlentities}">
+                        <input class="form-control" name="faversion" type="text" value="{:htmlentities(config('rocket.version'))}">
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-6 col-md-3">
@@ -200,7 +200,7 @@
     <% var label = labelarr[item.id % 5]; %>
     <% var addon = item.addon; %>
 
-    <span class="operate" data-id="<%=item.id%>" data-name="<%=item.name%>">
+    <span class="operate" data-id="<%=item.id%>" data-name="<%=item.name%>" data-compatible="<%=typeof item.compatible_state == 'undefined' ? '' : item.compatible_state%>">
         <% if(!addon){ %>
             <% if(typeof item.releaselist !="undefined" && item.releaselist.length>1){%>
                 <span class="btn-group">

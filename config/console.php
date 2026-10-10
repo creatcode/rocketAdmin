@@ -10,6 +10,9 @@ return [
         'app\admin\command\Menu',
         'app\admin\command\Min',
         'app\admin\command\Addon',
+        'app\admin\command\AddonManifest',
+        'app\admin\command\AddonCheck',
+        'app\admin\command\AddonCreate',
         'app\admin\command\Api',
     ],
 ];

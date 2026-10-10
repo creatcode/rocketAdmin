@@ -2,15 +2,25 @@
 
 namespace creatcode\easyaddons\addons;
 
-use think\facade\Event;
 use think\exception\HttpException;
 
+/**
+ * 插件路由入口。
+ */
 class Route
 {
+    /**
+     * 校验插件路由并执行控制器方法。
+     *
+     * @param string|null $addon 插件标识
+     * @param string|null $controller 控制器名称
+     * @param string|null $action 操作名称
+     * @return mixed
+     */
     public static function execute($addon = null, $controller = null, $action = null)
     {
         $request = request();
-        $convert = config('url_convert', true);
+        $convert = \think\facade\Config::get('app.url_convert', true);
         $filter = $convert ? 'strtolower' : 'trim';
 
         $addon = $addon !== null && $addon !== '' ? trim(call_user_func($filter, (string)$addon)) : '';
@@ -26,7 +36,8 @@ class Route
             throw new HttpException(404, __('addon route not found'));
         }
 
-        Event::trigger('addon_begin', $request);
+        set_addon_route_vars(['addon' => $addon, 'controller' => $controller, 'action' => $action]);
+        addon_event('addon_begin', $request);
 
         if (!empty($addon) && !empty($controller) && !empty($action)) {
             $info = get_addon_info($addon);
@@ -42,7 +53,7 @@ class Route
             }
 
             $request->setController($controller)->setAction($action);
-            Event::trigger('addon_module_init', $request);
+            addon_event('addon_module_init', $request);
 
             $class = get_addon_class($addon, 'controller', $controller);
             if (!$class) {
@@ -61,7 +72,7 @@ class Route
                 throw new HttpException(404, __('addon action %s not found', get_class($instance) . '->' . $action . '()'));
             }
 
-            Event::trigger('addon_action_begin', $call);
+            addon_event('addon_action_begin', $call);
             return app()->invokeMethod($call, $vars);
         }
 

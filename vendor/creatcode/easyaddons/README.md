@@ -1,12 +1,12 @@
 # easyaddons
 
-`easyaddons` 是一个面向 ThinkPHP 6+ 项目体系的插件开发与运行支持包，提供插件安装、启用、禁用、升级、
+`easyaddons` 是一个面向 ThinkPHP 5.1+ 项目体系的插件开发与运行支持包，提供插件安装、启用、禁用、升级、
 配置读取、资源发布、路由接入与授权相关能力。
 
 ## 适用范围
 
-面向 **TP6+ 内核、FastAdmin 风格项目结构**的插件扩展包，可直接运行 FastAdmin 生态的插件包
-（含使用 `use think\Addons;` 等旧版命名空间的老插件）。
+面向 **TP5.1+ 内核、FastAdmin 风格项目结构**的插件扩展包，支持 FastAdmin 生态插件约定
+（含 `use think\Addons;` 等旧版命名空间）。插件自身的框架 API 和业务依赖仍需匹配宿主版本。
 
 包内已内置以下兼容能力，宿主无需额外提供：
 
@@ -14,11 +14,11 @@
 - **TP5 常量**：`DS`、`EXT`、`ROOT_PATH`、`APP_PATH`、`CONF_PATH`、`RUNTIME_PATH`
   （用 `defined() || define()` 定义，不覆盖宿主已有定义）
 - **文件操作**：`rmdirs`、`copydirs`、`is_really_writable`、`var_export_short` 等全局函数
-  已由 `addons\support\File` 收拢，优先复用宿主同名函数，缺失时用内置实现
+  已由 `addons\support\File` 收拢；目录复制使用内置实现，检测每个文件的复制结果，其余操作按需复用宿主函数
 
 包依赖项目中存在以下基础类或等价实现：
 
-- `app\BaseController`
+- `app\BaseController`（TP6+；TP5.1 使用框架的 `think\Controller`）
 - `app\common\middleware\CommonInit`
 - `app\common\library\Auth`
 - `app\common\library\Menu`
@@ -37,8 +37,8 @@
 
 ## 运行要求
 
-- PHP >= 7.2.5（受 `symfony/var-exporter ^5.4` 与 `guzzlehttp/guzzle ^7.0` 约束）
-- ThinkPHP >= 6.1（支持 6.1 / 7 / 8）
+- PHP >= 7.2.5（依赖 `guzzlehttp/guzzle ^7.0`）
+- ThinkPHP 5.1 / 6 / 7 / 8（具体 PHP 版本还需满足宿主框架要求）
 - MySQL 5.7+ 或 8.0+
 
 ## 安装方式
@@ -47,11 +47,13 @@
 composer require creatcode/easyaddons
 ```
 
-安装后执行配置发布：
+TP6+ 安装后执行配置发布：
 
 ```bash
 php think vendor:publish
 ```
+
+TP5.1 通过 Composer 自动加载注册 `app_init` 行为和命令；默认配置由包内加载，宿主同名配置覆盖默认值。使用 `topthink/think-installer` 的项目可通过 `think-config` 安装配置。
 
 ## 配置
 
@@ -108,6 +110,20 @@ $config = Event::trigger("config_init", $config, true) ?: $config;
 
 插件代码内部触发钩子请使用 `hook()` 函数（插件专属，支持引用传递）；
 宿主侧请使用 `Event::trigger()`。
+
+## SQL 脚本约定
+
+SQL 导入沿用 FastAdmin 的普通脚本约定：语句以行末分号分隔，允许末句省略分号。`DELIMITER` 和存储过程脚本需由插件自身处理。
+
+## 最小回归检查
+
+在宿主项目根目录执行（只检查加载和异常数据，不写入数据库或插件目录）：
+
+```bash
+php -r 'require "vendor/autoload.php"; $e = new \creatcode\easyaddons\addons\AddonException("conflict", -3, ["conflictlist" => ["app/demo.php"]]); if ($e->getData() !== ["conflictlist" => ["app/demo.php"]] || !is_subclass_of(\creatcode\easyaddons\AddonService::class, \think\Service::class)) { exit(1); } echo "OK\n";'
+```
+
+该命令适用于 TP6+；TP5.1 的服务通过行为机制启动。发布前还应在隔离环境验证安装、配置、启禁用、升级与卸载；MySQL DDL 会隐式提交，安装事务不能撤销已经执行的建表语句。
 
 ## 许可
 

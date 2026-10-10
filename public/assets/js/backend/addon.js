@@ -1,12 +1,21 @@
 define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie'], function ($, undefined, Backend, Table, Form, Template, undefined) {
     $.cookie.prototype.defaults = {path: Config.moduleurl};
+    //市场地址去掉尾部斜杠后再拼接，避免出现双斜杠
+    var marketApiUrl = (Config.api_url || '').replace(/\/+$/, '');
+    var marketUrl = function (path) {
+        return marketApiUrl ? marketApiUrl + '/' + path.replace(/^\/+/, '') : '';
+    };
 
     var Controller = {
         index: function () {
+            // 静态清单源走本地代理接口
+            var staticSource = Config.api_url && /\.json(\?|$)/i.test(Config.api_url);
+            // 仅官方市场提供价格与下载量统计
+            var hasMarketStats = !!Config.api_url && !staticSource;
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: Config.api_url ? Config.api_url + '/addon/index' : "addon/downloaded",
+                    index_url: !Config.api_url ? "addon/downloaded" : (staticSource ? "addon/online" : marketUrl('addon/index')),
                     add_url: '',
                     edit_url: '',
                     del_url: '',
@@ -19,15 +28,59 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
             // 弹窗自适应宽高
             var area = Fast.config.openArea != undefined ? Fast.config.openArea : [$(window).width() > 800 ? '800px' : '95%', $(window).height() > 600 ? '600px' : '95%'];
 
+            //空消息兜底，避免弹窗无文案
+            var errMsg = function (ret) {
+                return ret && ret.msg ? ret.msg : __('Addon operate failed');
+            };
+
+            //渲染体检报告，确认后继续
+            var showReport = function (report, onContinue) {
+                var html = '';
+                if (report.undeclared) {
+                    html += '<p class="text-warning">' + __('Addon check undeclared') + '</p>';
+                }
+                if (report.issues && report.issues.length) {
+                    html += '<p>' + __('Addon check found', report.errors, report.warnings) + '</p>';
+                    html += '<ul style="max-height:260px;overflow-y:auto;padding-left:18px;">';
+                    $.each(report.issues.slice(0, 20), function (i, item) {
+                        html += '<li>[' + (item.level === 'error' ? __('Addon check error') : __('Addon check warning')) + '] '
+                            + Fast.api.escape(item.file) + ':' + item.line + ' ' + Fast.api.escape(item.message) + '</li>';
+                    });
+                    html += '</ul>';
+                }
+                Layer.confirm(html, {
+                    title: __('Addon compatibility check'),
+                    area: ['640px', '420px'],
+                    btn: [__('Continue install'), __('Cancel')]
+                }, function (index) {
+                    layer.close(index);
+                    onContinue();
+                });
+            };
+
             var switch_local = function () {
+                //静态清单源本身只有本地按钮，加载失败时无需切换
+                if (staticSource) {
+                    Layer.confirm(__('Addon source unavailable'), {
+                        title: __('Warmtips'),
+                        btn: [__('OK'), __('try to reload')]
+                    }, function (index) {
+                        layer.close(index);
+                    }, function (index) {
+                        layer.close(index);
+                        table.bootstrapTable('refresh');
+                    });
+                    return false;
+                }
                 if ($(".btn-switch.active").data("type") != "local") {
                     Layer.confirm(__('Store not available tips'), {
                         title: __('Warmtips'),
-                        btn: [__('Switch to the local'), __('Try to reload')]
+                        btn: [__('Switch to the local'), __('try to reload')]
                     }, function (index) {
                         layer.close(index);
                         $(".panel .nav-tabs").hide();
-                        $(".toolbar > *:not(:first)").hide();
+                        //切本地后仅保留刷新与本地安装
+                        $(".toolbar > *:not(:first):not(#faupload-addon)").hide();
                         $(".btn-switch[data-type='local']").trigger("click");
                     }, function (index) {
                         layer.close(index);
@@ -79,7 +132,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     uid: userinfo ? userinfo.id : '',
                     token: userinfo ? userinfo.token : '',
                     version: Config.faversion,
-                    force: (files[0].force || false) ? 1 : 0
+                    faversion: Config.faversion,
+                    force: (files[0].force || false) ? 1 : 0,
+                    skipcheck: (files[0].skipcheck || false) ? 1 : 0
                 };
             });
 
@@ -127,7 +182,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                             field: 'author',
                             title: __('Author'),
                             operate: 'LIKE',
-                            width: '100px',
+                            width: '140px',
                             formatter: Controller.api.formatter.author
                         },
                         {
@@ -136,6 +191,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                             operate: 'LIKE',
                             width: '100px',
                             align: 'center',
+                            visible: hasMarketStats,
                             formatter: Controller.api.formatter.price
                         },
                         {
@@ -144,6 +200,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                             operate: 'LIKE',
                             width: '80px',
                             align: 'center',
+                            visible: hasMarketStats,
                             formatter: Controller.api.formatter.downloads
                         },
                         {
@@ -233,6 +290,13 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                                 $(".btn-userinfo").trigger("click");
                             }
                         });
+                    } else if (ret && ret.code === -4) {
+                        showReport(ret.data.report, function () {
+                            up.removeFile(file);
+                            file.skipcheck = true;
+                            up.uploadFile(file);
+                        });
+                        return false;
                     } else if (ret.code === -1) {
                         Layer.confirm(__('Upgrade tips', data.title), {title: __('Warmtips')}, function (index, layero) {
                             up.removeFile(file);
@@ -261,26 +325,26 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                         });
 
                     } else {
-                        Layer.alert(ret.msg, {title: __('Warning'), icon: 0});
+                        Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
                     }
                 });
 
                 // 检测是否登录
-                // $(document).on("mousedown", "#faupload-addon", function (e) {
-                //     var userinfo = Controller.api.userinfo.get();
-                //     var uid = userinfo ? userinfo.id : 0;
-                //     var uploadBtn = Upload.list['faupload-addon'];
+                $(document).on("mousedown", "#faupload-addon", function (e) {
+                    var userinfo = Controller.api.userinfo.get();
+                    var uid = userinfo ? userinfo.id : 0;
+                    var uploadBtn = Upload.list['faupload-addon'];
 
-                //     if (parseInt(uid) === 0) {
-                //         uploadBtn.disable();
-                //         $(".btn-userinfo").trigger("click");
-                //         return false;
-                //     } else {
-                //         if (uploadBtn.disabled) {
-                //             uploadBtn.enable();
-                //         }
-                //     }
-                // });
+                    if (Config.addon_auth_check && parseInt(uid) === 0) {
+                        uploadBtn.disable();
+                        $(".btn-userinfo").trigger("click");
+                        return false;
+                    } else {
+                        if (uploadBtn.disabled) {
+                            uploadBtn.enable();
+                        }
+                    }
+                });
             });
 
             // 查看插件首页
@@ -341,7 +405,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                 var userinfo = Controller.api.userinfo.get();
                 if (!userinfo) {
                     Fast.api.ajax({
-                        url: Config.api_url + '/user/logintpl',
+                        url: marketUrl('user/logintpl'),
                         type: 'post',
                         loading: false,
                         data: {
@@ -361,7 +425,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                                 data.push({name: "faversion", value: Config.faversion});
                                 data.push({name: "sid", value: Controller.api.sid()});
                                 Fast.api.ajax({
-                                    url: Config.api_url + '/user/login',
+                                    url: marketUrl('user/login'),
                                     type: 'post',
                                     data: data
                                 }, function (data, ret) {
@@ -389,7 +453,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     });
                 } else {
                     Fast.api.ajax({
-                        url: Config.api_url + '/user/userinfotpl',
+                        url: marketUrl('user/userinfotpl'),
                         type: 'post',
                         data: {
                             uid: userinfo.id,
@@ -406,7 +470,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                             btn: [__('Logout'), __('Close')],
                             yes: function () {
                                 Fast.api.ajax({
-                                    url: Config.api_url + '/user/logout',
+                                    url: marketUrl('user/logout'),
                                     data: {
                                         uid: userinfo.id,
                                         token: userinfo.token,
@@ -416,11 +480,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                                 }, function (data, ret) {
                                     Controller.api.userinfo.set(null);
                                     Layer.closeAll();
-                                    Layer.alert(ret.msg, {title: __('Warning'), icon: 0});
+                                    Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
                                 }, function (data, ret) {
                                     Controller.api.userinfo.set(null);
                                     Layer.closeAll();
-                                    Layer.alert(ret.msg, {title: __('Warning'), icon: 0});
+                                    Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
                                 });
                             }
                         });
@@ -455,7 +519,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                 return false;
             });
 
-            var install = function (name, version, force) {
+            var install = function (name, version, force, skipcheck) {
                 var userinfo = Controller.api.userinfo.get();
                 var uid = userinfo ? userinfo.id : 0;
                 var token = userinfo ? userinfo.token : '';
@@ -467,7 +531,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                         uid: uid,
                         token: token,
                         version: version,
-                        faversion: Config.faversion
+                        faversion: Config.faversion,
+                        skipcheck: skipcheck ? 1 : 0
                     }
                 }, function (data, ret) {
                     Layer.closeAll();
@@ -500,6 +565,12 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     });
                 }, function (data, ret) {
                     var area = Fast.config.openArea != undefined ? Fast.config.openArea : [$(window).width() > 650 ? '650px' : '95%', $(window).height() > 710 ? '710px' : '95%'];
+                    if (ret && ret.code === -4) {
+                        showReport(ret.data.report, function () {
+                            install(name, version, force, true);
+                        });
+                        return false;
+                    }
                     if (ret && ret.code === -2) {
                         //如果登录已经超时,重新提醒登录
                         if (uid && uid != ret.data.uid) {
@@ -554,7 +625,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                         });
 
                     } else {
-                        Layer.alert(ret.msg, {title: __('Warning'), icon: 0});
+                        Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
                     }
                     return false;
                 });
@@ -586,7 +657,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                         });
 
                     } else {
-                        Layer.alert(ret.msg, {title: __('Warning'), icon: 0});
+                        Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
                     }
                     return false;
                 });
@@ -622,25 +693,31 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                         });
 
                     } else {
-                        Layer.alert(ret.msg, {title: __('Warning'), icon: 0});
+                        Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
                     }
                     return false;
                 });
             };
 
-            var upgrade = function (name, version) {
+            var upgrade = function (name, version, skipcheck) {
                 var userinfo = Controller.api.userinfo.get();
                 var uid = userinfo ? userinfo.id : 0;
                 var token = userinfo ? userinfo.token : '';
                 Fast.api.ajax({
                     url: 'addon/upgrade',
-                    data: {name: name, uid: uid, token: token, version: version, faversion: Config.faversion}
+                    data: {name: name, uid: uid, token: token, version: version, faversion: Config.faversion, skipcheck: skipcheck ? 1 : 0}
                 }, function (data, ret) {
                     Config['addons'][name] = data.addon;
                     Layer.closeAll();
                     Controller.api.refresh(table, name);
                 }, function (data, ret) {
-                    Layer.alert(ret.msg, {title: __('Warning')});
+                    if (ret && ret.code === -4) {
+                        showReport(ret.data.report, function () {
+                            upgrade(name, version, true);
+                        });
+                        return false;
+                    }
+                    Layer.alert(errMsg(ret), {title: __('Warning')});
                     return false;
                 });
             };
@@ -650,12 +727,22 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                 var that = this;
                 var name = $(this).closest(".operate").data("name");
                 var version = $(this).data("version");
+                var compatible = $(this).closest(".operate").data("compatible");
 
                 var userinfo = Controller.api.userinfo.get();
                 var uid = userinfo ? userinfo.id : 0;
 
-                if (parseInt(uid) === 0) {
+                //静态清单源不需要市场账号
+                if (!staticSource && parseInt(uid) === 0) {
                     $(".btn-userinfo").trigger("click", name, version);
+                    return false;
+                }
+                //仅明确声明适配的插件直接安装，其余先确认且不阻止
+                if (compatible !== 'ok') {
+                    Layer.confirm(__('Undeclared compatibility tips'), {title: __('Warmtips')}, function (index) {
+                        layer.close(index);
+                        install(name, version, false);
+                    });
                     return false;
                 }
                 install(name, version, false);
@@ -696,8 +783,14 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     return false;
                 }
                 var version = $(this).data("version");
+                var compatible = $(this).closest(".operate").data("compatible");
+                //未声明适配时在确认文案中附加提示，避免二次弹窗
+                var tips = __('Upgrade tips', Config['addons'][name].title);
+                if (compatible !== 'ok') {
+                    tips += '<br><span class="text-warning">' + __('Undeclared compatibility tips') + '</span>';
+                }
 
-                Layer.confirm(__('Upgrade tips', Config['addons'][name].title), {title: __('Warmtips')}, function (index, layero) {
+                Layer.confirm(tips, {title: __('Warmtips')}, function (index, layero) {
                     upgrade(name, version);
                 });
             });
@@ -747,7 +840,16 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     if ($(".btn-switch.active").data("type") == "local") {
                         // return value;
                     }
-                    var title = '<a class="title" href="' + row.url + '" data-toggle="tooltip" title="' + __('View addon home page') + '" target="_blank"><span class="' + Fast.api.escape(row.color) + '">' + value + '</span></a>';
+                    //市场源不返回前台入口字段，保持原有可点击行为；本地与静态源仅已装且有前台入口时才是链接
+                    var inner = '<span class="' + Fast.api.escape(row.color) + '">' + value + '</span>';
+                    var linkable = row.has_front === undefined ? true : (!!row.addon && row.has_front);
+                    var title = linkable
+                        ? '<a class="title" href="' + row.url + '" data-toggle="tooltip" title="' + __('View addon home page') + '" target="_blank">' + inner + '</a>'
+                        : inner;
+                    //已适配为默认状态不显示标签，仅对未声明适配的插件提示
+                    if (row.compatible_state === 'undeclared') {
+                        title += ' <span class="label label-warning">' + __('Undeclared compatibility') + '</span>';
+                    }
                     if (row.screenshots && row.screenshots.length > 0) {
                         title += ' <a href="javascript:;" data-index="' + index + '" class="view-screenshots text-success" title="' + __('View addon screenshots') + '" data-toggle="tooltip"><i class="fa fa-image"></i></a>';
                     }
@@ -784,10 +886,19 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     return value;
                 },
                 version: function (value, row, index) {
-                    return row.addon && row.addon.version != row.version ? '<a href="' + row.url + '?version=' + row.version + '" target="_blank"><span class="releasetips text-primary" data-toggle="tooltip" title="' + __('New version tips', row.version) + '">' + row.addon.version + '<i></i></span></a>' : row.version;
+                    if (row.addon && row.addon.version != row.version) {
+                        //市场源提供插件详情页可跳转；本地与静态源的 url 是插件前台地址，不可跳转且提示不带"点击"
+                        if (row.has_front === undefined) {
+                            return '<a href="' + row.url + '?version=' + row.version + '" target="_blank"><span class="releasetips text-primary" data-toggle="tooltip" title="' + __('New version tips', row.version) + '">' + row.addon.version + '<i></i></span></a>';
+                        }
+                        return '<span class="releasetips text-primary" data-toggle="tooltip" title="' + __('New version found', row.version) + '">' + row.addon.version + '<i></i></span>';
+                    }
+                    return row.version;
                 },
                 home: function (value, row, index) {
-                    return row.addon && parseInt(row.addon.state) > 0 ? '<a href="' + row.addon.url + '" data-toggle="tooltip" title="' + __('View addon index page') + '" target="_blank"><i class="fa fa-home text-primary"></i></a>' : '<a href="javascript:;"><i class="fa fa-home text-gray"></i></a>';
+                    //已安装且启用、并且存在前台入口的插件才可点击
+                    var clickable = row.addon && parseInt(row.addon.state) > 0 && row.has_front !== false;
+                    return clickable ? '<a href="' + row.addon.url + '" data-toggle="tooltip" title="' + __('View addon index page') + '" target="_blank"><i class="fa fa-home text-primary"></i></a>' : '<a href="javascript:;"><i class="fa fa-home text-gray"></i></a>';
                 },
             },
             bindevent: function () {
