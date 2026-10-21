@@ -26,7 +26,7 @@ class Addon extends Backend
     public function initialize()
     {
         parent::initialize();
-        if (!$this->auth->isSuperAdmin() && in_array($this->request->action(), ['install', 'uninstall', 'local', 'upgrade', 'authorization', 'testdata'])) {
+        if (!$this->auth->isSuperAdmin() && in_array($this->request->action(), ['install', 'uninstall', 'local', 'upgrade', 'testdata'])) {
             $this->error(__('Access is allowed only to the super management group'));
         }
     }
@@ -43,14 +43,10 @@ class Addon extends Backend
             $v['url'] = str_replace($this->request->server('SCRIPT_NAME'), '', $v['url']);
         }
         $this->assignconfig([
-            'addons'           => $addons,
-            'api_url'          => Service::marketApiUrl(),
-            'faversion'        => config('rocket.version'),
-            'domain'           => request()->host(true),
-            'addon_auth_check' => Service::addonConfig('addon_auth_check', false),
+            'addons'     => $addons,
+            'api_url'    => Service::marketApiUrl(),
+            'faversion'  => config('rocket.version'),
         ]);
-        //静态清单源不需要市场专属工具栏
-        $this->view->assign('isMarketSource', Service::marketApiUrl() !== '' && !$this->isStaticSource());
 
         return $this->view->fetch();
     }
@@ -192,25 +188,13 @@ class Addon extends Backend
         $report = null;
         $needConfirm = false;
         try {
-            $uid = $this->request->post("uid");
-            $token = $this->request->post("token");
             $version = $this->request->post("version");
             $faversion = $this->request->post("faversion");
             $extend = [
-                'uid'       => $uid,
-                'token'     => $token,
                 'version'   => $version,
                 'faversion' => $faversion
             ];
-            //解压前校验兼容声明
-            if ($this->isStaticSource()) {
-                $tmpFile = $this->downloadFromSource($name, (string)$version);
-            } else {
-                $extend['domain'] = request()->host(true);
-                $extend['phpversion'] = PHP_VERSION;
-                $extend['mysqlversion'] = Service::mysqlVersion();
-                $tmpFile = Service::download($name, $extend);
-            }
+            $tmpFile = $this->downloadFromSource($name, (string)$version);
             //解压前体检，有问题时先让用户确认
             $report = $this->checkPackage($tmpFile);
             $needConfirm = (bool)$report && !$this->request->post('skipcheck');
@@ -314,16 +298,12 @@ class Addon extends Backend
         $needConfirm = false;
         $file = $this->request->file('file');
         try {
-            $uid = $this->request->post("uid");
-            $token = $this->request->post("token");
+            if (Service::addonConfig('addon_auth_check', false)) {
+                throw new Exception(__('当前仅支持本地安装和 JSON 源，不支持市场授权校验'));
+            }
             $faversion = $this->request->post("faversion");
             $force = (int)$this->request->post("force", 0);
-            if (Service::addonConfig('addon_auth_check', false) && (!$uid || !$token)) {
-                throw new Exception(__('Please login and try to install'));
-            }
             $extend = [
-                'uid'       => $uid,
-                'token'     => $token,
                 'faversion' => $faversion
             ];
             //解压前体检，有问题时先让用户确认
@@ -372,28 +352,19 @@ class Addon extends Backend
         $needConfirm = false;
         try {
             $info = get_addon_info($name);
-            $uid = $this->request->post("uid");
-            $token = $this->request->post("token");
             $version = $this->request->post("version");
             $faversion = $this->request->post("faversion");
             $extend = [
-                'uid'        => $uid,
-                'token'      => $token,
                 'version'    => $version,
                 'oldversion' => $info['version'] ?? '',
                 'faversion'  => $faversion
             ];
-            //静态清单源按指定版本从源内下载，否则回退市场接口
-            if ($this->isStaticSource()) {
-                $tmpFile = $this->downloadFromSource($name, (string)$version);
-                //解压前体检，有问题时先让用户确认
-                $report = $this->checkPackage($tmpFile);
-                $needConfirm = (bool)$report && !$this->request->post('skipcheck');
-                if (!$needConfirm) {
-                    $info = Service::upgrade($name, $extend, $tmpFile);
-                }
-            } else {
-                $info = Service::upgrade($name, $extend);
+            $tmpFile = $this->downloadFromSource($name, (string)$version);
+            //解压前体检，有问题时先让用户确认
+            $report = $this->checkPackage($tmpFile);
+            $needConfirm = (bool)$report && !$this->request->post('skipcheck');
+            if (!$needConfirm) {
+                $info = Service::upgrade($name, $extend, $tmpFile);
             }
             Cache::delete('__menu__');
         } catch (AddonException $e) {
@@ -441,7 +412,6 @@ class Addon extends Backend
         $limit = (int)$this->request->get("limit");
         $filter = $this->request->get("filter", '');
         $search = $this->request->get("search", '', 'strip_tags,htmlspecialchars');
-        $onlineaddons = $this->getAddonList();
         $filter = (array)json_decode($filter, true);
         $addons = get_addon_list();
         $list = [];
@@ -450,21 +420,16 @@ class Addon extends Backend
                 continue;
             }
 
-            if (isset($onlineaddons[$v['name']])) {
-                $v = array_merge($v, $onlineaddons[$v['name']]);
-                $v['price'] = '-';
-            } else {
-                $v['category_id'] = 0;
-                $v['flag'] = '';
-                $v['banner'] = '';
-                $v['image'] = '';
-                $v['demourl'] = '';
-                $v['price'] = __('None');
-                $v['screenshots'] = [];
-                $v['releaselist'] = [];
-                $v['url'] = addon_url($v['name']);
-                $v['url'] = str_replace($this->request->server('SCRIPT_NAME'), '', $v['url']);
-            }
+            $v['category_id'] = 0;
+            $v['flag'] = '';
+            $v['banner'] = '';
+            $v['image'] = '';
+            $v['demourl'] = '';
+            $v['price'] = __('None');
+            $v['screenshots'] = [];
+            $v['releaselist'] = [];
+            $v['url'] = addon_url($v['name']);
+            $v['url'] = str_replace($this->request->server('SCRIPT_NAME'), '', $v['url']);
             $v['createtime'] = filemtime(ADDON_PATH . $v['name']);
             //适配声明状态：ok 已声明完美适配 / undeclared 未声明或非真值
             $v['compatible_state'] = $this->isCompatible((string)($v['compatible'] ?? '')) ? 'ok' : 'undeclared';
@@ -483,49 +448,6 @@ class Addon extends Backend
 
         $callback = $this->request->get('callback') ? "jsonp" : "json";
         return $callback($result);
-    }
-
-    /**
-     * 检测
-     */
-    public function isbuy()
-    {
-        $name = $this->request->post("name");
-        $this->checkAddonName($name);
-        $uid = $this->request->post("uid");
-        $token = $this->request->post("token");
-        $version = $this->request->post("version");
-        $faversion = $this->request->post("faversion");
-        $extend = [
-            'uid'       => $uid,
-            'token'     => $token,
-            'version'   => $version,
-            'faversion' => $faversion
-        ];
-        try {
-            $result = Service::isBuy($name, $extend);
-        } catch (Exception $e) {
-            $this->error(__($e->getMessage()));
-        }
-        return json($result);
-    }
-
-    /**
-     * 刷新授权
-     */
-    public function authorization()
-    {
-        $params = [
-            'uid'       => $this->request->post('uid'),
-            'token'     => $this->request->post('token'),
-            'faversion' => $this->request->post('faversion'),
-        ];
-        try {
-            Service::authorization($params);
-        } catch (Exception $e) {
-            $this->error(__($e->getMessage()));
-        }
-        $this->success(__('Operate successful'));
     }
 
     /**
@@ -552,34 +474,6 @@ class Addon extends Backend
         }
 
         $this->success('', null, ['tables' => $tables]);
-    }
-
-    protected function getAddonList()
-    {
-        $onlineaddons = Cache::get("onlineaddons");
-        if (!is_array($onlineaddons) && Service::marketApiUrl()) {
-            $onlineaddons = [];
-            $params = [
-                'uid'       => $this->request->post('uid'),
-                'token'     => $this->request->post('token'),
-                'version'   => config('rocket.version'),
-                'faversion' => config('rocket.version'),
-            ];
-            $json = [];
-            try {
-                $json = Service::addons($params);
-            } catch (\Exception $e) {
-            }
-            $rows = $json['rows'] ?? [];
-            foreach ($rows as $index => $row) {
-                if (empty($row['name']) || !preg_match('/^[a-zA-Z0-9]+$/', (string)$row['name'])) {
-                    continue;
-                }
-                $onlineaddons[$row['name']] = $row;
-            }
-            Cache::set("onlineaddons", $onlineaddons, 600);
-        }
-        return $onlineaddons;
     }
 
     /**
@@ -631,6 +525,9 @@ class Addon extends Backend
      */
     protected function readSource()
     {
+        if (!$this->isStaticSource()) {
+            $this->error(__('Addon source data invalid'));
+        }
         $url = (string)Config::get('rocket.addon_market_api_url');
         $cacheKey = 'addon_source_' . md5($url);
         $data = Cache::get($cacheKey);

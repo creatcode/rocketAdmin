@@ -1,21 +1,11 @@
-define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie'], function ($, undefined, Backend, Table, Form, Template, undefined) {
-    $.cookie.prototype.defaults = {path: Config.moduleurl};
-    //市场地址去掉尾部斜杠后再拼接，避免出现双斜杠
-    var marketApiUrl = (Config.api_url || '').replace(/\/+$/, '');
-    var marketUrl = function (path) {
-        return marketApiUrl ? marketApiUrl + '/' + path.replace(/^\/+/, '') : '';
-    };
-
+define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function ($, undefined, Backend, Table, Form, Template, undefined) {
     var Controller = {
         index: function () {
-            // 静态清单源走本地代理接口
-            var staticSource = Config.api_url && /\.json(\?|$)/i.test(Config.api_url);
-            // 仅官方市场提供价格与下载量统计
-            var hasMarketStats = !!Config.api_url && !staticSource;
+            var sourceUrl = Config.api_url || '';
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: !Config.api_url ? "addon/downloaded" : (staticSource ? "addon/online" : marketUrl('addon/index')),
+                    index_url: sourceUrl && /\.json(\?|$)/i.test(sourceUrl) ? "addon/online" : "addon/downloaded",
                     add_url: '',
                     edit_url: '',
                     del_url: '',
@@ -58,51 +48,23 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                 });
             };
 
-            var switch_local = function () {
-                //静态清单源本身只有本地按钮，加载失败时无需切换
-                if (staticSource) {
-                    Layer.confirm(__('Addon source unavailable'), {
-                        title: __('Warmtips'),
-                        btn: [__('OK'), __('try to reload')]
-                    }, function (index) {
-                        layer.close(index);
-                    }, function (index) {
-                        layer.close(index);
-                        table.bootstrapTable('refresh');
-                    });
-                    return false;
-                }
-                if ($(".btn-switch.active").data("type") != "local") {
-                    Layer.confirm(__('Store not available tips'), {
-                        title: __('Warmtips'),
-                        btn: [__('Switch to the local'), __('try to reload')]
-                    }, function (index) {
-                        layer.close(index);
-                        $(".panel .nav-tabs").hide();
-                        //切本地后仅保留刷新与本地安装
-                        $(".toolbar > *:not(:first):not(#faupload-addon)").hide();
-                        $(".btn-switch[data-type='local']").trigger("click");
-                    }, function (index) {
-                        layer.close(index);
-                        table.bootstrapTable('refresh');
-                    });
-                    return false;
-                }
+            var sourceError = function () {
+                Layer.confirm(__('Addon source unavailable'), {
+                    title: __('Warmtips'),
+                    btn: [__('OK'), __('try to reload')]
+                }, function (index) {
+                    layer.close(index);
+                }, function (index) {
+                    layer.close(index);
+                    table.bootstrapTable('refresh');
+                });
             };
             table.on('load-success.bs.table', function (e, json) {
-                if (json && typeof json.category != 'undefined' && $(".nav-category li").length == 2) {
-                    $.each(json.category, function (i, j) {
-                        $("<li><a href='javascript:;' data-id='" + j.id + "'>" + j.name + "</a></li>").insertBefore($(".nav-category li:last"));
-                    });
-                }
-                if (typeof json.rows === 'undefined' && typeof json.code != 'undefined') {
-                    switch_local();
+                if (json && typeof json.rows === 'undefined' && typeof json.code !== 'undefined') {
+                    sourceError();
                 }
             });
-            table.on('load-error.bs.table', function (e, status, res) {
-                console.log(e, status, res);
-                switch_local();
-            });
+            table.on('load-error.bs.table', sourceError);
             table.on('post-body.bs.table', function (e, settings, json, xhr) {
                 var parenttable = table.closest('.bootstrap-table');
                 var d = $(".fixed-table-toolbar", parenttable).find(".search input");
@@ -127,10 +89,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
             Template.helper("addons", Config['addons']);
 
             $("#faupload-addon").data("params", function (files, xhr) {
-                var userinfo = Controller.api.userinfo.get();
                 return {
-                    uid: userinfo ? userinfo.id : '',
-                    token: userinfo ? userinfo.token : '',
                     version: Config.faversion,
                     faversion: Config.faversion,
                     force: (files[0].force || false) ? 1 : 0,
@@ -142,17 +101,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
             table.bootstrapTable({
                 url: $.fn.bootstrapTable.defaults.extend.index_url,
                 pageSize: 50,
-                queryParams: function (params) {
-                    var userinfo = Controller.api.userinfo.get();
-                    $.extend(params, {
-                        uid: userinfo ? userinfo.id : '',
-                        token: userinfo ? userinfo.token : '',
-                        domain: Config.domain,
-                        version: Config.faversion,
-                        sid: Controller.api.sid()
-                    });
-                    return params;
-                },
                 columns: [
                     [
                         {field: 'id', title: 'ID', operate: false, visible: false},
@@ -184,24 +132,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                             operate: 'LIKE',
                             width: '140px',
                             formatter: Controller.api.formatter.author
-                        },
-                        {
-                            field: 'price',
-                            title: __('Price'),
-                            operate: 'LIKE',
-                            width: '100px',
-                            align: 'center',
-                            visible: hasMarketStats,
-                            formatter: Controller.api.formatter.price
-                        },
-                        {
-                            field: 'downloads',
-                            title: __('Downloads'),
-                            operate: 'LIKE',
-                            width: '80px',
-                            align: 'center',
-                            visible: hasMarketStats,
-                            formatter: Controller.api.formatter.downloads
                         },
                         {
                             field: 'version',
@@ -282,15 +212,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     });
                     return false;
                 }, function (data, ret, up, file) {
-                    if (ret.msg && ret.msg.match(/(login|登录)/g)) {
-                        return Layer.alert(ret.msg, {
-                            title: __('Warning'),
-                            btn: [__('Login now')],
-                            yes: function (index, layero) {
-                                $(".btn-userinfo").trigger("click");
-                            }
-                        });
-                    } else if (ret && ret.code === -4) {
+                    if (ret && ret.code === -4) {
                         showReport(ret.data.report, function () {
                             up.removeFile(file);
                             file.skipcheck = true;
@@ -329,22 +251,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     }
                 });
 
-                // 检测是否登录
-                $(document).on("mousedown", "#faupload-addon", function (e) {
-                    var userinfo = Controller.api.userinfo.get();
-                    var uid = userinfo ? userinfo.id : 0;
-                    var uploadBtn = Upload.list['faupload-addon'];
-
-                    if (Config.addon_auth_check && parseInt(uid) === 0) {
-                        uploadBtn.disable();
-                        $(".btn-userinfo").trigger("click");
-                        return false;
-                    } else {
-                        if (uploadBtn.disabled) {
-                            uploadBtn.enable();
-                        }
-                    }
-                });
             });
 
             // 查看插件首页
@@ -357,26 +263,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                 }
             });
 
-            // 切换
-            $(document).on("click", ".btn-switch", function () {
-                $(".btn-switch").removeClass("active");
-                $(this).addClass("active");
-                $("form.form-commonsearch input[name='type']").val($(this).data("type"));
-                var method = $(this).data("type") == 'local' ? 'hideColumn' : 'showColumn';
-                table.bootstrapTable(method, 'price');
-                table.bootstrapTable(method, 'downloads');
-                table.bootstrapTable('refresh', {url: ($(this).data("url") ? $(this).data("url") : $.fn.bootstrapTable.defaults.extend.index_url), pageNumber: 1});
-                return false;
-            });
-
-            // 切换分类
-            $(document).on("click", ".nav-category li a", function () {
-                $(".nav-category li").removeClass("active");
-                $(this).parent().addClass("active");
-                $("form.form-commonsearch input[name='category_id']").val($(this).data("id"));
-                table.bootstrapTable('refresh', {url: $(this).data("url"), pageNumber: 1});
-                return false;
-            });
             var tables = [];
             $(document).on("click", "#droptables", function () {
                 if ($(this).prop("checked")) {
@@ -398,138 +284,12 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                 $(window).resize();
             });
 
-            // 会员信息
-            $(document).on("click", ".btn-userinfo", function (e, name, version) {
-                var that = this;
-                var area = [$(window).width() > 800 ? '500px' : '95%', $(window).height() > 600 ? '400px' : '95%'];
-                var userinfo = Controller.api.userinfo.get();
-                if (!userinfo) {
-                    Fast.api.ajax({
-                        url: marketUrl('user/logintpl'),
-                        type: 'post',
-                        loading: false,
-                        data: {
-                            version: Config.faversion,
-                            sid: Controller.api.sid()
-                        }
-                    }, function (tpldata, ret) {
-                        Layer.open({
-                            content: Template.render(tpldata, {}),
-                            zIndex: 99,
-                            area: area,
-                            title: __('Login'),
-                            resize: false,
-                            btn: [__('Login')],
-                            yes: function (index, layero) {
-                                var data = $("form", layero).serializeArray();
-                                data.push({name: "faversion", value: Config.faversion});
-                                data.push({name: "sid", value: Controller.api.sid()});
-                                Fast.api.ajax({
-                                    url: marketUrl('user/login'),
-                                    type: 'post',
-                                    data: data
-                                }, function (data, ret) {
-                                    Controller.api.userinfo.set(data);
-                                    Layer.closeAll();
-                                    Layer.alert(ret.msg, {title: __('Warning'), icon: 1});
-                                    return false;
-                                }, function (data, ret) {
-                                });
-                            },
-                            success: function (layero, index) {
-                                this.checkEnterKey = function (event) {
-                                    if (event.keyCode === 13) {
-                                        $(".layui-layer-btn0").trigger("click");
-                                        return false;
-                                    }
-                                };
-                                $(document).on('keydown', this.checkEnterKey);
-                            },
-                            end: function () {
-                                $(document).off('keydown', this.checkEnterKey);
-                            }
-                        });
-                        return false;
-                    });
-                } else {
-                    Fast.api.ajax({
-                        url: marketUrl('user/userinfotpl'),
-                        type: 'post',
-                        data: {
-                            uid: userinfo.id,
-                            token: userinfo.token,
-                            version: Config.faversion,
-                            sid: Controller.api.sid()
-                        }
-                    }, function (tpldata, ret) {
-                        Layer.open({
-                            content: Template.render(tpldata, userinfo),
-                            area: area,
-                            title: __('Userinfo'),
-                            resize: false,
-                            btn: [__('Logout'), __('Close')],
-                            yes: function () {
-                                Fast.api.ajax({
-                                    url: marketUrl('user/logout'),
-                                    data: {
-                                        uid: userinfo.id,
-                                        token: userinfo.token,
-                                        version: Config.faversion,
-                                        sid: Controller.api.sid()
-                                    }
-                                }, function (data, ret) {
-                                    Controller.api.userinfo.set(null);
-                                    Layer.closeAll();
-                                    Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
-                                }, function (data, ret) {
-                                    Controller.api.userinfo.set(null);
-                                    Layer.closeAll();
-                                    Layer.alert(errMsg(ret), {title: __('Warning'), icon: 0});
-                                });
-                            }
-                        });
-                        return false;
-                    }, function (data) {
-                        Controller.api.userinfo.set(null);
-                        $(that).trigger('click');
-                        return false;
-                    });
-                }
-            });
-
-            //刷新授权
-            $(document).on("click", ".btn-authorization", function () {
-                var userinfo = Controller.api.userinfo.get();
-                if (!userinfo) {
-                    $(".btn-userinfo").trigger("click");
-                    return false;
-                }
-                Layer.confirm(__('Are you sure you want to refresh authorization?'), {icon: 3, title: __('Warmtips')}, function () {
-                    Fast.api.ajax({
-                        url: 'addon/authorization',
-                        data: {
-                            uid: userinfo.id,
-                            token: userinfo.token
-                        }
-                    }, function (data, ret) {
-                        $(".btn-refresh").trigger("click");
-                        Layer.closeAll();
-                    });
-                });
-                return false;
-            });
-
             var install = function (name, version, force, skipcheck) {
-                var userinfo = Controller.api.userinfo.get();
-                var uid = userinfo ? userinfo.id : 0;
-                var token = userinfo ? userinfo.token : '';
                 Fast.api.ajax({
                     url: 'addon/install',
                     data: {
                         name: name,
                         force: force ? 1 : 0,
-                        uid: uid,
-                        token: token,
                         version: version,
                         faversion: Config.faversion,
                         skipcheck: skipcheck ? 1 : 0
@@ -547,8 +307,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                                         url: 'addon/testdata',
                                         data: {
                                             name: name,
-                                            uid: uid,
-                                            token: token,
                                             version: version,
                                             faversion: Config.faversion
                                         }
@@ -571,44 +329,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                         });
                         return false;
                     }
-                    if (ret && ret.code === -2) {
-                        //如果登录已经超时,重新提醒登录
-                        if (uid && uid != ret.data.uid) {
-                            Controller.api.userinfo.set(null);
-                            $(".operate[data-name='" + name + "'] .btn-install:first").trigger("click");
-                            return;
-                        }
-                        top.Fast.api.open(ret.data.payurl, __('Pay now'), {
-                            area: area,
-                            end: function () {
-                                Fast.api.ajax({
-                                    url: 'addon/isbuy',
-                                    data: {
-                                        name: name,
-                                        force: force ? 1 : 0,
-                                        uid: uid,
-                                        token: token,
-                                        version: version,
-                                        faversion: Config.faversion
-                                    }
-                                }, function () {
-                                    top.Layer.alert(__('Pay successful tips'), {
-                                        btn: [__('Continue installation')],
-                                        title: __('Warning'),
-                                        icon: 1,
-                                        yes: function (index) {
-                                            top.Layer.close(index);
-                                            install(name, version);
-                                        }
-                                    });
-                                    return false;
-                                }, function () {
-                                    console.log(__('Canceled'));
-                                    return false;
-                                });
-                            }
-                        });
-                    } else if (ret && ret.code === -3) {
+                    if (ret && ret.code === -3) {
                         //插件目录发现影响全局的文件
                         Layer.open({
                             content: Template("conflicttpl", ret.data),
@@ -700,12 +421,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
             };
 
             var upgrade = function (name, version, skipcheck) {
-                var userinfo = Controller.api.userinfo.get();
-                var uid = userinfo ? userinfo.id : 0;
-                var token = userinfo ? userinfo.token : '';
                 Fast.api.ajax({
                     url: 'addon/upgrade',
-                    data: {name: name, uid: uid, token: token, version: version, faversion: Config.faversion, skipcheck: skipcheck ? 1 : 0}
+                    data: {name: name, version: version, faversion: Config.faversion, skipcheck: skipcheck ? 1 : 0}
                 }, function (data, ret) {
                     Config['addons'][name] = data.addon;
                     Layer.closeAll();
@@ -724,19 +442,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
 
             // 点击安装
             $(document).on("click", ".btn-install", function () {
-                var that = this;
                 var name = $(this).closest(".operate").data("name");
                 var version = $(this).data("version");
                 var compatible = $(this).closest(".operate").data("compatible");
 
-                var userinfo = Controller.api.userinfo.get();
-                var uid = userinfo ? userinfo.id : 0;
 
-                //静态清单源不需要市场账号
-                if (!staticSource && parseInt(uid) === 0) {
-                    $(".btn-userinfo").trigger("click", name, version);
-                    return false;
-                }
                 //仅明确声明适配的插件直接安装，其余先确认且不阻止
                 if (compatible !== 'ok') {
                     Layer.confirm(__('Undeclared compatibility tips'), {title: __('Warmtips')}, function (index) {
@@ -837,12 +547,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
         api: {
             formatter: {
                 title: function (value, row, index) {
-                    if ($(".btn-switch.active").data("type") == "local") {
-                        // return value;
-                    }
-                    //市场源不返回前台入口字段，保持原有可点击行为；本地与静态源仅已装且有前台入口时才是链接
                     var inner = '<span class="' + Fast.api.escape(row.color) + '">' + value + '</span>';
-                    var linkable = row.has_front === undefined ? true : (!!row.addon && row.has_front);
+                    var linkable = !!row.addon && row.has_front;
                     var title = linkable
                         ? '<a class="title" href="' + row.url + '" data-toggle="tooltip" title="' + __('View addon home page') + '" target="_blank">' + inner + '</a>'
                         : inner;
@@ -876,21 +582,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     }
                     return '<a href="' + url + '" target="_blank" data-toggle="tooltip" class="text-primary">' + value + '</a>';
                 },
-                price: function (value, row, index) {
-                    if (isNaN(value)) {
-                        return value;
-                    }
-                    return parseFloat(value) == 0 ? '<span class="text-success">' + __('Free') + '</span>' : '<span class="text-danger">￥' + value + '</span>';
-                },
-                downloads: function (value, row, index) {
-                    return value;
-                },
                 version: function (value, row, index) {
                     if (row.addon && row.addon.version != row.version) {
-                        //市场源提供插件详情页可跳转；本地与静态源的 url 是插件前台地址，不可跳转且提示不带"点击"
-                        if (row.has_front === undefined) {
-                            return '<a href="' + row.url + '?version=' + row.version + '" target="_blank"><span class="releasetips text-primary" data-toggle="tooltip" title="' + __('New version tips', row.version) + '">' + row.addon.version + '<i></i></span></a>';
-                        }
                         return '<span class="releasetips text-primary" data-toggle="tooltip" title="' + __('New version found', row.version) + '">' + row.addon.version + '<i></i></span>';
                     }
                     return row.version;
@@ -904,39 +597,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
             bindevent: function () {
                 Form.api.bindevent($("form[role=form]"));
             },
-            userinfo: {
-                get: function () {
-                    if (typeof $.cookie !== 'undefined') {
-                        var userinfo = $.cookie('fastadmin_userinfo');
-                    } else {
-                        var userinfo = sessionStorage.getItem("fastadmin_userinfo");
-                    }
-                    return userinfo ? JSON.parse(userinfo) : null;
-                },
-                set: function (data) {
-                    if (typeof $.cookie !== 'undefined') {
-                        if (data) {
-                            $.cookie("fastadmin_userinfo", JSON.stringify(data));
-                        } else {
-                            $.removeCookie("fastadmin_userinfo");
-                        }
-                    } else {
-                        if (data) {
-                            sessionStorage.setItem("fastadmin_userinfo", JSON.stringify(data));
-                        } else {
-                            sessionStorage.removeItem("fastadmin_userinfo");
-                        }
-                    }
-                }
-            },
-            sid: function () {
-                var sid = $.cookie('fastadmin_sid');
-                if (!sid) {
-                    sid = Math.random().toString(20).substr(2, 12);
-                    $.cookie('fastadmin_sid', sid);
-                }
-                return sid;
-            },
             refresh: function (table, name) {
                 //刷新左侧边栏
                 Fast.api.refreshmenu();
@@ -948,7 +608,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template', 'cookie']
                     var row = Table.api.getrowbyindex(table, index);
                     row.addon = typeof Config['addons'][name] !== 'undefined' ? Config['addons'][name] : undefined;
                     table.bootstrapTable("updateRow", {index: index, row: row});
-                } else if ($(".btn-switch.active").data("type") == "local") {
+                } else {
                     $(".btn-refresh").trigger("click");
                 }
             }
