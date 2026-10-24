@@ -32,19 +32,23 @@ class Token extends Api
             $this->error(__('Invalid parameters'));
         }
 
-        //删除源Token
-        $token = $this->auth->getToken();
-        if (!$token) {
+        $expire = $this->getTokenExpireFromRequest();
+        $oldToken = $this->auth->getToken();
+        if (!$oldToken) {
             $this->error(__('Please login first'), null, 401);
         }
 
-        TokenLib::delete($token);
-        //创建新Token
+        // 新 Token 创建并读取成功后才删除旧 Token，失败时保留原登录状态。
         $token = Random::uuid();
-        if (!TokenLib::set($token, $this->auth->id, $this->getTokenExpireFromRequest())) {
+        if (!TokenLib::set($token, $this->auth->id, $expire)) {
             $this->error(__('Operation failed'));
         }
         $tokenInfo = TokenLib::get($token);
+        if (!$tokenInfo) {
+            TokenLib::delete($token);
+            $this->error(__('Operation failed'));
+        }
+        TokenLib::delete($oldToken);
         $this->success('', $this->formatTokenInfo($tokenInfo));
     }
 

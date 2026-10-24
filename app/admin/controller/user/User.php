@@ -62,9 +62,25 @@ class User extends Backend
      */
     public function add()
     {
+        $groups = \app\admin\model\UserGroup::where('status', 'normal')->column('name', 'id');
         if ($this->request->isPost()) {
             $this->token();
+            $post = $this->request->post();
+            $params = $this->request->post('row/a', []);
+            $groupId = $params['group_id'] ?? null;
+            if (!is_scalar($groupId) || !isset($groups[$groupId])) {
+                $this->error(__('Invalid parameters'));
+            }
+            // 新增仅接收表单字段，登录状态和账户余额使用系统默认值。
+            $post['row'] = array_intersect_key($params, array_flip(['group_id', 'username', 'nickname', 'password', 'email', 'mobile', 'status']));
+            $post['row']['jointime'] = time();
+            $post['row']['joinip'] = $this->request->ip();
+            $post['row']['level'] = 1;
+            $this->request->withPost($post);
+            $this->modelValidate = true;
+            $this->modelSceneValidate = true;
         }
+        $this->view->assign('groupList', build_select('row[group_id]', $groups, null, ['id' => 'c-group_id', 'class' => 'form-control selectpicker', 'data-rule' => 'required']));
         return parent::add();
     }
 

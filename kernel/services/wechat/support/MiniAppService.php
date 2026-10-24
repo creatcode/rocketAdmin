@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace kernel\services\wechat\support;
 
-use EasyWeChat\MiniApp\Application;
-use Symfony\Contracts\HttpClient\ResponseInterface;
+use EasyWeChat\MiniProgram\Application;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * 小程序服务
@@ -14,8 +14,11 @@ class MiniAppService
 {
     protected Application $app;
 
-    public function __construct(protected string $name = 'default')
+    protected string $name;
+
+    public function __construct(string $name = 'default')
     {
+        $this->name = $name;
         $this->app = new Application(WechatConfig::miniApp($name));
     }
 
@@ -37,7 +40,7 @@ class MiniAppService
      */
     public function codeToSession(string $code): array
     {
-        return $this->app->getUtils()->codeToSession($code);
+        return $this->app->auth->session($code);
     }
 
     /**
@@ -50,7 +53,7 @@ class MiniAppService
      */
     public function decryptSession(string $sessionKey, string $iv, string $ciphertext): array
     {
-        return $this->app->getUtils()->decryptSession($sessionKey, $iv, $ciphertext);
+        return $this->app->encryptor->decryptData($sessionKey, $iv, $ciphertext);
     }
 
     /**
@@ -61,7 +64,7 @@ class MiniAppService
      */
     public function getPhoneNumber(string $code): array
     {
-        return $this->app->getUtils()->getPhoneNumber($code);
+        return $this->app->phone_number->getUserPhoneNumber($code);
     }
 
     /**
@@ -72,7 +75,7 @@ class MiniAppService
      */
     public function sendSubscribeMessage(array $message): array
     {
-        return $this->client()->postJson('/cgi-bin/message/subscribe/send', $message)->toArray(false);
+        return $this->app->subscribe_message->send($message);
     }
 
     /**
@@ -90,7 +93,7 @@ class MiniAppService
             $payload['page'] = $page;
         }
 
-        return $this->client()->postJson('/wxa/getwxacodeunlimit', $payload);
+        return $this->app->app_code->getUnlimit($scene, $payload);
     }
 
     /**
@@ -98,8 +101,8 @@ class MiniAppService
      *
      * @return mixed
      */
-    public function client(): mixed
+    public function client(): \EasyWeChat\Kernel\BaseClient
     {
-        return $this->app->createClient();
+        return new \EasyWeChat\Kernel\BaseClient($this->app);
     }
 }

@@ -131,7 +131,8 @@ class Sms
             Db::rollback();
             return false;
         }
-        return Event::trigger('sms_check', $sms, true);
+        Event::trigger('sms_check', $sms);
+        return true;
     }
 
     /**

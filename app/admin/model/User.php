@@ -29,6 +29,16 @@ class User extends Model
         return $this->origin;
     }
 
+    /**
+     * 新增会员使用与登录校验一致的加盐密码格式。
+     */
+    public static function onBeforeInsert($row)
+    {
+        $salt = Random::alnum();
+        $row->password = \app\common\library\Auth::instance()->getEncryptPassword($row->password, $salt);
+        $row->salt = $salt;
+    }
+
     public static function onBeforeUpdate($row)
     {
         $changed = $row->getChangedData();

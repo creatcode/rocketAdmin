@@ -105,7 +105,7 @@ class Frontend extends BaseController
             'controllername' => $controllername,
             'actionname'     => $actionname,
             'jsname'         => 'frontend/' . str_replace('.', '/', $controllername),
-            'moduleurl'      => rtrim((string) url("/{$modulename}", [], false), '/'),
+            'moduleurl'      => rtrim(dirname((string)url('index/index', [], false), 2), '/\\'),
             'language'       => $lang,
         ];
         $config = array_merge($config, Config::get('view.tpl_replace_string'));

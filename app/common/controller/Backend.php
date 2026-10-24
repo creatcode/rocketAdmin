@@ -165,7 +165,7 @@ class Backend extends BaseController
                 return $matches[2] == '&' ? $matches[1] : '';
             }, $this->request->url());
             $url = (string)url($url, [], false);
-            $this->redirect('/admin/index/index', [], 302, ['referer' => $url]);
+            $this->redirect('index/index', [], 302, ['referer' => $url]);
             exit;
         }
 
@@ -203,7 +203,7 @@ class Backend extends BaseController
             'controllername' => $controllername,
             'actionname'     => $actionname,
             'jsname'         => 'backend/' . str_replace('.', '/', $controllername),
-            'moduleurl'      => rtrim((string)url("/{$modulename}", [], false), '/'),
+            'moduleurl'      => rtrim(dirname((string)url('index/index', [], false), 2), '/\\'),
             'language'       => $lang,
             'referer'        => Session::get("referer")
         ];

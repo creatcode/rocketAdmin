@@ -29,16 +29,20 @@ class PaymentService
      */
     protected static array $extensions = [];
 
-    public function __construct(
-        protected string $channel,
-        protected string $account = 'default'
-    ) {
+    protected string $channel;
+
+    protected string $account;
+
+    public function __construct(string $channel, string $account = 'default')
+    {
+        $this->channel = $channel;
+        $this->account = $account;
     }
 
     /**
      * 获取指定支付渠道实例
      */
-    public static function channel(?string $channel = null, string $account = 'default'): static
+    public static function channel(?string $channel = null, string $account = 'default'): self
     {
         $channel = $channel ?: (string) Config::get('payment.default', 'wechat');
 
@@ -59,7 +63,7 @@ class PaymentService
         self::$extensions[$channel] = $providerClass;
 
         foreach (array_keys(self::$providers) as $key) {
-            if (str_starts_with($key, $channel . ':')) {
+            if (strpos($key, $channel . ':') === 0) {
                 unset(self::$providers[$key]);
             }
         }
@@ -70,7 +74,7 @@ class PaymentService
      *
      * @param array<string, mixed> $order 支付参数
      */
-    public function pay(string $scene, array $order): mixed
+    public function pay(string $scene, array $order)
     {
         return $this->provider()->pay($scene, $order);
     }
@@ -81,7 +85,7 @@ class PaymentService
      * @param array<string, mixed>|string $order 查询参数或商户订单号
      * @return array<string, mixed>
      */
-    public function query(array|string $order): array
+    public function query($order): array
     {
         return $this->provider()->query($order);
     }
@@ -92,7 +96,7 @@ class PaymentService
      * @param array<string, mixed>|string $order 关闭参数或商户订单号
      * @return array<string, mixed>
      */
-    public function close(array|string $order): array
+    public function close($order): array
     {
         return $this->provider()->close($order);
     }
@@ -116,7 +120,7 @@ class PaymentService
      * @param array<string, mixed>|null $params 额外参数
      * @return array<string, mixed>
      */
-    public function notify(array|string|null $contents = null, array $headers = [], ?array $params = null): array
+    public function notify($contents = null, array $headers = [], ?array $params = null): array
     {
         return $this->provider()->notify($contents, $headers, $params);
     }

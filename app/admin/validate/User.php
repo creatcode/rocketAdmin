@@ -10,11 +10,12 @@ class User extends Validate
      * 验证规则
      */
     protected $rule = [
-        'username' => 'require|regex:\w{3,32}|unique:user',
+        'username' => 'require|regex:^\w{3,32}$|unique:user',
         'nickname' => 'require|unique:user',
-        'password' => 'regex:\S{6,32}',
+        'password' => 'regex:^\S{6,32}$',
         'email'    => 'require|email|unique:user',
         'mobile'   => 'unique:user',
+        'status'   => 'in:normal,hidden',
     ];
 
     /**
@@ -34,6 +35,14 @@ class User extends Validate
         'add'  => [],
         'edit' => ['username', 'email', 'nickname', 'password', 'mobile'],
     ];
+
+    /**
+     * 新建账户必须设置密码，编辑仍允许留空以保持原密码。
+     */
+    public function sceneAdd()
+    {
+        return $this->only(['username', 'nickname', 'password', 'email', 'mobile', 'status'])->append('password', 'require');
+    }
 
     public function __construct()
     {

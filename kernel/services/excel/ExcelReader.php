@@ -223,7 +223,7 @@ class ExcelReader
      * @param string $dateFormat 日期格式
      * @return mixed
      */
-    protected function cellValue(Worksheet $sheet, int $column, int $row, ?array $config, string $dateFormat): mixed
+    protected function cellValue(Worksheet $sheet, int $column, int $row, ?array $config, string $dateFormat)
     {
         $cell = $sheet->getCell($this->cell($column, $row));
         $type = $config['type'] ?? 'auto';
@@ -299,10 +299,10 @@ class ExcelReader
      * 获取工作表
      *
      * @param Spreadsheet $spreadsheet Excel 对象
-     * @param int|string $sheet 工作表序号或名称
+     * @param $sheet 工作表序号或名称
      * @return Worksheet
      */
-    protected function sheet(Spreadsheet $spreadsheet, int|string $sheet): Worksheet
+    protected function sheet(Spreadsheet $spreadsheet, $sheet): Worksheet
     {
         $worksheet = is_int($sheet)
             ? $spreadsheet->getSheet($sheet)

@@ -412,7 +412,7 @@ class ExcelService
         $database = (string) Config::get('database.connections.' . $default . '.database');
         $realTable = str_replace('`', '', (string) Db::name($table)->getTable());
 
-        if (str_contains($realTable, '.')) {
+        if (strpos($realTable, '.') !== false) {
             $parts = explode('.', $realTable);
             $realTable = end($parts) ?: $table;
         }

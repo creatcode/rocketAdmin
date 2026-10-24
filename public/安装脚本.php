@@ -18,14 +18,4 @@ require __DIR__ . '/../vendor/autoload.php';
 
 
 
-// 执行HTTP应用并响应
-$http = (new App())->http;
-
-// 绑定到安装控制器
-\think\facade\Route::rule('/', '\app\install\controller\Index@index');
-
-$response = $http->run();
-
-$response->send();
-
-$http->end($response);
+require __DIR__ . '/install.php';

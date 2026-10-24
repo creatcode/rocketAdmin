@@ -18,7 +18,7 @@ interface PaymentProviderInterface
      *
      * @param array<string, mixed> $order 支付参数
      */
-    public function pay(string $scene, array $order): mixed;
+    public function pay(string $scene, array $order);
 
     /**
      * 查询支付订单
@@ -26,7 +26,7 @@ interface PaymentProviderInterface
      * @param array<string, mixed>|string $order 查询参数或商户订单号
      * @return array<string, mixed>
      */
-    public function query(array|string $order): array;
+    public function query($order): array;
 
     /**
      * 关闭支付订单
@@ -34,7 +34,7 @@ interface PaymentProviderInterface
      * @param array<string, mixed>|string $order 关闭参数或商户订单号
      * @return array<string, mixed>
      */
-    public function close(array|string $order): array;
+    public function close($order): array;
 
     /**
      * 发起退款
@@ -52,7 +52,7 @@ interface PaymentProviderInterface
      * @param array<string, mixed>|null $params 额外参数
      * @return array<string, mixed>
      */
-    public function notify(array|string|null $contents = null, array $headers = [], ?array $params = null): array;
+    public function notify($contents = null, array $headers = [], ?array $params = null): array;
 
     /**
      * 返回支付平台要求的成功响应

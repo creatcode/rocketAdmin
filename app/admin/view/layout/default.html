@@ -21,7 +21,7 @@
                             <div id="ribbon">
                                 <ol class="breadcrumb pull-left">
                                     {if condition="$auth->check('dashboard')"}
-                                    <li><a href="dashboard" class="addtabsit"><i class="fa fa-dashboard"></i> {:__('Dashboard')}</a></li>
+                                    <li><a href="{:url('dashboard/index')}" class="addtabsit"><i class="fa fa-dashboard"></i> {:__('Dashboard')}</a></li>
                                     {/if}
                                 </ol>
                                 <ol class="breadcrumb pull-right">

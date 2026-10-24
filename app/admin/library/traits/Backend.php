@@ -132,7 +132,7 @@ trait Backend
                 $validate = is_bool($this->modelValidate) ? ($this->modelSceneValidate ? $name . '.add' : $name) : $this->modelValidate;
                 validate($validate)->failException(true)->check($params);
             }
-            $result = $this->model->allowField(true)->save($params);
+            $result = $this->model->save($params);
             if ($result === false) {
                 throw new \think\Exception(__('No rows were inserted'));
             }
@@ -408,7 +408,7 @@ trait Backend
         //导入文件首行类型,默认是注释,如果需要使用字段名称请使用name
         $importHeadType = !empty($this->importHeadType) ? $this->importHeadType : 'comment';
 
-        $table = $this->model->getQuery()->getTable();
+        $table = $this->model->getTable();
         $default = Config::get('database.default');
         $database = Config::get('database.connections.' . $default . '.database');
         $fieldArr = [];
@@ -530,7 +530,7 @@ trait Backend
         if (empty($headers) || empty($fieldNames)) {
             [$where, $sort, $order] = $this->buildparams();
 
-            $table = $this->model->getQuery()->getTable();
+            $table = $this->model->getTable();
             $default = Config::get('database.default');
             $database = Config::get('database.connections.' . $default . '.database');
 
@@ -797,7 +797,7 @@ trait Backend
         if (empty($headers) || empty($fieldNames)) {
             [$where, $sort, $order] = $this->buildparams();
 
-            $table = $this->model->getQuery()->getTable();
+            $table = $this->model->getTable();
             $default = Config::get('database.default');
             $database = Config::get('database.connections.' . $default . '.database');
 

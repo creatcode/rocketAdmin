@@ -915,7 +915,7 @@ class Crud extends Command
                                     break;
                                 }
                             }
-                            $selectpageController = str_replace('_', '/', $selectpageTable);
+                            $selectpageController = str_replace('_', '.', $selectpageTable);
                             $attrArr['data-source'] = $selectpageController . "/index";
                             //如果是类型表需要特殊处理下
                             if ($selectpageController == 'category') {
@@ -924,10 +924,10 @@ class Crud extends Command
                                 $search = '"##replacetext##"';
                                 $replace = '\'{"custom[type]":"' . $table . '"}\'';
                             } elseif ($selectpageController == 'admin') {
-                                $attrArr['data-source'] = 'auth/admin/selectpage';
+                                $attrArr['data-source'] = 'auth.admin/selectpage';
                                 $attrArr['data-field'] = 'nickname';
                             } elseif ($selectpageController == 'user') {
-                                $attrArr['data-source'] = 'user/user/index';
+                                $attrArr['data-source'] = 'user.user/index';
                                 $attrArr['data-field'] = 'nickname';
                             }
                             if ($this->isMatchSuffix($field, $this->selectpagesSuffix)) {

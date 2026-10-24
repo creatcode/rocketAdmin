@@ -83,7 +83,7 @@ class AdminAuth extends AuthService
         Session::delete("admin");
         Cookie::delete("keeplogin");
         // 向客户端发送一个 HTTP cookie
-        setcookie('fastadmin_userinfo', '', $_SERVER['REQUEST_TIME'] - 3600, rtrim((string)url("/" . app('http')->getName(), [], false), '/'));
+        setcookie('fastadmin_userinfo', '', $_SERVER['REQUEST_TIME'] - 3600, rtrim(dirname(parse_url((string)url('index/index', [], false), PHP_URL_PATH), 2), '/\\') ?: '/');
 
         return true;
     }
@@ -414,7 +414,7 @@ class AdminAuth extends AuthService
         foreach ($this->rules as $rule) {
             if (isset($pathArr[$rule['name']])) {
                 $rule['title'] = __($rule['title']);
-                $rule['url'] = (string)url($rule['name'], [], false);
+                $rule['url'] = (string)url($rule['name'] . (strpos($rule['name'], '/') === false ? '/index' : ''), [], false);
                 $titleArr[$pathArr[$rule['name']]] = $rule['title'];
                 $menuArr[$pathArr[$rule['name']]] = $rule;
             }
@@ -438,7 +438,6 @@ class AdminAuth extends AuthService
         $colorArr = ['red', 'green', 'yellow', 'blue', 'teal', 'orange', 'purple'];
         $colorNums = count($colorArr);
         $badgeList = [];
-        $module = app('http')->getName();
         // 生成菜单的badge
         foreach ($params as $k => $v) {
             $url = $k;
@@ -483,7 +482,7 @@ class AdminAuth extends AuthService
                 continue;
             }
             $v['icon'] = $v['icon'] . ' fa-fw';
-            $v['url'] = isset($v['url']) && $v['url'] ? $v['url'] : '/' . $module . '/' . $v['name'];
+            $v['url'] = isset($v['url']) && $v['url'] ? $v['url'] : $v['name'] . (strpos($v['name'], '/') === false ? '/index' : '');
             $v['badge'] = $badgeList[$v['name']] ?? '';
             $v['title'] = __($v['title']);
             $v['url'] = preg_match("/^((?:[a-z]+:)?\/\/|data:image\/)(.*)/i", $v['url']) ? $v['url'] : (string)url($v['url'], [], false);

@@ -146,7 +146,7 @@ class Attachment extends Backend
      */
     public function classify()
     {
-        if (!$this->auth->check('general/attachment/edit')) {
+        if (!$this->auth->check('general.attachment/edit')) {
             \think\facade\Event::trigger('admin_nopermission', $this);
             $this->error(__('You have no permission'), '');
         }

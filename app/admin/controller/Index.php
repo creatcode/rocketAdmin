@@ -46,7 +46,7 @@ class Index extends Backend
         list($menulist, $navlist, $fixedmenu, $referermenu) = $this->auth->getSidebar([
             'dashboard' => 'hot',
             'addon'     => ['new', 'red', 'badge'],
-            'auth/rule' => __('Menu'),
+            'auth.rule' => __('Menu'),
         ], $this->view->site['fixedpage']);
         $action = $this->request->request('action');
         if ($this->request->isPost()) {

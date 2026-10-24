@@ -24,8 +24,11 @@ class WechatPayService
 
     protected bool $serverRegistered = false;
 
-    public function __construct(protected string $name = 'default')
+    protected string $name;
+
+    public function __construct(string $name = 'default')
     {
+        $this->name = $name;
         $this->config = WechatConfig::pay($name);
         $this->app = new Application($this->config);
     }
@@ -45,7 +48,7 @@ class WechatPayService
      *
      * @return mixed
      */
-    public function client(): mixed
+    public function client()
     {
         return $this->app->getClient();
     }
@@ -215,7 +218,7 @@ class WechatPayService
      * @param callable $handler 处理器
      * @return $this
      */
-    public function onPaid(callable $handler): static
+    public function onPaid(callable $handler): self
     {
         $this->paidHandler = Closure::fromCallable($handler);
 
@@ -228,7 +231,7 @@ class WechatPayService
      * @param callable $handler 处理器
      * @return $this
      */
-    public function onRefunded(callable $handler): static
+    public function onRefunded(callable $handler): self
     {
         $this->refundedHandler = Closure::fromCallable($handler);
 

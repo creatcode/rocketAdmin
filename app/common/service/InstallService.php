@@ -10,12 +10,10 @@ use util\Random;
 
 class InstallService
 {
-    protected string $resourcePath;
     protected string $lockFile;
 
     public function __construct()
     {
-        $this->resourcePath = app_path() . 'admin' . DIRECTORY_SEPARATOR . 'command' . DIRECTORY_SEPARATOR . 'Install' . DIRECTORY_SEPARATOR;
         $this->lockFile = root_path() . '.install.lock';
     }
 
@@ -46,13 +44,13 @@ class InstallService
         $checks = [];
         $checks[] = $this->makeCheck(
             'PHP',
-            version_compare(PHP_VERSION, '7.4.0', '>='),
-            sprintf('PHP %s / minimum 7.4.0', PHP_VERSION)
+            version_compare(PHP_VERSION, '7.4.3', '>='),
+            sprintf('PHP %s / minimum 7.4.3', PHP_VERSION)
         );
         $checks[] = $this->makeCheck('PDO', extension_loaded('PDO'), 'PDO extension');
         $checks[] = $this->makeCheck('pdo_mysql', extension_loaded('pdo_mysql'), 'pdo_mysql extension');
         $checks[] = $this->makeCheck(
-            'install.sql',
+            'rocketadmin.sql',
             is_file($this->getSqlFile()),
             __('Please go to the official website to download the full package or resource package and try to install')
         );
@@ -167,7 +165,10 @@ class InstallService
         if ($sql === false) {
             throw new Exception(__('Please go to the official website to download the full package or resource package and try to install'));
         }
-        $sql = str_replace('`fa_', '`' . $data['mysqlPrefix'], $sql);
+        if (!preg_match('/CREATE TABLE\s+(?:IF NOT EXISTS\s+)?`([^`]*?)admin`/i', $sql, $matches)) {
+            throw new Exception('安装 SQL 缺少管理员表结构');
+        }
+        $sql = str_replace('`' . $matches[1], '`' . $data['mysqlPrefix'], $sql);
         $database = $this->quoteIdentifier($data['mysqlDatabase']);
 
         try {
@@ -337,7 +338,7 @@ class InstallService
 
     protected function getSqlFile(): string
     {
-        return $this->resourcePath . 'fastadmin.sql';
+        return root_path() . 'rocketadmin.sql';
     }
 
     protected function quoteIdentifier(string $value): string

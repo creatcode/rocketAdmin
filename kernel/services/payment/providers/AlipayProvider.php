@@ -18,14 +18,20 @@ use Yansongda\Supports\Collection;
  */
 class AlipayProvider implements PaymentProviderInterface
 {
+    protected string $channel;
+
+    protected string $account;
+
+    protected array $config;
+
     /**
      * @param array<string, mixed> $config 支付总配置
      */
-    public function __construct(
-        protected string $channel,
-        protected string $account = 'default',
-        protected array $config = []
-    ) {
+    public function __construct(string $channel, string $account = 'default', array $config = [])
+    {
+        $this->channel = $channel;
+        $this->account = $account;
+        $this->config = $config;
         $this->assertConfig();
         $this->boot();
     }
@@ -37,7 +43,7 @@ class AlipayProvider implements PaymentProviderInterface
      *
      * @param array<string, mixed> $order 支付参数
      */
-    public function pay(string $scene, array $order): mixed
+    public function pay(string $scene, array $order)
     {
         $this->assertScene($scene);
 
@@ -50,7 +56,7 @@ class AlipayProvider implements PaymentProviderInterface
      * @param array<string, mixed>|string $order 查询参数或商户订单号
      * @return array<string, mixed>
      */
-    public function query(array|string $order): array
+    public function query($order): array
     {
         $order = is_array($order) ? $order : ['out_trade_no' => $order];
 
@@ -63,7 +69,7 @@ class AlipayProvider implements PaymentProviderInterface
      * @param array<string, mixed>|string $order 关闭参数或商户订单号
      * @return array<string, mixed>
      */
-    public function close(array|string $order): array
+    public function close($order): array
     {
         $order = is_array($order) ? $order : ['out_trade_no' => $order];
 
@@ -89,7 +95,7 @@ class AlipayProvider implements PaymentProviderInterface
      * @param array<string, mixed>|null $params 额外参数
      * @return array<string, mixed>
      */
-    public function notify(array|string|null $contents = null, array $headers = [], ?array $params = null): array
+    public function notify($contents = null, array $headers = [], ?array $params = null): array
     {
         if (is_string($contents)) {
             parse_str($contents, $contents);
@@ -148,7 +154,7 @@ class AlipayProvider implements PaymentProviderInterface
     /**
      * 标准化 SDK 返回值
      */
-    protected function normalize(mixed $result): mixed
+    protected function normalize($result)
     {
         if ($result instanceof ResponseInterface) {
             return $this->toThinkResponse($result);
@@ -162,7 +168,7 @@ class AlipayProvider implements PaymentProviderInterface
      *
      * @return array<string, mixed>
      */
-    protected function toArray(mixed $result): array
+    protected function toArray($result): array
     {
         if ($result instanceof Collection || $result instanceof Rocket) {
             return $result->toArray();

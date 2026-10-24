@@ -16,16 +16,20 @@ use think\Response;
  */
 class PaymentNotifyService
 {
-    public function __construct(
-        protected string $channel,
-        protected string $account = 'default'
-    ) {
+    protected string $channel;
+
+    protected string $account;
+
+    public function __construct(string $channel, string $account = 'default')
+    {
+        $this->channel = $channel;
+        $this->account = $account;
     }
 
     /**
      * 获取指定渠道回调服务
      */
-    public static function channel(string $channel, string $account = 'default'): static
+    public static function channel(string $channel, string $account = 'default'): self
     {
         return new static($channel, $account);
     }
@@ -51,7 +55,7 @@ class PaymentNotifyService
      * @param array<string, mixed>|null $params 请求参数
      */
     public function handle(
-        array|string|null $contents = null,
+        $contents = null,
         array $headers = [],
         ?array $params = null,
         ?callable $handler = null
@@ -89,7 +93,7 @@ class PaymentNotifyService
      * @param array<string, mixed>|null $params 请求参数
      * @return array<string, mixed>
      */
-    public function verify(array|string|null $contents = null, array $headers = [], ?array $params = null): array
+    public function verify($contents = null, array $headers = [], ?array $params = null): array
     {
         return PaymentService::channel($this->channel, $this->account)
             ->notify($contents, $headers, $params);
@@ -146,7 +150,7 @@ class PaymentNotifyService
     /**
      * 获取当前请求的回调内容
      */
-    protected function currentContents(): array|string|null
+    protected function currentContents()
     {
         if ($this->channel === 'alipay') {
             return $this->currentParams();
@@ -171,7 +175,7 @@ class PaymentNotifyService
 
         $headers = [];
         foreach ($_SERVER as $key => $value) {
-            if (str_starts_with($key, 'HTTP_')) {
+            if (strpos($key, 'HTTP_') === 0) {
                 $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
                 $headers[$name] = $value;
                 continue;

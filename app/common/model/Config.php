@@ -204,7 +204,7 @@ class Config extends Model
     public static function refreshFile()
     {
         //如果没有配置权限无法进行修改
-        if (!AdminAuth::instance()->check('general/config/edit')) {
+        if (!AdminAuth::instance()->check('general.config/edit')) {
             return false;
         }
         $config = [];

@@ -290,11 +290,11 @@ class ExcelWriter
     /**
      * 获取字段值
      *
-     * @param mixed $row 行数据
+     * @param $row 行数据
      * @param array $column 列配置
      * @return mixed
      */
-    protected function rowValue(mixed $row, array $column): mixed
+    protected function rowValue($row, array $column)
     {
         $field = (string) $column['field'];
         $default = $column['default'] ?? '';
@@ -325,11 +325,11 @@ class ExcelWriter
      * @param Worksheet $sheet 工作表
      * @param int $columnIndex 列号
      * @param int $rowIndex 行号
-     * @param mixed $value 值
+     * @param $value 值
      * @param array $column 列配置
      * @return void
      */
-    protected function setValue(Worksheet $sheet, int $columnIndex, int $rowIndex, mixed $value, array $column): void
+    protected function setValue(Worksheet $sheet, int $columnIndex, int $rowIndex, $value, array $column): void
     {
         $cell = $sheet->getCell($this->cell($columnIndex, $rowIndex));
         $type = (string) ($column['type'] ?? 'auto');
@@ -361,11 +361,11 @@ class ExcelWriter
     /**
      * 自动设置值
      *
-     * @param mixed $cell 单元格
-     * @param mixed $value 值
+     * @param $cell 单元格
+     * @param $value 值
      * @return void
      */
-    protected function setAuto(mixed $cell, mixed $value): void
+    protected function setAuto($cell, $value): void
     {
         if ($value instanceof DateTimeInterface) {
             $cell->setValue(Date::PHPToExcel($value));
@@ -390,12 +390,12 @@ class ExcelWriter
     /**
      * 设置日期值
      *
-     * @param mixed $cell 单元格
-     * @param mixed $value 值
+     * @param $cell 单元格
+     * @param $value 值
      * @param string|null $format 格式
      * @return void
      */
-    protected function setDate(mixed $cell, mixed $value, ?string $format): void
+    protected function setDate($cell, $value, ?string $format): void
     {
         if ($value instanceof DateTimeInterface) {
             $cell->setValue(Date::PHPToExcel($value));
@@ -504,10 +504,10 @@ class ExcelWriter
     /**
      * 颜色值
      *
-     * @param mixed $color 颜色
+     * @param $color 颜色
      * @return string
      */
-    protected function color(mixed $color): string
+    protected function color($color): string
     {
         $color = strtoupper(ltrim(trim((string) $color), '#'));
         return preg_match('/^[0-9A-F]{6}$/', $color) ? $color : '000000';

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace kernel\services\wechat\support;
 
 use Closure;
-use EasyWeChat\Kernel\Message;
+use stdClass;
+use EasyWeChat\Kernel\Messages;
 use EasyWeChat\OfficialAccount\Application;
 use think\Response;
 
@@ -22,8 +23,11 @@ class OfficialAccountService
 
     protected bool $serverRegistered = false;
 
-    public function __construct(protected string $name = 'default')
+    protected string $name;
+
+    public function __construct(string $name = 'default')
     {
+        $this->name = $name;
         $this->app = new Application(WechatConfig::officialAccount($name));
     }
 
@@ -43,7 +47,7 @@ class OfficialAccountService
      * @param callable $handler 处理器
      * @return $this
      */
-    public function onMessage(callable $handler): static
+    public function onMessage(callable $handler): self
     {
         $this->messageHandler = Closure::fromCallable($handler);
 
@@ -56,7 +60,7 @@ class OfficialAccountService
      * @param callable $handler 处理器
      * @return $this
      */
-    public function onEvent(callable $handler): static
+    public function onEvent(callable $handler): self
     {
         $this->eventHandler = Closure::fromCallable($handler);
 
@@ -70,10 +74,39 @@ class OfficialAccountService
      */
     public function serve(): Response
     {
-        $server = $this->app->getServer();
+        $server = $this->app->server;
 
         if (!$this->serverRegistered) {
-            $server->with(fn (Message $message) => $this->dispatch($message));
+            $server->push(function ($message) {
+                $reply = $this->dispatch((object)$message);
+                if (!is_array($reply)) {
+                    return $reply;
+                }
+                switch ($reply['MsgType'] ?? '') {
+                    case 'text':
+                        return new Messages\Text($reply['Content']);
+                    case 'image':
+                        return new Messages\Image($reply['Image']['MediaId']);
+                    case 'voice':
+                        return new Messages\Voice($reply['Voice']['MediaId']);
+                    case 'video':
+                        $video = $reply['Video'];
+                        return new Messages\Video($video['MediaId'], [
+                            'title' => $video['Title'] ?? '',
+                            'description' => $video['Description'] ?? '',
+                            'thumb_media_id' => $video['ThumbMediaId'] ?? '',
+                        ]);
+                    case 'news':
+                        return new Messages\News(array_map(static function ($item) {
+                            return new Messages\NewsItem([
+                                'title' => $item['Title'], 'description' => $item['Description'],
+                                'url' => $item['Url'], 'image' => $item['PicUrl'],
+                            ]);
+                        }, $reply['Articles']));
+                    default:
+                        throw new \InvalidArgumentException('不支持的微信回复消息类型');
+                }
+            });
             $this->serverRegistered = true;
         }
 
@@ -88,9 +121,7 @@ class OfficialAccountService
      */
     public function createMenu(array $buttons): array
     {
-        return $this->client()->postJson('/cgi-bin/menu/create', [
-            'button' => $buttons,
-        ])->toArray(false);
+        return $this->app->menu->create($buttons);
     }
 
     /**
@@ -100,7 +131,7 @@ class OfficialAccountService
      */
     public function getMenu(): array
     {
-        return $this->client()->get('/cgi-bin/menu/get')->toArray(false);
+        return $this->app->menu->list();
     }
 
     /**
@@ -110,7 +141,7 @@ class OfficialAccountService
      */
     public function deleteMenu(): array
     {
-        return $this->client()->get('/cgi-bin/menu/delete')->toArray(false);
+        return $this->app->menu->delete();
     }
 
     /**
@@ -122,10 +153,7 @@ class OfficialAccountService
      */
     public function getUser(string $openid, string $lang = 'zh_CN'): array
     {
-        return $this->client()->get('/cgi-bin/user/info', [
-            'openid' => $openid,
-            'lang' => $lang,
-        ])->toArray(false);
+        return $this->app->user->get($openid, $lang);
     }
 
     /**
@@ -136,12 +164,7 @@ class OfficialAccountService
      */
     public function getUsers(?string $nextOpenid = null): array
     {
-        $query = [];
-        if ($nextOpenid !== null && $nextOpenid !== '') {
-            $query['next_openid'] = $nextOpenid;
-        }
-
-        return $this->client()->get('/cgi-bin/user/get', $query)->toArray(false);
+        return $this->app->user->list($nextOpenid);
     }
 
     /**
@@ -152,7 +175,7 @@ class OfficialAccountService
      */
     public function sendTemplateMessage(array $message): array
     {
-        return $this->client()->postJson('/cgi-bin/message/template/send', $message)->toArray(false);
+        return $this->app->template_message->send($message);
     }
 
     /**
@@ -160,9 +183,9 @@ class OfficialAccountService
      *
      * @return mixed
      */
-    public function oauth(): mixed
+    public function oauth()
     {
-        return $this->app->getOAuth();
+        return $this->app->oauth;
     }
 
     /**
@@ -170,18 +193,18 @@ class OfficialAccountService
      *
      * @return mixed
      */
-    public function client(): mixed
+    public function client(): \EasyWeChat\Kernel\BaseClient
     {
-        return $this->app->createClient();
+        return new \EasyWeChat\Kernel\BaseClient($this->app);
     }
 
     /**
      * 分发公众号消息
      *
-     * @param Message $message 微信消息
+     * @param stdClass $message 微信消息
      * @return array<string, mixed>|string
      */
-    protected function dispatch(Message $message): array|string
+    protected function dispatch(stdClass $message)
     {
         if ($message->MsgType === 'event') {
             return $this->handleEvent($message);
@@ -193,42 +216,36 @@ class OfficialAccountService
     /**
      * 处理普通消息
      *
-     * @param Message $message 微信消息
+     * @param stdClass $message 微信消息
      * @return array<string, mixed>|string
      */
-    protected function handleMessage(Message $message): array|string
+    protected function handleMessage(stdClass $message)
     {
         if ($this->messageHandler !== null) {
             return ($this->messageHandler)($message);
         }
 
-        return match ($message->MsgType) {
-            'text' => WechatMessage::text('收到文字消息'),
-            'image' => WechatMessage::text('收到图片消息'),
-            'voice' => WechatMessage::text('收到语音消息'),
-            'video' => WechatMessage::text('收到视频消息'),
-            'location' => WechatMessage::text('收到坐标消息'),
-            'link' => WechatMessage::text('收到链接消息'),
-            default => '',
-        };
+        $replies = [
+            'text' => '收到文字消息', 'image' => '收到图片消息', 'voice' => '收到语音消息',
+            'video' => '收到视频消息', 'location' => '收到坐标消息', 'link' => '收到链接消息',
+        ];
+        return isset($replies[$message->MsgType]) ? WechatMessage::text($replies[$message->MsgType]) : '';
     }
 
     /**
      * 处理事件消息
      *
-     * @param Message $message 微信消息
+     * @param stdClass $message 微信消息
      * @return array<string, mixed>|string
      */
-    protected function handleEvent(Message $message): array|string
+    protected function handleEvent(stdClass $message)
     {
         if ($this->eventHandler !== null) {
             return ($this->eventHandler)($message);
         }
 
-        return match (strtolower((string) $message->Event)) {
-            'subscribe' => WechatMessage::text('欢迎关注'),
-            'scan' => WechatMessage::text('欢迎回来'),
-            default => '',
-        };
+        $replies = ['subscribe' => '欢迎关注', 'scan' => '欢迎回来'];
+        $event = strtolower((string)$message->Event);
+        return isset($replies[$event]) ? WechatMessage::text($replies[$event]) : '';
     }
 }
