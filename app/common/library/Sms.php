@@ -50,10 +50,33 @@ class Sms
      */
     public static function send($mobile, $code = null, $event = 'default')
     {
-        $code = is_null($code) ? Random::numeric((int)config('rocket.sms_captcha_length') ?: 6) : $code;
-        $time = time();
-        $ip = request()->ip();
-        $sms = \app\common\model\Sms::create(['event' => $event, 'mobile' => $mobile, 'code' => $code, 'ip' => $ip, 'createtime' => $time]);
+        $connection = Db::connect();
+        $scope = $connection->getConfig('database') . ':' . $connection->getConfig('prefix');
+        $locks = [];
+        try {
+            // 使用同一主库连接占用发送名额，跨进程保护 IP 配额和接收地址的发送间隔。
+            foreach ([request()->ip(), strtolower((string)$mobile) . ':' . $event] as $identity) {
+                $key = 'rocket:sms:' . sha1($scope . ':' . $identity);
+                $result = $connection->query('SELECT GET_LOCK(?, 5) AS acquired', [$key], true);
+                if ((int)($result[0]['acquired'] ?? 0) !== 1) {
+                    return false;
+                }
+                $locks[] = $key;
+            }
+            $last = self::get($mobile, $event);
+            if (($last && time() - $last['createtime'] < 60)
+                || \app\common\model\Sms::where('ip', request()->ip())->where('createtime', '>=', time() - 3600)->count() >= 5) {
+                return false;
+            }
+            $code = is_null($code) ? Random::numeric((int)config('rocket.sms_captcha_length') ?: 6) : $code;
+            $time = time();
+            $ip = request()->ip();
+            $sms = \app\common\model\Sms::create(['event' => $event, 'mobile' => $mobile, 'code' => $code, 'ip' => $ip, 'createtime' => $time]);
+        } finally {
+            foreach (array_reverse($locks) as $key) {
+                $connection->query('SELECT RELEASE_LOCK(?)', [$key], true);
+            }
+        }
         $result = Event::trigger('sms_send', $sms, true);
         if (!$result) {
             $sms->delete();

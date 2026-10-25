@@ -50781,8 +50781,8 @@ CREATE TABLE `im_user`  (
   `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '昵称',
   `password` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '密码',
   `salt` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '密码盐',
-  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '电子邮箱',
-  `mobile` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '手机号',
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '电子邮箱',
+  `mobile` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '手机号',
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '头像',
   `level` tinyint(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '等级',
   `gender` tinyint(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '性别',
@@ -50803,16 +50803,17 @@ CREATE TABLE `im_user`  (
   `token` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT 'Token',
   `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '状态',
   `verification` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT '' COMMENT '验证',
+  `loginfailuretime` bigint(16) NOT NULL DEFAULT 0 COMMENT '最后登录失败时间',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `username`(`username`) USING BTREE,
-  INDEX `email`(`email`) USING BTREE,
-  INDEX `mobile`(`mobile`) USING BTREE
+  UNIQUE KEY `username`(`username`) USING BTREE,
+  UNIQUE KEY `email`(`email`) USING BTREE,
+  UNIQUE KEY `mobile`(`mobile`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '会员表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_user
 -- ----------------------------
-INSERT INTO `im_user` VALUES (1, 1, 'admin', 'admin', '38dd5115dd53f214ea713d29c3271e98', '90f979', 'admin@163.com', '13888888888', '/assets/img/qrcode.png', 0, 0, '2017-04-08', '', 0.00, 0, 1, 1, 1491635035, 1491635035, '127.0.0.1', 0, '127.0.0.1', 1491635035, 0, 1713867339, '', 'normal', '');
+INSERT INTO `im_user` VALUES (1, 1, 'admin', 'admin', '38dd5115dd53f214ea713d29c3271e98', '90f979', 'admin@163.com', '13888888888', '/assets/img/qrcode.png', 0, 0, '2017-04-08', '', 0.00, 0, 1, 1, 1491635035, 1491635035, '127.0.0.1', 0, '127.0.0.1', 1491635035, 0, 1713867339, '', 'normal', '', 0);
 
 -- ----------------------------
 -- Table structure for im_user_group

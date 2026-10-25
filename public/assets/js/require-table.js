@@ -495,7 +495,9 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                             var changeid = current[options.pk];
                             var pid = typeof current.pid != 'undefined' ? current.pid : '';
                             var params = {
-                                url: table.bootstrapTable('getOptions').extend.dragsort_url,
+                                url: Config.modulename === 'admin' && options.extend.dragsort_url === 'ajax/weigh'
+                                    ? options.extend.index_url.replace(/\/index(?:\?.*)?$/, '/weigh')
+                                    : options.extend.dragsort_url,
                                 data: {
                                     ids: ids.join(','),
                                     changeid: changeid,

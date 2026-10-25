@@ -102,7 +102,7 @@ class InstallService
         $this->checkEnv();
         $this->validateInstallData($data);
 
-        $connection = $this->importDatabase($data);
+        $connection = $this->importDatabase($data, $force);
         $this->writeEnvFile($data);
         $this->refreshTokenKey();
         $this->initializeAccounts($connection, $data);
@@ -152,7 +152,7 @@ class InstallService
         }
     }
 
-    protected function importDatabase(array $data)
+    protected function importDatabase(array $data, bool $force = false)
     {
         $default = Config::get('database.default');
         $config = Config::get('database.connections.' . $default);
@@ -202,12 +202,38 @@ class InstallService
         try {
             $connection = Db::connect('install');
             $connection->execute('SELECT 1');
-            $connection->getPdo()->exec($sql);
+            $this->importSql($connection->getPdo(), $data['mysqlDatabase'], $sql, $force);
         } catch (\PDOException $e) {
             throw new Exception($e->getMessage());
         }
 
         return $connection;
+    }
+
+    /**
+     * 同一数据库的安装串行执行，普通安装不得覆盖已有目标表。
+     */
+    public function importSql(PDO $pdo, string $database, string $sql, bool $force): void
+    {
+        $lockName = 'rocket-install:' . substr(hash('sha256', strtolower($database)), 0, 48);
+        $lock = $pdo->prepare('SELECT GET_LOCK(?, 0)');
+        $lock->execute([$lockName]);
+        if ((int)$lock->fetchColumn() !== 1) {
+            throw new Exception('该数据库正在安装，请稍后重试');
+        }
+        try {
+            preg_match_all('/CREATE TABLE\s+(?:IF NOT EXISTS\s+)?`([^`]+)`/i', $sql, $matches);
+            $query = $pdo->prepare('SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ?');
+            $query->execute([$database]);
+            if (array_intersect(array_map('strtolower', $matches[1]), array_map('strtolower', $query->fetchAll(PDO::FETCH_COLUMN)))
+                && !($force && PHP_SAPI === 'cli')) {
+                throw new Exception('目标数据库已包含待安装的数据表，拒绝覆盖；重装请先备份并通过命令行 --force 执行');
+            }
+            $pdo->exec($sql);
+        } finally {
+            $release = $pdo->prepare('SELECT RELEASE_LOCK(?)');
+            $release->execute([$lockName]);
+        }
     }
 
     protected function writeEnvFile(array $data): void

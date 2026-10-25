@@ -14,5 +14,7 @@ return [
         'app\admin\command\AddonCheck',
         'app\admin\command\AddonCreate',
         'app\admin\command\Api',
+        'app\admin\command\UserSchema',
+        'app\admin\command\Install',
     ],
 ];

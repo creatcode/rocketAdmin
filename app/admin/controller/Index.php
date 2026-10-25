@@ -66,6 +66,7 @@ class Index extends Backend
             'cookie'     => ['prefix' => ''],
             //无操作自动登出秒数,0 表示不启用
             'autoLogout' => (int)config('rocket.auto_logout'),
+            'csrfToken' => $this->request->buildToken(),
         ]);
         $this->view->assign('menulist', $menulist);
         $this->view->assign('navlist', $navlist);

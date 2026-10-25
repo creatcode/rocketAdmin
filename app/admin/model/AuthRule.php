@@ -13,6 +13,7 @@ class AuthRule extends Model
     // 定义时间戳字段名
     protected $createTime = 'createtime';
     protected $updateTime = 'updatetime';
+    protected $type = ['createtime' => 'integer', 'updatetime' => 'integer'];
     // 数据自动完成字段
     protected $insert = ['py', 'pinyin'];
     protected $update = ['py', 'pinyin'];

@@ -14,12 +14,17 @@ use think\Model;
  */
 class User extends Model
 {
+    use \app\common\model\traits\UserIdentity;
+
 
     // 开启自动写入时间戳字段
     protected $autoWriteTimestamp = 'int';
     // 定义时间戳字段名
     protected $createTime = 'createtime';
     protected $updateTime = 'updatetime';
+
+    // ORM 4 将 bigint 保留为字符串类型，自动时间字段需明确使用整数。
+    protected $type = ['createtime' => 'integer', 'updatetime' => 'integer'];
     // 追加属性
     protected $append = [
         'url',

@@ -79,7 +79,7 @@ class Install extends Command
         $adminEmail = 'admin@admin.com';
         $siteName = __('My Website');
 
-        $adminName = $this->installation($hostname, $hostport, $database, $username, $password, $prefix, $adminUsername, $adminPassword, $adminEmail, $siteName);
+        $adminName = $this->installation($hostname, $hostport, $database, $username, $password, $prefix, $adminUsername, $adminPassword, $adminEmail, $siteName, (bool)$force);
         if ($adminName) {
             $output->highlight("Admin url:https://www.example.com/{$adminName}");
         }
@@ -165,7 +165,7 @@ class Install extends Command
     /**
      * 执行安装
      */
-    protected function installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail = null, $siteName = null)
+    protected function installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail = null, $siteName = null, bool $force = false)
     {
         $this->checkenv();
 
@@ -217,7 +217,7 @@ class Install extends Command
             $instance->execute("SELECT 1");
 
             // 调用原生PDO对象进行批量查询
-            $instance->getPdo()->exec($sql);
+            app()->make(\app\common\service\InstallService::class)->importSql($instance->getPdo(), $mysqlDatabase, $sql, $force);
         } catch (\PDOException $e) {
             throw new Exception($e->getMessage());
         }

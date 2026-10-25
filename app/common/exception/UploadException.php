@@ -15,8 +15,4 @@ class UploadException extends Exception
         $this->data = $data;
     }
 
-    public function getData()
-    {
-        return $this->data;
-    }
 }

@@ -4,6 +4,7 @@ namespace app\admin\controller\user;
 
 use app\common\controller\Backend;
 use app\common\library\Auth;
+use think\facade\Db;
 
 /**
  * 会员管理
@@ -109,17 +110,32 @@ class User extends Backend
         if (!$this->request->isPost()) {
             $this->error(__("Invalid parameters"));
         }
-        $ids = $ids ?: $this->request->post("ids");
-        $ids = array_filter(array_unique(explode(',', $ids)), function ($id) {
-            return preg_match('/^\d+$/', (string)$id);
-        });
-        $row = $ids ? $this->model->where('id', 'in', $ids)->select() : [];
-        $this->modelValidate = true;
-        if (!$row || count($row) === 0) {
-            $this->error(__('No Results were found'));
+        $ids = $ids ?: $this->request->post('ids');
+        $ids = is_array($ids) ? $ids : explode(',', (string)$ids);
+        if (!$ids) {
+            $this->error(__('Invalid parameters'));
         }
-        foreach ($row as $item) {
-            Auth::instance()->delete($item['id']);
+        foreach ($ids as $id) {
+            if (!is_scalar($id) || !ctype_digit((string)$id) || $id <= 0) {
+                $this->error(__('Invalid parameters'));
+            }
+        }
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        Db::startTrans();
+        try {
+            $list = $this->model->where('id', 'in', $ids)->select();
+            if (count($list) !== count($ids)) {
+                throw new \think\Exception(__('No Results were found'));
+            }
+            foreach ($list as $row) {
+                if (!Auth::instance()->delete($row['id'])) {
+                    throw new \think\Exception(Auth::instance()->getError() ?: __('No rows were deleted'));
+                }
+            }
+            Db::commit();
+        } catch (\Throwable $e) {
+            Db::rollback();
+            $this->error($e->getMessage());
         }
         $this->success();
     }

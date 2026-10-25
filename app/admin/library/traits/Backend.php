@@ -21,6 +21,62 @@ trait Backend
 {
 
     /**
+     * 排序使用当前控制器模型，禁止客户端切换数据表或绕过数据范围。
+     */
+    public function weigh()
+    {
+        if (!$this->request->isPost() || !$this->model) {
+            $this->error(__('Invalid parameters'));
+        }
+        if (!$this->auth->check($this->request->controllerPath . '/edit')) {
+            $this->error(__('You have no permission'));
+        }
+        $ids = $this->request->post('ids', '');
+        $changeid = $this->request->post('changeid', '');
+        $pid = $this->request->post('pid', '');
+        if (!is_string($ids) || !preg_match('/^\d+(?:,\d+)*$/D', $ids)
+            || !is_scalar($changeid) || !preg_match('/^\d+$/D', (string)$changeid)
+            || !is_scalar($pid) || ($pid !== '' && !preg_match('/^\d+(?:,\d+)*$/D', (string)$pid))) {
+            $this->error(__('Invalid parameters'));
+        }
+        $ids = array_values(array_unique(array_map(static fn($id) => ltrim($id, '0'), explode(',', $ids))));
+        $changeid = ltrim((string)$changeid, '0');
+        if (in_array('', $ids, true) || !in_array($changeid, $ids, true)) {
+            $this->error(__('Invalid parameters'));
+        }
+        $order = strtolower($this->request->post('orderway', '')) === 'asc' ? 'ASC' : 'DESC';
+        $pk = $this->model->getPk();
+        $adminIds = $this->getDataLimitAdminIds();
+        try {
+            $this->model->db()->getConnection()->transaction(function () use ($ids, $pid, $order, $pk, $adminIds) {
+                $query = $this->model->whereIn($pk, $ids);
+                if (is_array($adminIds)) {
+                    $query->whereIn($this->dataLimitField, $adminIds);
+                }
+                if ($pid !== '') {
+                    $query->whereIn('pid', explode(',', (string)$pid));
+                }
+                $rows = $query->order('weigh', $order)->lock(true)->select();
+                if (count($rows) !== count($ids)) {
+                    throw new \think\Exception(__('You have no permission'));
+                }
+                $weights = [];
+                foreach ($rows as $row) {
+                    $weights[] = $row['weigh'];
+                }
+                foreach ($ids as $index => $id) {
+                    if ($this->model->where($pk, $id)->update(['weigh' => $weights[$index]]) === false) {
+                        throw new \think\Exception(__('Operation failed'));
+                    }
+                }
+            });
+        } catch (\Throwable $e) {
+            $this->error($e->getMessage());
+        }
+        $this->success();
+    }
+
+    /**
      * 排除前台提交过来的字段
      * @param array $params
      * @return array

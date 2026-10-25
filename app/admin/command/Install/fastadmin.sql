@@ -437,8 +437,8 @@ CREATE TABLE `fa_user` (
   `nickname` varchar(50) DEFAULT '' COMMENT '昵称',
   `password` varchar(32) DEFAULT '' COMMENT '密码',
   `salt` varchar(30) DEFAULT '' COMMENT '密码盐',
-  `email` varchar(100) DEFAULT '' COMMENT '电子邮箱',
-  `mobile` varchar(11) DEFAULT '' COMMENT '手机号',
+  `email` varchar(100) DEFAULT NULL COMMENT '电子邮箱',
+  `mobile` varchar(11) DEFAULT NULL COMMENT '手机号',
   `avatar` varchar(255) DEFAULT '' COMMENT '头像',
   `level` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '等级',
   `gender` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '性别',
@@ -452,7 +452,7 @@ CREATE TABLE `fa_user` (
   `logintime` bigint(16) DEFAULT NULL COMMENT '登录时间',
   `loginip` varchar(50) DEFAULT '' COMMENT '登录IP',
   `loginfailure` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '失败次数',
-  `loginfailuretime` bigint(16) DEFAULT NULL COMMENT '最后登录失败时间',
+  `loginfailuretime` bigint(16) NOT NULL DEFAULT 0 COMMENT '最后登录失败时间',
   `joinip` varchar(50) DEFAULT '' COMMENT '加入IP',
   `jointime` bigint(16) DEFAULT NULL COMMENT '加入时间',
   `createtime` bigint(16) DEFAULT NULL COMMENT '创建时间',
@@ -461,9 +461,9 @@ CREATE TABLE `fa_user` (
   `status` varchar(30) DEFAULT '' COMMENT '状态',
   `verification` varchar(255) DEFAULT '' COMMENT '验证',
   PRIMARY KEY (`id`),
-  KEY `username` (`username`),
-  KEY `email` (`email`),
-  KEY `mobile` (`mobile`)
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `mobile` (`mobile`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_general_ci COMMENT='会员表';
 
 -- ----------------------------

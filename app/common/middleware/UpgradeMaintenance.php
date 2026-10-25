@@ -24,7 +24,7 @@ class UpgradeMaintenance
             return $next($request);
         }
 
-        $root = rtrim(runtime_path(), '/\\') . DIRECTORY_SEPARATOR . 'upgrade';
+        $root = root_path() . 'runtime' . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'upgrade';
         if (!is_dir($root) && !@mkdir($root, 0755, true) && !is_dir($root)) {
             return $next($request);
         }

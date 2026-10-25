@@ -152,7 +152,7 @@ class Backend extends BaseController
             // 判断是否需要验证权限
             if (!$this->auth->match($this->noNeedRight)) {
                 // 判断控制器和方法是否有对应权限
-                if (!$this->auth->check($path)) {
+                if (!$this->auth->check($actionname === 'weigh' ? $controllername . '/edit' : $path)) {
                     Event::trigger('admin_nopermission', $this);
                     $this->error(__('You have no permission'), '');
                 }
@@ -344,7 +344,10 @@ class Backend extends BaseController
                 case '>=':
                 case '<':
                 case '<=':
-                    $where[] = [$k, $sym, intval($v)];
+                    if (!is_scalar($v) || !is_numeric($v)) {
+                        $this->error(__('Invalid parameters'));
+                    }
+                    $where[] = [$k, $sym, $v];
                     break;
                 case 'FINDIN':
                 case 'FINDINSET':

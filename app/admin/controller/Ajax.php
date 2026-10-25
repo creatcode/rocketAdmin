@@ -138,79 +138,7 @@ class Ajax extends Backend
      */
     public function weigh()
     {
-        //排序的数组
-        $ids = $this->request->post("ids");
-        //拖动的记录ID
-        $changeid = $this->request->post("changeid");
-        //操作字段
-        $field = $this->request->post("field");
-        //操作的数据表
-        $table = $this->request->post("table");
-        if (!Validate::is($table, "alphaDash") || !preg_match('/^[a-zA-Z0-9_]+$/', (string)$table)) {
-            $this->error(__('Operation failed'));
-        }
-        //主键
-        $pk = $this->request->post("pk");
-        //排序的方式
-        $orderway = strtolower($this->request->post("orderway", ""));
-        $orderway = $orderway == 'asc' ? 'ASC' : 'DESC';
-        $sour = $weighdata = [];
-        $ids = array_values(array_filter(array_unique(explode(',', $ids)), function ($id) {
-            return preg_match('/^\d+$/', (string)$id);
-        }));
-        if (!$ids || !in_array($changeid, $ids)) {
-            $this->error(__('Invalid parameters'));
-        }
-        $prikey = $pk && preg_match("/^[a-zA-Z0-9_]+$/", $pk) ? $pk : (Db::name($table)->getPk() ?: 'id');
-        $pid = $this->request->post("pid", "");
-        if ($pid !== '') {
-            $pid = array_values(array_filter(array_unique(explode(',', $pid)), function ($id) {
-                return preg_match('/^\d+$/', (string)$id);
-            }));
-            if (!$pid) {
-                $this->error(__('Invalid parameters'));
-            }
-        }
-        //限制更新的字段
-        $field = in_array($field, ['weigh']) ? $field : 'weigh';
-
-        // 如果设定了pid的值,此时只匹配满足条件的ID,其它忽略
-        if ($pid !== '') {
-            $hasids = [];
-            $list = Db::name($table)->where($prikey, 'in', $ids)->where('pid', 'in', $pid)->field("{$prikey},pid")->select();
-            foreach ($list as $k => $v) {
-                $hasids[] = $v[$prikey];
-            }
-            $ids = array_values(array_intersect($ids, $hasids));
-        }
-
-        $list = Db::name($table)->field("$prikey,$field")->where($prikey, 'in', $ids)->order($field, $orderway)->select();
-        foreach ($list as $k => $v) {
-            $sour[] = $v[$prikey];
-            $weighdata[$v[$prikey]] = $v[$field];
-        }
-        $position = array_search($changeid, $ids);
-        $desc_id = $sour[$position] ?? end($sour);    //移动到目标的ID值,取出所处改变前位置的值
-        $sour_id = $changeid;
-        $weighids = [];
-        $temp = array_values(array_diff_assoc($ids, $sour));
-        foreach ($temp as $m => $n) {
-            if ($n == $sour_id) {
-                $offset = $desc_id;
-            } else {
-                if ($sour_id == $temp[0]) {
-                    $offset = $temp[$m + 1] ?? $sour_id;
-                } else {
-                    $offset = $temp[$m - 1] ?? $sour_id;
-                }
-            }
-            if (!isset($weighdata[$offset])) {
-                continue;
-            }
-            $weighids[$n] = $weighdata[$offset];
-            Db::name($table)->where($prikey, $n)->update([$field => $weighdata[$offset]]);
-        }
-        $this->success();
+        $this->error(__('You have no permission'));
     }
 
     /**
@@ -218,13 +146,20 @@ class Ajax extends Backend
      */
     public function wipecache()
     {
+        if (!$this->request->isPost()) {
+            $this->error(__('Invalid parameters'));
+        }
+        if (!$this->auth->isSuperAdmin()) {
+            $this->error(__('You have no permission'));
+        }
+        $this->token();
         try {
-            $type = $this->request->request("type");
+            $type = $this->request->post("type");
             switch ($type) {
                 case 'all':
                 case 'content':
                     //内容缓存
-                    rmdirs(app()->getRuntimePath(), false);
+                    rmdirs(app()->getRuntimePath() . 'temp', false);
                     Cache::clear();
                     if ($type == 'content') {
                         break;
@@ -232,7 +167,7 @@ class Ajax extends Backend
                     // no break
                 case 'template':
                     // 模板缓存
-                    rmdirs(app()->getRuntimePath(), false);
+                    rmdirs(app()->getRuntimePath() . 'temp', false);
                     if ($type == 'template') {
                         break;
                     }

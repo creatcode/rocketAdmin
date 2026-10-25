@@ -213,30 +213,30 @@ class Auth
     public function login($account, $password)
     {
         $field = Validate::is($account, 'email') ? 'email' : (Validate::regex($account, '/^1\d{10}$/') ? 'mobile' : 'username');
-        $user = User::where([$field => $account])->find();
-        if (!$user) {
-            $this->setError('Account is incorrect');
-            return false;
-        }
-
-        if ($user->status != 'normal') {
-            $this->setError('Account is locked');
-            return false;
-        }
-
-        if ($user->loginfailure >= 10 && time() - $user->loginfailuretime < 86400) {
-            $this->setError('Please try again after 1 day');
-            return false;
-        }
-
-        if ($user->password != $this->getEncryptPassword($password, $user->salt)) {
-            $user->save(['loginfailure' => $user->loginfailure + 1, 'loginfailuretime' => time()]);
-            $this->setError('Password is incorrect');
-            return false;
-        }
-
-        //直接登录会员
-        return $this->direct($user->id);
+        $userId = Db::transaction(function () use ($field, $account, $password) {
+            $user = User::where([$field => $account])->lock(true)->find();
+            if (!$user) {
+                $this->setError('Account is incorrect');
+                return false;
+            }
+            if ($user->status != 'normal') {
+                $this->setError('Account is locked');
+                return false;
+            }
+            $time = time();
+            $expired = $time - (int)$user->loginfailuretime >= 86400;
+            if ($user->loginfailure >= 10 && !$expired) {
+                $this->setError('Please try again after 1 day');
+                return false;
+            }
+            if ($user->password != $this->getEncryptPassword($password, $user->salt)) {
+                $user->save(['loginfailure' => ($expired ? 0 : $user->loginfailure) + 1, 'loginfailuretime' => $time]);
+                $this->setError('Password is incorrect');
+                return false;
+            }
+            return $user->id;
+        });
+        return $userId ? $this->direct($userId) : false;
     }
 
     /**
@@ -280,7 +280,9 @@ class Auth
                 $newpassword = $this->getEncryptPassword($newpassword, $salt);
                 $this->_user->save(['loginfailure' => 0, 'password' => $newpassword, 'salt' => $salt]);
 
-                Token::delete($this->_token);
+                Token::clear($this->_user->id);
+                $this->_logined = false;
+                $this->_token = '';
                 //修改密码成功的事件
                 Event::trigger("user_changepwd_successed", $this->_user);
                 Db::commit();

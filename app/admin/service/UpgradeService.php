@@ -33,7 +33,7 @@ class UpgradeService
     public function __construct($rootPath = null, $runtimePath = null)
     {
         $root = realpath($rootPath === null ? root_path() : $rootPath);
-        $runtime = realpath($runtimePath === null ? runtime_path() : $runtimePath);
+        $runtime = realpath($runtimePath === null ? root_path() . 'runtime/admin/' : $runtimePath);
         if ($root === false || $runtime === false || !is_dir($runtime)) {
             throw new RuntimeException('项目根目录或运行目录不可用。');
         }

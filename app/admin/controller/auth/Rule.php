@@ -77,7 +77,8 @@ class Rule extends Backend
                 if (!$params['ismenu'] && !$params['pid']) {
                     $this->error(__('The non-menu rule must have parent'));
                 }
-                $result = $this->model->validate()->save($params);
+                validate(\app\admin\validate\AuthRule::class)->failException(true)->check($params);
+                $result = $this->model->save($params);
                 if ($result === false) {
                     $this->error($this->model->getError());
                 }
@@ -119,7 +120,7 @@ class Rule extends Backend
                 $ruleValidate->rule([
                     'name' => 'require|format|unique:AuthRule,name,' . $row->id,
                 ]);
-                $ruleValidate->check($params);
+                $ruleValidate->failException(true)->check($params);
                 $result = $row->data($params, true)->save();
                 if ($result === false) {
                     $this->error($row->getError());

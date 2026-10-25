@@ -10,6 +10,27 @@ use think\facade\Config;
  */
 class Redis extends Driver
 {
+    private const INDEX_EXPIRY = <<<'LUA'
+local longest = 0
+local permanent = false
+for _, key in ipairs(redis.call('SMEMBERS', KEYS[2])) do
+    local ttl = redis.call('PTTL', key)
+    if ttl == -2 then
+        redis.call('SREM', KEYS[2], key)
+    elseif ttl == -1 then
+        permanent = true
+    elseif ttl > longest then
+        longest = ttl
+    end
+end
+if permanent then
+    redis.call('PERSIST', KEYS[2])
+else
+    redis.call('PEXPIRE', KEYS[2], longest)
+end
+return 1
+LUA;
+
 
     protected $options = [
         'host'        => '127.0.0.1',
@@ -90,15 +111,24 @@ class Redis extends Driver
         if ($expire instanceof \DateTime) {
             $expire = $expire->getTimestamp() - time();
         }
-        $key = $this->getEncryptedToken($token);
-        if ($expire) {
-            $result = $this->handler->setex($key, $expire, $user_id);
-        } else {
-            $result = $this->handler->set($key, $user_id);
+        if ($expire < 0) {
+            throw new \InvalidArgumentException('Token 有效期不能为负数');
         }
-        //写入会员关联的token
-        $this->handler->sAdd($this->getUserKey($user_id), $key);
-        return $result;
+        // 写入与索引维护必须原子执行，索引有效期覆盖所有仍有效的 Token。
+        $script = <<<'LUA'
+if tonumber(ARGV[2]) > 0 then
+    redis.call('SETEX', KEYS[1], ARGV[2], ARGV[1])
+else
+    redis.call('SET', KEYS[1], ARGV[1])
+end
+redis.call('SADD', KEYS[2], KEYS[1])
+
+LUA;
+        $result = $this->handler->eval($script . self::INDEX_EXPIRY, [$this->getEncryptedToken($token), $this->getUserKey($user_id), $user_id, $expire], 2);
+        if ($result === false) {
+            throw new \RuntimeException('Token 写入失败');
+        }
+        return true;
     }
 
     /**
@@ -144,10 +174,10 @@ class Redis extends Driver
     {
         $data = $this->get($token);
         if ($data) {
-            $key = $this->getEncryptedToken($token);
-            $user_id = $data['user_id'];
-            $this->handler->del($key);
-            $this->handler->sRem($this->getUserKey($user_id), $key);
+            $script = "redis.call('DEL', KEYS[1])\nredis.call('SREM', KEYS[2], KEYS[1])\n" . self::INDEX_EXPIRY;
+            if ($this->handler->eval($script, [$this->getEncryptedToken($token), $this->getUserKey($data['user_id'])], 2) === false) {
+                throw new \RuntimeException('Token 删除失败');
+            }
         }
         return true;
     }
@@ -159,11 +189,15 @@ class Redis extends Driver
      */
     public function clear($user_id)
     {
-        $keys = $this->handler->sMembers($this->getUserKey($user_id));
-        $this->handler->del($this->getUserKey($user_id));
-        // phpredis 在空数组场景下可能触发参数异常，这里做一次兜底
-        if (!empty($keys)) {
-            $this->handler->del($keys);
+        $script = <<<'LUA'
+for _, key in ipairs(redis.call('SMEMBERS', KEYS[1])) do
+    redis.call('DEL', key)
+end
+redis.call('DEL', KEYS[1])
+return 1
+LUA;
+        if ($this->handler->eval($script, [$this->getUserKey($user_id)], 1) === false) {
+            throw new \RuntimeException('Token 清理失败');
         }
         return true;
     }

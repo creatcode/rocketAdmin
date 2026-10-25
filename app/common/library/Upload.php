@@ -315,67 +315,68 @@ class Upload
      */
     public function merge($chunkid, $chunkcount, $filename)
     {
-        if (!preg_match('/^[a-z0-9\-]{36}$/', $chunkid)) {
+        if (!preg_match('/^[a-z0-9\-]{36}$/D', $chunkid) || $chunkcount <= 0) {
             throw new UploadException(__('Invalid parameters'));
         }
-
-        $filePath = $this->chunkDir . DIRECTORY_SEPARATOR . $chunkid;
-
-        $completed = true;
-        //检查所有分片是否都存在
-        for ($i = 0; $i < $chunkcount; $i++) {
-            if (!file_exists("{$filePath}-{$i}.part")) {
-                $completed = false;
-                break;
+        $uploadPath = $this->chunkDir . DIRECTORY_SEPARATOR . $chunkid;
+        // 首片保留到上传成功，以其文件锁串行保护同一任务，避免截断正在发布的文件。
+        $lock = @fopen($uploadPath . '-0.part', 'rb');
+        if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) {
+            if (is_resource($lock)) {
+                fclose($lock);
             }
-        }
-        if (!$completed) {
-            $this->clean($chunkid);
-            throw new UploadException(__('Chunk file info error'));
-        }
-
-        //如果所有文件分片都上传完毕，开始合并
-        $uploadPath = $filePath;
-
-        if (!$destFile = @fopen($uploadPath, "wb")) {
-            $this->clean($chunkid);
             throw new UploadException(__('Chunk file merge error'));
         }
-        if (flock($destFile, LOCK_EX)) { // 进行排他型锁定
-            for ($i = 0; $i < $chunkcount; $i++) {
-                $partFile = "{$filePath}-{$i}.part";
-                if (!$handle = @fopen($partFile, "rb")) {
-                    break;
-                }
-                while ($buff = fread($handle, filesize($partFile))) {
-                    fwrite($destFile, $buff);
-                }
-                @fclose($handle);
-                @unlink($partFile); //删除分片
-            }
-
-            flock($destFile, LOCK_UN);
-        }
-        @fclose($destFile);
-
-        $attachment = null;
+        $destFile = null;
         try {
-            //重新设置文件
+            for ($i = 0; $i < $chunkcount; $i++) {
+                if (!is_file("{$uploadPath}-{$i}.part")) {
+                    throw new UploadException(__('Chunk file info error'));
+                }
+            }
+            $destFile = @fopen($uploadPath, 'wb');
+            if (!$destFile) {
+                throw new UploadException(__('Chunk file merge error'));
+            }
+            for ($i = 0; $i < $chunkcount; $i++) {
+                $partFile = "{$uploadPath}-{$i}.part";
+                $handle = @fopen($partFile, 'rb');
+                if (!$handle) {
+                    throw new UploadException(__('Chunk file merge error'));
+                }
+                try {
+                    $size = filesize($partFile);
+                    if ($size === false || stream_copy_to_stream($handle, $destFile) !== $size) {
+                        throw new UploadException(__('Chunk file merge error'));
+                    }
+                } finally {
+                    fclose($handle);
+                }
+            }
+            if (!fflush($destFile)) {
+                throw new UploadException(__('Chunk file merge error'));
+            }
+            fclose($destFile);
+            $destFile = null;
             $file = new UploadedFile($uploadPath, $filename, (new File($uploadPath))->getMime(), null, true);
             $this->setFile($file);
-
             unset($file);
             $this->merging = true;
-
-            //允许大文件
-            $this->config['maxsize'] = "1024G";
-
+            $this->config['maxsize'] = '1024G';
             $attachment = $this->upload();
-        } catch (\Exception $e) {
+            $this->clean($chunkid);
+            return $attachment;
+        } catch (\Throwable $e) {
+            if (is_resource($destFile)) {
+                fclose($destFile);
+                $destFile = null;
+            }
             @unlink($uploadPath);
             throw new UploadException($e->getMessage());
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
         }
-        return $attachment;
     }
 
     /**
@@ -439,7 +440,9 @@ class Upload
             if (!is_dir($destDir)) {
                 @mkdir($destDir, 0755, true);
             }
-            rename($sourceFile, $destFile);
+            if (!rename($sourceFile, $destFile)) {
+                throw new UploadException(__('Chunk file merge error'));
+            }
             $file = new UploadedFile($destFile, $fileName);
         } else {
             try {

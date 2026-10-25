@@ -83,25 +83,9 @@ module.exports = function (grunt) {
 
     // 注册部署JS和CSS任务
     grunt.registerTask('deploy', 'deploy', function () {
-        const fs = require('fs');
         const path = require("path")
         const nodeModulesDir = path.resolve(__dirname, "./node_modules");
 
-        const getAllFiles = function (dirPath, arrayOfFiles) {
-            files = fs.readdirSync(dirPath)
-
-            arrayOfFiles = arrayOfFiles || []
-
-            files.forEach(function (file) {
-                if (fs.statSync(dirPath + "/" + file).isDirectory()) {
-                    arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
-                } else {
-                    arrayOfFiles.push(path.join(__dirname, dirPath, "/", file))
-                }
-            });
-
-            return arrayOfFiles
-        };
         const mainPackage = grunt.config.get('pkg');
         let dists = mainPackage.dists || [];
         let files = [];

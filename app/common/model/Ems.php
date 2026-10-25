@@ -15,6 +15,8 @@ class Ems Extends Model
     // 定义时间戳字段名
     protected $createTime = 'createtime';
     protected $updateTime = false;
+    protected $type = ['createtime' => 'integer'];
+    protected $dateFormat = false;
     // 追加属性
     protected $append = [
     ];

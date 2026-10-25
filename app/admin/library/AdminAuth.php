@@ -105,7 +105,7 @@ class AdminAuth extends AuthService
         list($id, $keeptime, $expiretime, $key) = $parts;
         if ($id && $keeptime && $expiretime && $key && $expiretime > time()) {
             $admin = Admin::find($id);
-            if (!$admin || !$admin->token) {
+            if (!$admin || $admin->status !== 'normal' || !$admin->token) {
                 return false;
             }
             //token有变更
@@ -237,7 +237,8 @@ class AdminAuth extends AuthService
             return false;
         }
         $my = Admin::find($admin['id']);
-        if (!$my) {
+        if (!$my || $my->status !== 'normal') {
+            $this->logout();
             return false;
         }
         //校验安全码，可用于判断关键信息发生了变更需要重新登录

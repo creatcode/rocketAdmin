@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace kernel\services\payment;
 
 use Throwable;
-use think\facade\Config;
 use think\facade\Event;
 use think\Response;
 
@@ -75,7 +74,7 @@ class PaymentNotifyService
                 }
             }
 
-            if (empty($handled) && (bool) Config::get('payment.notify.require_listener', false)) {
+            if (empty($handled)) {
                 return $this->fail('未配置支付回调业务处理器');
             }
 

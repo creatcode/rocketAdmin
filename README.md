@@ -100,3 +100,9 @@ FastAdmin遵循Apache2开源协议发布，并提供免费使用。
 版权所有Copyright © 2017-2022 by FastAdmin (https://www.fastadmin.net)
 
 All rights reserved。
+
+## 安全修复后的数据库升级
+
+已有数据库部署前须备份并暂停业务写入，再执行 `php think user:secure-schema`，补齐会员登录失败时间和身份唯一约束。发现重复账号时命令会停止，不自动合并或删除；未绑定的空邮箱、手机号会转换为 `NULL`，模型对外仍保持空字符串。
+
+执行后重启 PHP 服务或清理模型字段缓存，再恢复业务。
