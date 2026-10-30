@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>RocketAdmin · 视觉符号探索</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<style>
+    :root {
+        --paper: #f6f6f4;
+        --ink: #12151a;
+        --muted: #6c727c;
+        --line: #e2e2dd;
+        --blue: #1677ff;
+        --orange: #ff6b35;
+        --white: #ffffff;
+        --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    /* ============ 首屏 ============ */
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: #080b12;
+        color: #fff;
+    }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        inset: -20% -10% auto -10%;
+        height: 130%;
+        background:
+            radial-gradient(52% 62% at 18% 6%, rgba(22, 119, 255, .22), transparent 68%),
+            radial-gradient(40% 55% at 88% 84%, rgba(255, 107, 53, .12), transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-orbit {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: .55;
+    }
+
+    .hero-inner {
+        position: relative;
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 78px 40px 54px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 48px;
+        align-items: end;
+    }
+
+    .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font: 10px/1 var(--mono);
+        letter-spacing: .22em;
+        color: #8a93a6;
+        text-transform: uppercase;
+    }
+
+    .eyebrow s {
+        display: block;
+        width: 30px;
+        height: 1px;
+        background: var(--orange);
+        opacity: .85;
+    }
+
+    h1 {
+        margin: 24px 0 0;
+        font-size: clamp(44px, 6.6vw, 80px);
+        line-height: .98;
+        letter-spacing: -.045em;
+        font-weight: 600;
+    }
+
+    h1 span { color: #767f92; font-weight: 500; }
+
+    .lead {
+        max-width: 640px;
+        margin: 26px 0 0;
+        font-size: 14.5px;
+        line-height: 1.9;
+        color: #a5adbd;
+    }
+
+    .hero-meta {
+        display: grid;
+        gap: 22px;
+        padding-left: 28px;
+        border-left: 1px solid rgba(255, 255, 255, .1);
+        text-align: right;
+    }
+
+    .hero-meta div b {
+        display: block;
+        font: 600 21px/1.2 var(--mono);
+        letter-spacing: -.02em;
+    }
+
+    .hero-meta div span {
+        display: block;
+        margin-top: 5px;
+        font: 9.5px/1 var(--mono);
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: #7d8698;
+    }
+
+    .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 18px;
+        margin-top: 46px;
+        padding-top: 26px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+        max-width: 760px;
+    }
+
+    .chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+        cursor: default;
+    }
+
+    .chip svg {
+        width: 46px;
+        height: 46px;
+        display: block;
+        border-radius: 10px;
+        transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .chip:hover svg { transform: translateY(-3px) scale(1.05); }
+
+    .chip em {
+        font: 8.5px/1 var(--mono);
+        font-style: normal;
+        letter-spacing: .1em;
+        color: #67718a;
+    }
+
+    /* ============ 吸顶实测条 ============ */
+    .dock {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(246, 246, 244, .92);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .dock-inner {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 40px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+    }
+
+    .dock-label {
+        font: 9.5px/1 var(--mono);
+        letter-spacing: .18em;
+        color: #8b909a;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .seg {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        flex: 0 0 auto;
+    }
+
+    .seg button {
+        border: 0;
+        background: transparent;
+        padding: 7px 11px;
+        font: 10.5px/1 var(--mono);
+        letter-spacing: .02em;
+        color: #6f747d;
+        cursor: pointer;
+        transition: background .18s, color .18s;
+    }
+
+    .seg button + button { border-left: 1px solid var(--line); }
+    .seg button.on { background: var(--ink); color: #fff; }
+
+    .themebtn {
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 8px;
+        padding: 7px 12px;
+        font: 10.5px/1 var(--mono);
+        color: #6f747d;
+        cursor: pointer;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+
+    .themebtn.on { background: #0b0f17; color: #fff; border-color: #0b0f17; }
+
+    .dock-icons {
+        --px: 24px;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding: 4px;
+        border-radius: 10px;
+        transition: background .2s;
+    }
+
+    .dock-icons::-webkit-scrollbar { display: none; }
+
+    .dock-icons.dark { background: #0b0f17; }
+
+    .dock-icons .d {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 5px;
+        cursor: pointer;
+        transition: border-color .18s, transform .25s;
+    }
+
+    .dock-icons.dark .d { background: #0b0f17; border-color: #232b3a; }
+    .dock-icons .d:hover { border-color: #b9bec6; }
+    .dock-icons .d svg { width: var(--px); height: var(--px); display: block; }
+
+    /* ============ 列表 ============ */
+    .list {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 40px 20px;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 368px 1fr;
+        gap: 60px;
+        padding: 68px 0;
+        border-top: 1px solid var(--line);
+        align-items: start;
+    }
+
+    .row:first-child { border-top: 0; }
+
+    .stage {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .tile {
+        position: relative;
+        height: 172px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .tile.light { background: #ececeb; }
+    .tile.dark { background: #0a0f18; }
+
+    .tile .art {
+        width: 128px;
+        height: 128px;
+        transition: transform .55s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .tile:hover .art { transform: scale(1.07); }
+
+    .tile .cap {
+        position: absolute;
+        left: 13px;
+        bottom: 11px;
+        font: 8.5px/1 var(--mono);
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: #9ba0a9;
+    }
+
+    .tile.dark .cap { color: #4c5566; }
+
+    .strip {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: flex-end;
+        gap: 24px;
+        padding-top: 10px;
+    }
+
+    .strip .sz {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .strip .sz svg { display: block; }
+    .strip .sz em { font: 8.5px/1 var(--mono); font-style: normal; color: #8b909a; }
+
+    .strip .note {
+        margin-left: auto;
+        font: 9.5px/1 var(--mono);
+        letter-spacing: .08em;
+        color: #9ba0a9;
+        white-space: nowrap;
+    }
+
+    .meta .idx {
+        font: 10px/1 var(--mono);
+        letter-spacing: .18em;
+        color: #9ba0a9;
+        text-transform: uppercase;
+    }
+
+    .meta h2 {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 12px 0 0;
+        font-size: 27px;
+        letter-spacing: -.022em;
+        font-weight: 600;
+    }
+
+    .meta h2 small {
+        font: 500 10px/1 var(--mono);
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        color: #8b909a;
+    }
+
+    .tag {
+        font: 10px/1 var(--mono);
+        letter-spacing: .08em;
+        color: #6e747e;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 10px;
+        margin-left: 2px;
+        background: #fff;
+    }
+
+    .desc {
+        max-width: 62ch;
+        margin: 18px 0 0;
+        font-size: 14.5px;
+        line-height: 1.85;
+        color: #4b515a;
+    }
+
+    .pts {
+        list-style: none;
+        margin: 24px 0 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 11px 28px;
+        max-width: 660px;
+    }
+
+    .pts li {
+        position: relative;
+        padding-left: 16px;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: #3f4650;
+    }
+
+    .pts li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 7px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #c9ccd2;
+    }
+
+    .pts li.warn { color: #8a6751; }
+    .pts li.warn::before { background: var(--orange); }
+
+    /* 场景模拟 */
+    .mocks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: flex-end;
+        margin-top: 30px;
+    }
+
+    .tab {
+        width: 242px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 12px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-bottom: 0;
+        border-radius: 10px 10px 0 0;
+        font-size: 11.5px;
+        color: #343a42;
+    }
+
+    .tab svg { width: 16px; height: 16px; flex: 0 0 16px; }
+    .tab i { margin-left: auto; font-style: normal; color: #a2a7ae; font-size: 12px; }
+
+    .side {
+        width: 76px;
+        height: 106px;
+        background: #0b1220;
+        border-radius: 10px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .side .top {
+        width: 40px;
+        height: 40px;
+        border-radius: 9px;
+        background: #131c2d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .side .top svg { width: 24px; height: 24px; }
+    .side .ln { display: block; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .15); }
+    .side .ln.w1 { width: 40px; }
+    .side .ln.w2 { width: 27px; }
+    .side .ln.w3 { width: 34px; }
+
+    .login {
+        width: 182px;
+        padding: 15px 14px 14px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 26px rgba(15, 20, 30, .06);
+    }
+
+    .login svg { width: 42px; height: 42px; }
+    .login h4 { margin: 9px 0 2px; font-size: 11px; font-weight: 600; }
+    .login p { margin: 0; font-size: 9.5px; color: #8b909a; }
+
+    .login .btn {
+        margin-top: 11px;
+        height: 22px;
+        border-radius: 6px;
+        background: var(--blue);
+        color: #fff;
+        font-size: 9px;
+        letter-spacing: .1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .row.hit .tile {
+        outline: 2px solid var(--orange);
+        outline-offset: -2px;
+    }
+
+    .row.reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity .7s ease, transform .7s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .row.reveal.in { opacity: 1; transform: none; }
+
+    /* ============ 选择建议 ============ */
+    .guide {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 76px 40px 0;
+        border-top: 1px solid var(--line);
+    }
+
+    .guide-head h2 {
+        margin: 0;
+        font-size: 30px;
+        letter-spacing: -.025em;
+        font-weight: 600;
+    }
+
+    .guide-head p {
+        margin: 12px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.8;
+    }
+
+    .gcols {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 44px;
+        margin-top: 40px;
+    }
+
+    .gcol {
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+    }
+
+    .gcol h3 {
+        margin: 0;
+        font-size: 13px;
+        letter-spacing: .02em;
+        font-weight: 600;
+    }
+
+    .gcol p {
+        margin: 8px 0 0;
+        font-size: 12.5px;
+        line-height: 1.8;
+        color: #5b626c;
+    }
+
+    .picks {
+        display: flex;
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .pick {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        font: 9px/1 var(--mono);
+        color: #7b818b;
+        text-decoration: none;
+    }
+
+    .pick svg { width: 36px; height: 36px; }
+    .pick:hover { color: var(--ink); }
+
+    /* ============ 落地清单 ============ */
+    .next {
+        margin-top: 80px;
+        background: #080b12;
+        color: #fff;
+    }
+
+    .next-inner {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 64px 40px 70px;
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 60px;
+    }
+
+    .next h2 {
+        margin: 0;
+        font-size: 30px;
+        letter-spacing: -.025em;
+        font-weight: 600;
+    }
+
+    .next h2 span { color: #6f788a; }
+
+    .next .note {
+        margin: 16px 0 0;
+        font-size: 13px;
+        line-height: 1.9;
+        color: #98a0b0;
+    }
+
+    .steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 16px;
+    }
+
+    .steps li {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, .09);
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: #b9c0cc;
+    }
+
+    .steps li b {
+        display: block;
+        font: 600 11px/1.7 var(--mono);
+        letter-spacing: .1em;
+        color: #5b6a86;
+    }
+
+    .steps li strong {
+        display: block;
+        font-size: 12.5px;
+        color: #fff;
+        font-weight: 500;
+        margin-bottom: 3px;
+    }
+
+    .foot {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 26px 40px 44px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+        align-items: center;
+        color: #737a88;
+        font: 10px/1.8 var(--mono);
+        letter-spacing: .04em;
+    }
+
+    .foot-icons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .foot-icons svg { width: 26px; height: 26px; }
+
+    /* ============ 入场 ============ */
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    .hero .eyebrow { animation: rise .7s .05s both cubic-bezier(.22, 1, .36, 1); }
+    .hero h1 { animation: rise .8s .12s both cubic-bezier(.22, 1, .36, 1); }
+    .hero .lead { animation: rise .8s .2s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-meta { animation: rise .8s .26s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-chips { animation: rise .9s .32s both cubic-bezier(.22, 1, .36, 1); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero .eyebrow, .hero h1, .hero .lead, .hero-meta, .hero-chips,
+        .chip svg, .tile .art, .row.reveal {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+
+    /* ============ 响应式 ============ */
+    @media (max-width: 1080px) {
+        .hero-inner { grid-template-columns: 1fr; gap: 36px; align-items: start; }
+        .hero-meta { display: flex; gap: 44px; padding: 0; border: 0; text-align: left; border-top: 1px solid rgba(255, 255, 255, .1); padding-top: 24px; }
+        .row { grid-template-columns: 330px 1fr; gap: 40px; }
+        .next-inner { grid-template-columns: 1fr; gap: 36px; }
+    }
+
+    @media (max-width: 860px) {
+        .hero-inner { padding: 56px 24px 42px; }
+        .dock-inner { height: auto; padding: 12px 24px; flex-wrap: wrap; gap: 12px; }
+        .dock-label { display: none; }
+        .dock-icons { width: 100%; margin-left: 0; }
+        .list { padding: 0 24px; }
+        .row { grid-template-columns: 1fr; gap: 34px; padding: 48px 0; }
+        .tile { height: 156px; }
+        .tile .art { width: 112px; height: 112px; }
+        .pts { grid-template-columns: 1fr; }
+        .guide, .next-inner, .foot { padding-left: 24px; padding-right: 24px; }
+        .gcols { grid-template-columns: 1fr; gap: 30px; }
+        .strip .note { display: none; }
+    }
+
+    @media (max-width: 520px) {
+        .hero-chips { gap: 13px; }
+        .chip svg { width: 40px; height: 40px; }
+        .tile { height: 138px; }
+        .tile .art { width: 96px; height: 96px; }
+        .meta h2 { font-size: 23px; }
+        .mocks { gap: 10px; }
+        .tab { width: 210px; }
+        .login { width: 168px; }
+        .foot { padding-bottom: 34px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ============ 图形定义 ============ -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+    <defs>
+        <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4C9BFF"/>
+            <stop offset="1" stop-color="#0B47D0"/>
+        </linearGradient>
+        <linearGradient id="gDeep" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1A3352"/>
+            <stop offset="1" stop-color="#060D1A"/>
+        </linearGradient>
+        <linearGradient id="gInk" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#232B3D"/>
+            <stop offset="1" stop-color="#070A11"/>
+        </linearGradient>
+        <linearGradient id="gOrange" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFB25C"/>
+            <stop offset="1" stop-color="#FF5B22"/>
+        </linearGradient>
+
+        <!-- 01 基石 -->
+        <symbol id="i1" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M120 402 V264 A136 136 0 0 1 392 264 V402 H328 V264 A72 72 0 0 0 184 264 V402 Z" fill="#FFFFFF"/>
+            <path d="M256 128 L292 160 L256 192 L220 160 Z" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 02 光圈 -->
+        <symbol id="i2" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <g fill="#FFFFFF">
+                <path d="M224 86 L288 86 L272 202 L240 202 Z"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(60 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(120 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(180 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(240 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(300 256 256)"/>
+            </g>
+            <circle cx="256" cy="256" r="58" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 03 棱镜 -->
+        <symbol id="i3" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gInk)"/>
+            <g stroke-linecap="round" stroke-width="15">
+                <path d="M70 300 L300 300" stroke="#FFFFFF"/>
+                <path d="M300 272 L446 208" stroke="#4DA0FF"/>
+                <path d="M300 300 L446 300" stroke="#7CE0FF"/>
+                <path d="M300 328 L446 392" stroke="#FF7A45"/>
+            </g>
+            <path d="M256 130 L374 358 L138 358 Z" fill="#FFFFFF"/>
+        </symbol>
+
+        <!-- 04 环带 -->
+        <symbol id="i4" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M256 256 C 190 150 90 160 90 256 C 90 352 190 362 256 256 C 322 150 422 160 422 256 C 422 352 322 362 256 256"
+                  fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+            <circle cx="256" cy="256" r="25" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 05 脉冲 -->
+        <symbol id="i5" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <g fill="#FFFFFF">
+                <rect x="104" y="290" width="44" height="100" rx="22"/>
+                <rect x="176" y="200" width="44" height="190" rx="22"/>
+                <rect x="320" y="200" width="44" height="190" rx="22"/>
+                <rect x="392" y="290" width="44" height="100" rx="22"/>
+            </g>
+            <rect x="248" y="110" width="44" height="280" rx="22" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 06 北辰 -->
+        <symbol id="i6" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <polygon points="256,56 334,178 456,256 334,334 256,456 178,334 56,256 178,178" fill="#FFFFFF"/>
+            <polygon points="256,186 326,256 256,326 186,256" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 07 单元 -->
+        <symbol id="i7" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M256 96 L394 176 L394 336 L256 416 L118 336 L118 176 Z"
+                  fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linejoin="miter"/>
+            <path d="M256 164 L336 210 L336 302 L256 348 L176 302 L176 210 Z" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 08 日蚀 -->
+        <symbol id="i8" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="#0A101C"/>
+            <circle cx="250" cy="262" r="166" fill="url(#gOrange)"/>
+            <circle cx="250" cy="262" r="146" fill="#FFFFFF"/>
+            <circle cx="326" cy="204" r="152" fill="#0A101C"/>
+        </symbol>
+
+        <!-- 09 锦鲤 -->
+        <symbol id="i9" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M160 268 C 160 200 214 154 288 154 C 350 154 394 200 394 268 C 394 336 350 380 288 380 C 214 380 160 336 160 268 Z" fill="#FFFFFF"/>
+            <path d="M386 244 L452 194 L440 262 L452 330 L386 292 Z" fill="#FFFFFF"/>
+            <circle cx="224" cy="240" r="16" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 10 潮汐 -->
+        <symbol id="i10" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M60 220 C 122 158 186 282 248 220 C 310 158 374 282 436 220"
+                  fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round"/>
+            <path d="M60 316 C 122 254 186 378 248 316 C 310 254 374 378 436 316"
+                  fill="none" stroke="url(#gOrange)" stroke-width="26" stroke-linecap="round"/>
+        </symbol>
+    </defs>
+</svg>
+
+<!-- ============ 首屏 ============ -->
+<header class="hero">
+    <svg class="hero-orbit" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <ellipse cx="1080" cy="360" rx="620" ry="230" transform="rotate(-16 1080 360)" fill="none" stroke="#2b3a58" stroke-width="1"/>
+        <ellipse cx="1080" cy="360" rx="430" ry="160" transform="rotate(-16 1080 360)" fill="none" stroke="#25324c" stroke-width="1" opacity=".7"/>
+        <circle cx="1338" cy="236" r="3.5" fill="#ff6b35" opacity=".8"/>
+    </svg>
+
+    <div class="hero-inner">
+        <div>
+            <div class="eyebrow"><s></s>Visual identity / 2026</div>
+            <h1>Rocket<span>Admin</span></h1>
+            <p class="lead">不画火箭，也不写 R。从结构、光、拓扑、天体与生长里，找十个能独立成立的符号。每个方向都按 favicon 的真实尺寸验证，并给出标签页、侧栏与登录页的落地效果。</p>
+            <div class="hero-chips" id="heroChips"></div>
+        </div>
+        <aside class="hero-meta">
+            <div><b>010</b><span>Directions</span></div>
+            <div><b>SVG</b><span>Vector only</span></div>
+            <div><b>16px</b><span>Verified</span></div>
+        </aside>
+    </div>
+</header>
+
+<!-- ============ 吸顶实测条 ============ -->
+<div class="dock">
+    <div class="dock-inner">
+        <span class="dock-label">Favicon 实测</span>
+        <div class="seg" id="sizeSeg">
+            <button data-size="16">16</button>
+            <button data-size="24" class="on">24</button>
+            <button data-size="32">32</button>
+            <button data-size="48">48</button>
+        </div>
+        <button class="themebtn" id="themeBtn">浅色底</button>
+        <div class="dock-icons" id="dockIcons"></div>
+    </div>
+</div>
+
+<!-- ============ 方案列表 ============ -->
+<main class="list" id="list"></main>
+
+<!-- ============ 选择建议 ============ -->
+<section class="guide">
+    <div class="guide-head">
+        <h2>怎么选</h2>
+        <p>十个方向没有优劣，只有使用场景的差别。先决定这个图标更多出现在浏览器标签页，还是登录页与宣传物料上。</p>
+    </div>
+    <div class="gcols">
+        <div class="gcol">
+            <h3>要稳，要能用很多年</h3>
+            <p>结构型符号最耐久，不依赖流行趋势，缩小后也不会散。适合把图标长期放在后台左上角。</p>
+            <div class="picks">
+                <a class="pick" href="#c1"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#i1"></use></svg>01</a>
+                <a class="pick" href="#c7"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#i7"></use></svg>07</a>
+            </div>
+        </div>
+        <div class="gcol">
+            <h3>要气质，要不像模板</h3>
+            <p>抽象形在一堆“工具感”图标里更安静，适合偏平台、偏数据的产品，也更适合深色主题。</p>
+            <div class="picks">
+                <a class="pick" href="#c4"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#i4"></use></svg>04</a>
+                <a class="pick" href="#c8"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#i8"></use></svg>08</a>
+            </div>
+        </div>
+        <div class="gcol">
+            <h3>要记忆点，要一眼记住</h3>
+            <p>有机形和星形在同类产品里稀有，社交传播与周边延展的潜力更大，但需要接受它“不那么像后台”。</p>
+            <div class="picks">
+                <a class="pick" href="#c9"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#i9"></use></svg>09</a>
+                <a class="pick" href="#c6"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#i6"></use></svg>06</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 落地 ============ -->
+<section class="next">
+    <div class="next-inner">
+        <div>
+            <h2>选定之后<br><span>剩下的交给实现</span></h2>
+            <p class="note">回复编号即可。可以只选一个，也可以指定“主标 + 小尺寸简化版”的组合。十个方向都可以继续延展成加载动画、空状态插图与插件图标。</p>
+        </div>
+        <ul class="steps">
+            <li><b>01</b><div><strong>全尺寸资源</strong>favicon.ico（16 / 32 / 48）、logo.svg、apple-touch-icon 180、Android 192 / 512、maskable 512。</div></li>
+            <li><b>02</b><div><strong>替换图标入口</strong>public/favicon.ico 与 public/assets/img/favicon.ico，并同步 app/admin/view/common/meta.html 的引用。</div></li>
+            <li><b>03</b><div><strong>接入页面</strong>header.html 的 logo 区改为“图标 + 字标”锁定组合；登录页的 brand-logo 换成同一枚图标。</div></li>
+            <li><b>04</b><div><strong>两版同步</strong>tp6 与 tp8 仓库保持一致，版本相关的路径差异单独处理。</div></li>
+        </ul>
+    </div>
+    <div class="foot">
+        <span>10 marks · no rocket · no letterform</span>
+        <div class="foot-icons" id="footIcons"></div>
+    </div>
+</section>
+
+<script>
+    const data = [
+        {
+            id: 'i1', name: '基石', en: 'Keystone', tag: '结构 · 稳定',
+            desc: '从拱券里抽出的符号：厚重的结构，压着一颗橙色楔石。它不解释产品做什么，只暗示这个系统是稳的、可承重的。',
+            pts: ['正式、耐看，适合长期使用', '16px 下仍能读出“门”的轮廓', '可继续延展成权限、模块的图形语言'],
+            warn: '气质偏建筑，初次见到时含义不直接'
+        },
+        {
+            id: 'i2', name: '光圈', en: 'Aperture', tag: '光学 · 聚焦',
+            desc: '六片白色叶片围出一个光圈，中心是橙色。它把“后台”翻译成“对焦”：把杂乱的输入收束成一个清晰的判断。',
+            pts: ['径向构图，从 16px 到 512px 都不散', '与筛选、权限、监控的语义天然契合', '中心色可以换成状态色'],
+            warn: '叶片在 16px 会合并成一朵花形'
+        },
+        {
+            id: 'i3', name: '棱镜', en: 'Prism', tag: '光 · 数据',
+            desc: '一束白光穿过棱镜，被拆成三束颜色。数据进入系统，变成可读的信号——这是后台最本质的工作。',
+            pts: ['三角加射线，辨识度高', '深色底上颜色最通透', '适合仪表盘与数据产品'],
+            warn: '彩色元素不适合单色印刷与小尺寸'
+        },
+        {
+            id: 'i4', name: '环带', en: 'Möbius', tag: '拓扑 · 流程',
+            desc: '一条不断开的带子，在中心打了个结。没有起点也没有终点，正好对应后台里永不停歇的流程与循环。',
+            pts: ['造型优雅，气质高于具象符号', '单色可用，印刷友好', '能做无限循环的加载动效'],
+            warn: '环带在 16px 偏细，需要单独加粗'
+        },
+        {
+            id: 'i5', name: '脉冲', en: 'Pulse', tag: '数据 · 实时',
+            desc: '五根柱子，中间那根最高、最亮。它是实时状态，是心跳，是系统还在正常运转的证据。',
+            pts: ['结构极简，缩到 16px 依旧清楚', '可以做成实时数据动画', '与监控、运维语义贴合'],
+            warn: '形态接近通用图表图标，独特性靠配色'
+        },
+        {
+            id: 'i6', name: '北辰', en: 'Polaris', tag: '方位 · 指引',
+            desc: '一颗四向星，中心是橙色。它不指北，只表示“方向明确”——在复杂的后台里，知道下一步去哪。',
+            pts: ['星形轮廓在极小尺寸最稳', '深色与浅色两种底都成立', '可延展为导航与权限的符号'],
+            warn: '星形常见，需要靠比例与留白区分'
+        },
+        {
+            id: 'i7', name: '单元', en: 'Cell', tag: '模块 · 组合',
+            desc: '一个六边形，里面套着另一个六边形。模块、插件、权限组——后台的一切，都是由可复用的单元拼起来的。',
+            pts: ['几何感强，边缘在任何尺寸都锐利', '与插件化、模块化架构契合', '可扩展成蜂巢式图标系统'],
+            warn: '容易联想到“硬件 / 螺母”，需要配字标'
+        },
+        {
+            id: 'i8', name: '日蚀', en: 'Eclipse', tag: '天体 · 状态',
+            desc: '两个圆相错，留下一个月牙和一圈橙色边缘。它讲的是“遮蔽与显露”——权限、视图、状态，都是同一件事的两面。',
+            pts: ['大尺寸极有氛围，适合启动页', '月牙形在 16px 依然明确', '深色主题下最完整'],
+            warn: '浅色底需要换一套配色'
+        },
+        {
+            id: 'i9', name: '锦鲤', en: 'Koi', tag: '有机 · 记忆点',
+            desc: '一条白色的鱼，只有眼睛是橙色。在所有方案里它最不像“管理系统”——也正因如此，最容易被记住。',
+            pts: ['有机形在一堆几何标里跳出来', '适合品牌化、社区化的产品', '32px 以上细节最完整'],
+            warn: '16px 只剩色块与眼点，需简化版'
+        },
+        {
+            id: 'i10', name: '潮汐', en: 'Tide', tag: '自然 · 节律',
+            desc: '两条平行的波纹，一条白、一条橙。系统有自己的节律：流量有涨落，任务有潮汐，稳定比刺激更重要。',
+            pts: ['极简，气质安静', '适合运营、数据中台类产品', '可做成呼吸式加载动画'],
+            warn: '波纹在 16px 会黏在一起，需减为一条'
+        }
+    ];
+
+    function art(id, cls) {
+        const item = data.find(d => d.id === id);
+        return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 512 512" role="img" aria-label="' + item.name + ' ' + item.en + '"><use href="#' + id + '"></use></svg>';
+    }
+
+    function artSize(id, size) {
+        const item = data.find(d => d.id === id);
+        return '<svg style="width:' + size + 'px;height:' + size + 'px" viewBox="0 0 512 512" role="img" aria-label="' + item.name + ' ' + size + 'px"><use href="#' + id + '"></use></svg>';
+    }
+
+    // 首屏小图标
+    document.getElementById('heroChips').innerHTML = data.map((d, i) =>
+        '<div class="chip" title="' + d.name + ' / ' + d.en + '">' + art(d.id) + '<em>' + String(i + 1).padStart(2, '0') + '</em></div>'
+    ).join('');
+
+    // 吸顶实测条
+    document.getElementById('dockIcons').innerHTML = data.map((d, i) =>
+        '<button class="d" data-target="c' + (i + 1) + '" aria-label="查看方案 ' + (i + 1) + '：' + d.name + '">' + art(d.id) + '</button>'
+    ).join('');
+
+    // 页脚图标
+    document.getElementById('footIcons').innerHTML = data.map(d => art(d.id)).join('');
+
+    // 方案列表
+    document.getElementById('list').innerHTML = data.map((d, i) => {
+        const num = String(i + 1).padStart(2, '0');
+        const pts = d.pts.map(p => '<li>' + p + '</li>').join('') + (d.warn ? '<li class="warn">' + d.warn + '</li>' : '');
+        const mocks =
+            '<div class="tab">' + art(d.id) + '<span>RocketAdmin — 仪表盘</span><i>×</i></div>' +
+            '<div class="side"><div class="top">' + art(d.id) + '</div><span class="ln w1"></span><span class="ln w2"></span><span class="ln w3"></span></div>' +
+            '<div class="login">' + art(d.id) + '<h4>欢迎回来</h4><p>登录 RocketAdmin</p><div class="btn">登 录</div></div>';
+
+        return '<article class="row" id="c' + (i + 1) + '">' +
+            '<div class="stage">' +
+                '<div class="tile light">' + art(d.id, 'art') + '<span class="cap">Light</span></div>' +
+                '<div class="tile dark">' + art(d.id, 'art') + '<span class="cap">Dark</span></div>' +
+                '<div class="strip">' +
+                    '<div class="sz">' + artSize(d.id, 16) + '<em>16</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 24) + '<em>24</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 32) + '<em>32</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 48) + '<em>48</em></div>' +
+                    '<span class="note">favicon 实际尺寸</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="meta">' +
+                '<div class="idx">' + num + ' / ' + d.en.toUpperCase() + '</div>' +
+                '<h2>' + d.name + '<small>' + d.en + '</small><span class="tag">' + d.tag + '</span></h2>' +
+                '<p class="desc">' + d.desc + '</p>' +
+                '<ul class="pts">' + pts + '</ul>' +
+                '<div class="mocks">' + mocks + '</div>' +
+            '</div>' +
+        '</article>';
+    }).join('');
+
+    // 尺寸切换
+    const dockIcons = document.getElementById('dockIcons');
+    document.querySelectorAll('#sizeSeg button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#sizeSeg button').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on');
+            dockIcons.style.setProperty('--px', btn.dataset.size + 'px');
+        });
+    });
+
+    // 底色切换
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.addEventListener('click', () => {
+        const dark = dockIcons.classList.toggle('dark');
+        themeBtn.classList.toggle('on', dark);
+        themeBtn.textContent = dark ? '深色底' : '浅色底';
+    });
+
+    // 点击吸顶图标跳到对应方案
+    dockIcons.addEventListener('click', e => {
+        const btn = e.target.closest('.d');
+        if (!btn) return;
+        const target = document.getElementById(btn.dataset.target);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.classList.add('hit');
+        setTimeout(() => target.classList.remove('hit'), 1400);
+    });
+
+    // 滚动入场
+    const rows = Array.from(document.querySelectorAll('.row'));
+    rows.forEach(r => r.classList.add('reveal'));
+
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in');
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        rows.forEach(r => io.observe(r));
+    } else {
+        rows.forEach(r => r.classList.add('in'));
+    }
+</script>
+</body>
+</html>

@@ -219,11 +219,8 @@ abstract class BaseController
      * @param array     $with   隐式传参
      * @throws HttpResponseException
      */
-    protected function redirect(string $url, $params = [], int $code = 302, array $with = [])
+    protected function redirect(string $url, int $code = 302, array $with = [])
     {
-        if (is_int($params)) {
-            $code = $params;
-        }
         $response = \redirect($url);
         $response->code($code)->with($with);
 

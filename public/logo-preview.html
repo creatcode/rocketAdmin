@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>RocketAdmin 图标方案 · 第一轮</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    :root {
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #e6eaf2;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --brand: #1677ff;
+        --accent: #ff7a45;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 48px 32px 72px; }
+
+    /* 页头 */
+    .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .hero h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+    .hero p { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .hero .tagline { font-size: 12px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; white-space: nowrap; }
+
+    /* 概览表 */
+    .overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 26px 0 34px; }
+    .overview a { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-decoration: none; color: inherit; transition: border-color .2s, transform .2s; }
+    .overview a:hover { border-color: #bfd3ff; transform: translateY(-2px); }
+    .overview svg { width: 46px; height: 46px; flex: 0 0 46px; }
+    .overview b { display: block; font-size: 13px; }
+    .overview span { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* 方案卡片 */
+    .concept { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; margin-bottom: 18px; display: grid; grid-template-columns: 320px 1fr; gap: 30px; scroll-margin-top: 24px; }
+    .concept.glow { border-color: #cfe0ff; box-shadow: 0 10px 30px rgba(22, 119, 255, .08); }
+
+    .stage { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .box { height: 158px; border-radius: 14px; display: flex; align-items: center; justify-content: center; position: relative; }
+    .box.light { background: #fff; border: 1px solid var(--line); }
+    .box.dark { background: #0b1523; }
+    .box .caption { position: absolute; bottom: 8px; left: 12px; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: #9aa6b8; }
+    .box.dark .caption { color: #55657c; }
+    .big { width: 128px; height: 128px; }
+
+    .meta h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-size: 19px; letter-spacing: -0.01em; }
+    .badge { font-size: 10px; font-weight: 600; letter-spacing: .06em; padding: 4px 8px; border-radius: 6px; background: #eef4ff; color: var(--brand); text-transform: uppercase; }
+    .badge.rec { background: var(--brand); color: #fff; }
+    .sub { margin: 0 0 16px; font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+    .points { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .points span { font-size: 11.5px; color: #40506a; background: #f1f5fa; border-radius: 7px; padding: 5px 9px; }
+    .points span.warn { color: #9a5b13; background: #fff6e9; }
+
+    .label { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin: 0 0 8px; }
+
+    /* 尺寸条 */
+    .sizes { display: flex; align-items: flex-end; gap: 18px; padding: 0 0 18px; }
+    .sizes .sz { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .sizes .sz svg { display: block; }
+    .sizes .sz em { font-style: normal; font-size: 10px; color: #94a3b8; }
+
+    /* 场景模拟 */
+    .mocks { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+
+    .tab { width: 226px; height: 38px; display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-bottom: none; border-radius: 10px 10px 0 0; padding: 0 12px; font-size: 12px; color: #334155; }
+    .tab svg { width: 16px; height: 16px; flex: 0 0 16px; }
+    .tab i { font-style: normal; margin-left: auto; color: #94a3b8; font-size: 13px; }
+
+    .appbar { width: 246px; height: 46px; border-radius: 10px; background: #0f1e3d; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #fff; font-size: 13px; letter-spacing: .01em; }
+    .appbar svg { width: 26px; height: 26px; flex: 0 0 26px; }
+    .appbar b { font-weight: 600; }
+    .appbar .dots { margin-left: auto; display: flex; gap: 4px; }
+    .appbar .dots s { display: block; width: 5px; height: 5px; border-radius: 50%; background: #fff; opacity: .35; }
+
+    .card-login { width: 186px; padding: 16px 14px; border-radius: 12px; background: #fff; border: 1px solid var(--line); text-align: center; box-shadow: 0 6px 18px rgba(15, 23, 42, .05); }
+    .card-login svg { width: 42px; height: 42px; }
+    .card-login h4 { margin: 10px 0 3px; font-size: 13px; }
+    .card-login p { margin: 0; font-size: 10.5px; color: var(--muted); }
+
+    /* 配色区 */
+    .palettes { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; margin-top: 26px; }
+    .palettes h3 { margin: 0 0 4px; font-size: 16px; }
+    .palettes .sub { margin-bottom: 20px; }
+    .prow { display: flex; flex-wrap: wrap; gap: 18px; }
+    .pitem { text-align: center; }
+    .pitem svg { width: 92px; height: 92px; }
+    .pitem b { display: block; font-size: 12px; margin-top: 8px; }
+    .pitem span { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+    .foot { margin-top: 26px; padding: 20px 24px; border-radius: 14px; background: #fff; border: 1px dashed #cfd8e6; font-size: 12.5px; color: #475569; line-height: 1.9; }
+    .foot b { color: var(--ink); }
+
+    @media (max-width: 900px) {
+        .concept { grid-template-columns: 1fr; }
+        .overview { grid-template-columns: repeat(2, 1fr); }
+        .sizes { gap: 14px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- 图标定义（SVG 符号，可复用任意尺寸） -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+    <defs>
+        <linearGradient id="gBrand" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#3D94FF"/>
+            <stop offset="1" stop-color="#0B4ED8"/>
+        </linearGradient>
+        <linearGradient id="gDeep" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#152C4E"/>
+            <stop offset="1" stop-color="#06121F"/>
+        </linearGradient>
+        <linearGradient id="gFlame" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFB259"/>
+            <stop offset="1" stop-color="#FF5B22"/>
+        </linearGradient>
+        <linearGradient id="gWarm" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#FF9A5C"/>
+            <stop offset="1" stop-color="#E8410F"/>
+        </linearGradient>
+        <linearGradient id="gGreen" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#14C08A"/>
+            <stop offset="1" stop-color="#078A63"/>
+        </linearGradient>
+        <linearGradient id="gInk" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1E293B"/>
+            <stop offset="1" stop-color="#0B1220"/>
+        </linearGradient>
+        <linearGradient id="gGlassBg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5B8CFF"/>
+            <stop offset="1" stop-color="#7A4BFF"/>
+        </linearGradient>
+        <linearGradient id="gNeon" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#35E1FF"/>
+            <stop offset=".55" stop-color="#A855F7"/>
+            <stop offset="1" stop-color="#FF4FA3"/>
+        </linearGradient>
+
+        <!-- V1 字母标：R + 圆窗 -->
+        <symbol id="v1" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="url(#gBrand)"/>
+            <g fill="#FFFFFF">
+                <path d="M138 132 h50 v248 h-50 z"/>
+                <path fill-rule="evenodd" d="M188 132 H268 A84 84 0 0 1 268 300 H188 Z M188 178 H264 A38 38 0 0 1 264 254 H188 Z"/>
+                <path d="M230 292 h54 l98 88 h-60 z"/>
+            </g>
+            <circle cx="248" cy="216" r="15" fill="#FF7A45"/>
+        </symbol>
+
+        <!-- V2 火箭冲刺 -->
+        <symbol id="v2" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="url(#gBrand)"/>
+            <g transform="rotate(45 256 256)">
+                <path d="M204 232 L154 326 L204 302 Z" fill="#FFFFFF"/>
+                <path d="M308 232 L358 326 L308 302 Z" fill="#FFFFFF"/>
+                <path d="M228 310 L256 404 L284 310 Z" fill="url(#gFlame)"/>
+                <path d="M210 312 L220 358 L232 312 Z" fill="#FF9A5C"/>
+                <path d="M302 312 L292 358 L280 312 Z" fill="#FF9A5C"/>
+                <path d="M256 84 C294 138 308 194 308 252 V306 H204 V252 C204 194 218 138 256 84 Z" fill="#FFFFFF"/>
+                <circle cx="256" cy="226" r="24" fill="#0B4ED8"/>
+            </g>
+        </symbol>
+
+        <!-- V3 轨道 R -->
+        <symbol id="v3" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="url(#gDeep)"/>
+            <g fill="none" stroke="#2E6BFF">
+                <ellipse cx="256" cy="256" rx="206" ry="112" stroke-width="9" opacity=".55" transform="rotate(-18 256 256)"/>
+                <ellipse cx="256" cy="256" rx="206" ry="112" stroke-width="7" opacity=".26" transform="rotate(26 256 256)"/>
+            </g>
+            <g fill="#FFFFFF">
+                <path d="M138 132 h50 v248 h-50 z"/>
+                <path fill-rule="evenodd" d="M188 132 H268 A84 84 0 0 1 268 300 H188 Z M188 178 H264 A38 38 0 0 1 264 254 H188 Z"/>
+                <path d="M230 292 h54 l98 88 h-60 z"/>
+            </g>
+            <circle cx="248" cy="216" r="14" fill="#FF7A45"/>
+            <circle cx="424" cy="300" r="13" fill="#2E6BFF"/>
+        </symbol>
+
+        <!-- V4 圆形徽章 · 闪电传承 -->
+        <symbol id="v4" viewBox="0 0 512 512">
+            <circle cx="256" cy="256" r="248" fill="url(#gWarm)"/>
+            <circle cx="256" cy="256" r="228" fill="none" stroke="#FFFFFF" stroke-opacity=".22" stroke-width="6"/>
+            <path d="M318 128 L208 268 H266 L194 386 L322 252 H262 Z" fill="#FFFFFF"/>
+        </symbol>
+
+        <!-- V5 极简线稿 -->
+        <symbol id="v5" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="#EEF4FF"/>
+            <g fill="none" stroke="#1677FF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M256 104 C290 154 302 202 302 252 V296 H210 V252 C210 202 222 154 256 104 Z"/>
+                <circle cx="256" cy="220" r="26"/>
+                <path d="M210 252 L172 318"/>
+                <path d="M302 252 L340 318"/>
+            </g>
+            <path d="M234 318 L256 366 L278 318" fill="none" stroke="#FF7A45" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+
+        <!-- V6 复古太空徽章 -->
+        <symbol id="v6" viewBox="0 0 512 512">
+            <circle cx="256" cy="256" r="248" fill="#0E2A52"/>
+            <circle cx="256" cy="256" r="216" fill="none" stroke="#F5EFE2" stroke-width="8" opacity=".92"/>
+            <circle cx="256" cy="256" r="192" fill="none" stroke="#F5EFE2" stroke-width="3" opacity=".45"/>
+            <g fill="#F5EFE2">
+                <path d="M120 142 L126 160 L144 166 L126 172 L120 190 L114 172 L96 166 L114 160 Z"/>
+                <path d="M382 168 L387 182 L401 187 L387 192 L382 206 L377 192 L363 187 L377 182 Z"/>
+                <path d="M140 344 L145 356 L157 361 L145 366 L140 378 L135 366 L123 361 L135 356 Z"/>
+            </g>
+            <g fill="#FF8A3D">
+                <circle cx="386" cy="340" r="9"/>
+                <circle cx="128" cy="248" r="6"/>
+            </g>
+            <path d="M224 276 L196 326 L224 306 Z" fill="#F5EFE2"/>
+            <path d="M288 276 L316 326 L288 306 Z" fill="#F5EFE2"/>
+            <path d="M238 310 L256 356 L274 310 Z" fill="#FF8A3D"/>
+            <path d="M256 146 C280 184 288 222 288 258 V300 H224 V258 C224 222 232 184 256 146 Z" fill="#F5EFE2"/>
+            <circle cx="256" cy="220" r="15" fill="#0E2A52"/>
+        </symbol>
+
+        <!-- V7 玻璃拟态 -->
+        <symbol id="v7" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="url(#gGlassBg)"/>
+            <ellipse cx="130" cy="100" rx="230" ry="170" fill="#FFFFFF" opacity=".12"/>
+            <ellipse cx="410" cy="450" rx="200" ry="150" fill="#0B1B3A" opacity=".14"/>
+            <g transform="rotate(45 256 256)">
+                <path d="M204 232 L160 320 L204 302 Z" fill="#FFFFFF" opacity=".62"/>
+                <path d="M308 232 L352 320 L308 302 Z" fill="#FFFFFF" opacity=".62"/>
+                <path d="M230 306 L256 392 L282 306 Z" fill="url(#gFlame)"/>
+                <path d="M256 88 C292 140 306 194 306 250 V302 H206 V250 C206 194 220 140 256 88 Z" fill="#FFFFFF" opacity=".88"/>
+                <path d="M256 88 C292 140 306 194 306 250 V302 H282 V250 C282 198 272 140 256 88 Z" fill="#FFFFFF" opacity=".95"/>
+                <circle cx="256" cy="222" r="26" fill="#FFFFFF" fill-opacity=".32" stroke="#FFFFFF" stroke-opacity=".58" stroke-width="4"/>
+            </g>
+        </symbol>
+
+        <!-- B1 加速带 -->
+        <symbol id="b1" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="url(#gBrand)"/>
+            <g transform="rotate(-45 256 256)" fill="#FFFFFF">
+                <rect x="150" y="194" width="210" height="26" rx="13"/>
+                <rect x="122" y="250" width="262" height="38" rx="19"/>
+                <rect x="96" y="314" width="316" height="52" rx="26"/>
+            </g>
+            <circle cx="331" cy="120" r="22" fill="#FF7A45"/>
+        </symbol>
+
+        <!-- B2 突破框 -->
+        <symbol id="b2" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="url(#gBrand)"/>
+            <path d="M316 116 H136 Q116 116 116 136 V376 Q116 396 136 396 H376 Q396 396 396 376 V312"
+                  fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/>
+            <circle cx="374" cy="150" r="36" fill="#FF7A45"/>
+        </symbol>
+
+        <!-- B3 光点轨迹 -->
+        <symbol id="b3" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="#0F1F35"/>
+            <circle cx="140" cy="372" r="15" fill="#FFFFFF"/>
+            <circle cx="225" cy="287" r="22" fill="#FFFFFF"/>
+            <circle cx="310" cy="202" r="30" fill="#FFFFFF"/>
+            <circle cx="395" cy="117" r="39" fill="#FF7A45"/>
+        </symbol>
+
+        <!-- B4 橙杠 A -->
+        <symbol id="b4" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="url(#gBrand)"/>
+            <path d="M172 396 L256 116 L340 396" fill="none" stroke="#FFFFFF" stroke-width="46" stroke-linejoin="miter"/>
+            <path d="M188 298 H324" fill="none" stroke="#FF7A45" stroke-width="44"/>
+        </symbol>
+
+        <!-- V8 霓虹渐变 -->
+        <symbol id="v8" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="120" fill="#0D0820"/>
+            <g transform="rotate(45 256 256)">
+                <g fill="none" stroke="url(#gNeon)" stroke-linecap="round" stroke-linejoin="round">
+                    <g stroke-width="44" opacity=".22">
+                        <path d="M256 96 C290 148 302 198 302 250 V300 H210 V250 C210 198 222 148 256 96 Z"/>
+                        <circle cx="256" cy="218" r="26"/>
+                        <path d="M210 250 L172 318"/>
+                        <path d="M302 250 L340 318"/>
+                    </g>
+                    <g stroke-width="20">
+                        <path d="M256 96 C290 148 302 198 302 250 V300 H210 V250 C210 198 222 148 256 96 Z"/>
+                        <circle cx="256" cy="218" r="26"/>
+                        <path d="M210 250 L172 318"/>
+                        <path d="M302 250 L340 318"/>
+                    </g>
+                    <g stroke="#FF4FA3" stroke-width="16">
+                        <path d="M238 306 L256 352 L274 306"/>
+                    </g>
+                </g>
+            </g>
+        </symbol>
+    </defs>
+</svg>
+
+<div class="wrap">
+
+    <div class="hero">
+        <div>
+            <h1>RocketAdmin 图标方案</h1>
+            <p>基于项目现有品牌色 #1677ff 与登录页视觉体系设计，共十二个方向，均为纯 SVG、16px 可辨。<br>V 组围绕火箭与字母，B 组抛开具象事物、走抽象几何，每个方案都给出主图标、多尺寸与三种落地效果。</p>
+        </div>
+        <div class="tagline">12 个方向 · 任选其一</div>
+    </div>
+
+    <div class="overview">
+        <a href="#v1"><svg viewBox="0 0 512 512"><use href="#v1"/></svg><div><b>V1 R 字标</b><span>字母标 · 通用稳定</span></div></a>
+        <a href="#v2"><svg viewBox="0 0 512 512"><use href="#v2"/></svg><div><b>V2 火箭冲刺</b><span>图形标 · 记忆点强</span></div></a>
+        <a href="#v3"><svg viewBox="0 0 512 512"><use href="#v3"/></svg><div><b>V3 轨道深空</b><span>字母 + 轨道 · 平台感</span></div></a>
+        <a href="#v4"><svg viewBox="0 0 512 512"><use href="#v4"/></svg><div><b>V4 闪电徽章</b><span>圆形 · 传承旧版</span></div></a>
+        <a href="#v5"><svg viewBox="0 0 512 512"><use href="#v5"/></svg><div><b>V5 极简线稿</b><span>线条 · 可延展图标体系</span></div></a>
+        <a href="#v6"><svg viewBox="0 0 512 512"><use href="#v6"/></svg><div><b>V6 复古徽章</b><span>扁平复古 · 故事感</span></div></a>
+        <a href="#v7"><svg viewBox="0 0 512 512"><use href="#v7"/></svg><div><b>V7 玻璃拟态</b><span>渐变 + 半透明 · 精致</span></div></a>
+        <a href="#v8"><svg viewBox="0 0 512 512"><use href="#v8"/></svg><div><b>V8 霓虹渐变</b><span>深色底 · 潮流感</span></div></a>
+        <a href="#b1"><svg viewBox="0 0 512 512"><use href="#b1"/></svg><div><b>B1 加速带</b><span>抽象 · 速度递增</span></div></a>
+        <a href="#b2"><svg viewBox="0 0 512 512"><use href="#b2"/></svg><div><b>B2 突破框</b><span>抽象 · 打破边界</span></div></a>
+        <a href="#b3"><svg viewBox="0 0 512 512"><use href="#b3"/></svg><div><b>B3 光点轨迹</b><span>抽象 · 加速信号</span></div></a>
+        <a href="#b4"><svg viewBox="0 0 512 512"><use href="#b4"/></svg><div><b>B4 橙杠 A</b><span>字母 A · 后台语义</span></div></a>
+    </div>
+
+    <!-- V1 -->
+    <article class="concept glow" id="v1">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v1"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v1"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V1 · R 字标 <span class="badge rec">推荐</span></h2>
+            <p class="sub">直接用品牌首字母 R 做字形，字腔里放一颗橙色圆点，既像火箭舷窗，也让 16px 下有一个视觉焦点。与登录页现有的 48px 圆角方块 "R" 占位完全同构，改造成本最低。</p>
+            <div class="points">
+                <span>字母标最容易形成品牌资产</span>
+                <span>缩到 16px 仍可辨认</span>
+                <span>与后台蓝色系无缝衔接</span>
+                <span class="warn">需要另配火箭图形作为辅助符号</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v1"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v1"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v1"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v1"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v1"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v1"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v1"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v1"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- V2 -->
+    <article class="concept" id="v2">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v2"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v2"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V2 · 火箭冲刺 <span class="badge">图形标</span></h2>
+            <p class="sub">45° 上冲的火箭，橙色尾焰与蓝色底形成强对比。最能直接传达 "Rocket" 与 "极速" 的定位，适合做启动页、宣传物料的主视觉。</p>
+            <div class="points">
+                <span>品牌意象最直白</span>
+                <span>橙蓝互补，缩略图醒目</span>
+                <span class="warn">16px 下细节偏多</span>
+                <span class="warn">与字母标需搭配使用</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v2"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v2"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v2"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v2"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v2"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v2"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v2"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v2"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- V3 -->
+    <article class="concept" id="v3">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v3"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v3"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V3 · 轨道深空 <span class="badge">平台感</span></h2>
+            <p class="sub">深空蓝底 + 环绕轨道，白色 R 居中，橙色为卫星点。科技平台气质最强，适合日后做官网、控制台、插件市场的统一视觉基底。</p>
+            <div class="points">
+                <span>深色底在深色操作系统主题下稳定</span>
+                <span>轨道元素可扩展为加载动画</span>
+                <span class="warn">深底色在浅色页头中对比偏重</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v3"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v3"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v3"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v3"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v3"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v3"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v3"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v3"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- V4 -->
+    <article class="concept" id="v4">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v4"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v4"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V4 · 闪电徽章 <span class="badge">传承版</span></h2>
+            <p class="sub">保留 FastAdmin 时代最被用户记住的闪电符号，改为圆形橙色徽章 + 白色闪电，闪电同时被读作火箭尾焰。老用户有延续感，新用户仍理解为 "快"。</p>
+            <div class="points">
+                <span>图形最简单，16px 最清晰</span>
+                <span>与旧版有明确传承关系</span>
+                <span class="warn">橙色与现有蓝色后台反差较大</span>
+                <span class="warn">"火箭" 意象弱于 V2</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v4"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v4"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v4"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v4"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v4"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v4"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v4"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v4"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- V5 -->
+    <article class="concept" id="v5">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v5"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v5"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V5 · 极简线稿 <span class="badge">可延展</span></h2>
+            <p class="sub">不填充、只用线条勾形，浅蓝底 + 蓝色描边，橙色只做尾焰。这套线条语言可以继续复用到后台菜单、功能入口、空状态插图，形成统一的图标体系。</p>
+            <div class="points">
+                <span>与后台线性图标风格天然一致</span>
+                <span>后续可扩展整套图标</span>
+                <span class="warn">16px 线条偏细，favicon 需另做加粗版</span>
+                <span class="warn">缩小后视觉重量偏轻</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v5"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v5"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v5"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v5"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v5"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v5"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v5"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v5"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- V6 -->
+    <article class="concept" id="v6">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v6"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v6"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V6 · 复古太空徽章 <span class="badge">故事感</span></h2>
+            <p class="sub">双环圆徽 + 星星 + 米白火箭，配色取自老式太空任务章（深蓝 / 米白 / 橙）。品牌故事性最强，除了后台还能用在启动页、周边贴纸、版本纪念徽章。</p>
+            <div class="points">
+                <span>辨识度和收藏感都强</span>
+                <span>天然适合做启动页与周边</span>
+                <span class="warn">元素多，16px 会丢掉星星细节</span>
+                <span class="warn">与后台轻量界面风格差异较大</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v6"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v6"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v6"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v6"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v6"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v6"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v6"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v6"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- V7 -->
+    <article class="concept" id="v7">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v7"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v7"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V7 · 玻璃拟态 <span class="badge">精致</span></h2>
+            <p class="sub">蓝紫渐变底 + 半透明玻璃质感火箭，当前移动端 App 图标的主流做法。大尺寸下质感细腻，适合做应用图标、启动页主视觉。</p>
+            <div class="points">
+                <span>大尺寸质感最好</span>
+                <span>适合应用商店 / 启动页</span>
+                <span class="warn">16px 只剩蓝色方块，质感全失</span>
+                <span class="warn">依赖渐变与半透明，单色场景不可用</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v7"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v7"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v7"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v7"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v7"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v7"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v7"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v7"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- V8 -->
+    <article class="concept" id="v8">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#v8"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#v8"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>V8 · 霓虹渐变 <span class="badge">潮流</span></h2>
+            <p class="sub">深空黑底 + 青→紫→品红的渐变描边火箭，带一层低透明度辉光。深色浏览器主题下最亮眼，适合年轻化、开发者社区类的产品气质。</p>
+            <div class="points">
+                <span>深色主题下最醒目</span>
+                <span>线条结构清晰，缩小不失形</span>
+                <span class="warn">浅色页头里深色方块很突兀</span>
+                <span class="warn">印刷、单色、浅底场景不可用</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#v8"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#v8"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#v8"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#v8"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#v8"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#v8"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#v8"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#v8"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- B1 -->
+    <article class="concept glow" id="b1">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#b1"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#b1"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>B1 · 加速带 <span class="badge rec">大胆向</span></h2>
+            <p class="sub">三条同向斜条，从细到粗递进，末端一颗橙点——只表达“越来越快”，不画任何具体事物。纯几何构成，没有火箭也没有字母，像一条被凝固的加速轨迹。</p>
+            <div class="points">
+                <span>完全没有具象符号，气质更高级</span>
+                <span>16px 下依旧是三条清晰色块</span>
+                <span>可无限延展成加载动画（斜条依次点亮）</span>
+                <span class="warn">含义抽象，需要品牌文案辅助解释</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#b1"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#b1"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#b1"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#b1"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#b1"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#b1"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#b1"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#b1"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- B2 -->
+    <article class="concept" id="b2">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#b2"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#b2"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>B2 · 突破框 <span class="badge">大胆向</span></h2>
+            <p class="sub">一个粗线方框，右上角刻意断开，一颗橙点从缺口处冲出框外。方框代表后台的规则与边界，橙点代表产品本身——“从框架里冲出去”，比火箭更抽象的同一层意思。</p>
+            <div class="points">
+                <span>结构感强，很适合管理系统</span>
+                <span>缺口 + 出逃点，一眼记住</span>
+                <span class="warn">断口较细，16px 需要放宽线条</span>
+                <span class="warn">寓意需要一点解释成本</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#b2"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#b2"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#b2"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#b2"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#b2"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#b2"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#b2"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#b2"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- B3 -->
+    <article class="concept" id="b3">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#b3"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#b3"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>B3 · 光点轨迹 <span class="badge">大胆向</span></h2>
+            <p class="sub">四颗沿对角线依次放大的光点，最后一颗变成橙色并顶到角上。像一条正在加速的信号，也像数据在往上走。深空底 + 白点 + 橙点，只有三种元素。</p>
+            <div class="points">
+                <span>元素最少，缩小后几乎不会失真</span>
+                <span>天然可以做成“加载时逐点点亮”的动效</span>
+                <span class="warn">形态偏简单，独特性靠配色支撑</span>
+                <span class="warn">深底色在浅色页头中对比偏重</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#b3"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#b3"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#b3"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#b3"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#b3"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#b3"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#b3"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#b3"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- B4 -->
+    <article class="concept" id="b4">
+        <div class="stage">
+            <div class="box light"><svg class="big" viewBox="0 0 512 512"><use href="#b4"/></svg><span class="caption">Light</span></div>
+            <div class="box dark"><svg class="big" viewBox="0 0 512 512"><use href="#b4"/></svg><span class="caption">Dark</span></div>
+        </div>
+        <div class="meta">
+            <h2>B4 · 橙杠 A <span class="badge">字母向</span></h2>
+            <p class="sub">放弃 R，改用 A（Admin 的首字母），横杠换成橙色加速条。语义上从“火箭”转向“后台管理”，造型上只是一个被橙杠切开的粗体字母，比火箭更克制。</p>
+            <div class="points">
+                <span>与 Admin 语义直接对应</span>
+                <span>横杠可替换为进度条、状态色</span>
+                <span class="warn">A 过于常见，不容易独占</span>
+                <span class="warn">需要搭配完整的字标才成立</span>
+            </div>
+            <p class="label">尺寸表现</p>
+            <div class="sizes">
+                <div class="sz"><svg width="16" height="16" viewBox="0 0 512 512"><use href="#b4"/></svg><em>16</em></div>
+                <div class="sz"><svg width="24" height="24" viewBox="0 0 512 512"><use href="#b4"/></svg><em>24</em></div>
+                <div class="sz"><svg width="32" height="32" viewBox="0 0 512 512"><use href="#b4"/></svg><em>32</em></div>
+                <div class="sz"><svg width="48" height="48" viewBox="0 0 512 512"><use href="#b4"/></svg><em>48</em></div>
+                <div class="sz"><svg width="64" height="64" viewBox="0 0 512 512"><use href="#b4"/></svg><em>64</em></div>
+            </div>
+            <p class="label">场景模拟</p>
+            <div class="mocks">
+                <div class="tab"><svg viewBox="0 0 512 512"><use href="#b4"/></svg><span>RocketAdmin – 仪表盘</span><i>×</i></div>
+                <div class="appbar"><svg viewBox="0 0 512 512"><use href="#b4"/></svg><b>RocketAdmin</b><div class="dots"><s></s><s></s><s></s></div></div>
+                <div class="card-login">
+                    <svg viewBox="0 0 512 512"><use href="#b4"/></svg>
+                    <h4>欢迎回来</h4><p>请输入您的账号信息</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- 配色 -->
+    <section class="palettes">
+        <h3>配色方案（以 V1 为例，同一图形可换色）</h3>
+        <p class="sub">图形定稿后再确定配色即可，下面四种都在 16px 下验证过对比度。</p>
+        <div class="prow">
+            <div class="pitem">
+                <svg viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="url(#gBrand)"/><g fill="#fff"><path d="M138 132 h50 v248 h-50 z"/><path fill-rule="evenodd" d="M188 132 H268 A84 84 0 0 1 268 300 H188 Z M188 178 H264 A38 38 0 0 1 264 254 H188 Z"/><path d="M230 292 h54 l98 88 h-60 z"/></g><circle cx="248" cy="216" r="15" fill="#FF7A45"/></svg>
+                <b>科技蓝（默认）</b><span>对齐登录页 #1677ff</span>
+            </div>
+            <div class="pitem">
+                <svg viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="url(#gDeep)"/><g fill="#fff"><path d="M138 132 h50 v248 h-50 z"/><path fill-rule="evenodd" d="M188 132 H268 A84 84 0 0 1 268 300 H188 Z M188 178 H264 A38 38 0 0 1 264 254 H188 Z"/><path d="M230 292 h54 l98 88 h-60 z"/></g><circle cx="248" cy="216" r="15" fill="#2E6BFF"/></svg>
+                <b>深空蓝 + 青</b><span>更冷静，适合夜间主题</span>
+            </div>
+            <div class="pitem">
+                <svg viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="url(#gGreen)"/><g fill="#fff"><path d="M138 132 h50 v248 h-50 z"/><path fill-rule="evenodd" d="M188 132 H268 A84 84 0 0 1 268 300 H188 Z M188 178 H264 A38 38 0 0 1 264 254 H188 Z"/><path d="M230 292 h54 l98 88 h-60 z"/></g><circle cx="248" cy="216" r="15" fill="#FFD166"/></svg>
+                <b>青绿（旧品牌延续）</b><span>沿用 FastAdmin 绿系</span>
+            </div>
+            <div class="pitem">
+                <svg viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="url(#gInk)"/><g fill="#fff"><path d="M138 132 h50 v248 h-50 z"/><path fill-rule="evenodd" d="M188 132 H268 A84 84 0 0 1 268 300 H188 Z M188 178 H264 A38 38 0 0 1 264 254 H188 Z"/><path d="M230 292 h54 l98 88 h-60 z"/></g><circle cx="248" cy="216" r="15" fill="#FF7A45"/></svg>
+                <b>墨黑 + 橙</b><span>中性耐看，适合作为对外标识</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="foot">
+        <b>选定后我会做的落地工作：</b><br>
+        1. 导出 <b>favicon.ico</b>（含 16/32/48 多尺寸）、<b>logo.svg</b>、<b>apple-touch-icon.png</b>（180）、Android 图标 192/512，替换 <b>public/favicon.ico</b> 与 <b>public/assets/img/favicon.ico</b>；<br>
+        2. 更新 <b>app/admin/view/common/meta.html</b> 的 favicon 引用，并在 <b>header.html</b> 的 logo 区加入图标 + 文字锁定组合；<br>
+        3. 同步到 tp8 版 <b>tp8-fastadmin</b>，保持两版一致。
+    </div>
+
+</div>
+</body>
+</html>

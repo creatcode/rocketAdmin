@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>RocketAdmin · 通用后台图标决赛</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<style>
+    :root {
+        --paper: #f6f6f4;
+        --ink: #12151a;
+        --muted: #6c727c;
+        --line: #e2e2dd;
+        --blue: #1677ff;
+        --orange: #ff6b35;
+        --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 0 40px; }
+
+    /* ============ 首屏 ============ */
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: #080b12;
+        color: #fff;
+    }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        inset: -20% -10% auto -10%;
+        height: 130%;
+        background:
+            radial-gradient(50% 60% at 16% 8%, rgba(22, 119, 255, .2), transparent 68%),
+            radial-gradient(40% 55% at 88% 86%, rgba(255, 107, 53, .1), transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+        background-size: 96px 96px;
+        mask-image: radial-gradient(70% 60% at 28% 22%, #000 8%, transparent 78%);
+        -webkit-mask-image: radial-gradient(70% 60% at 28% 22%, #000 8%, transparent 78%);
+        pointer-events: none;
+    }
+
+    .hero-inner {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 48px;
+        align-items: end;
+        padding: 78px 0 52px;
+    }
+
+    .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font: 10px/1 var(--mono);
+        letter-spacing: .22em;
+        color: #8a93a6;
+        text-transform: uppercase;
+    }
+
+    .eyebrow s { display: block; width: 30px; height: 1px; background: var(--orange); opacity: .85; }
+
+    h1 {
+        margin: 22px 0 0;
+        font-size: clamp(46px, 7vw, 84px);
+        line-height: .96;
+        letter-spacing: -.05em;
+        font-weight: 600;
+    }
+
+    h1 span { color: #737c8f; font-weight: 500; }
+
+    .lead {
+        max-width: 660px;
+        margin: 24px 0 0;
+        font-size: 14.5px;
+        line-height: 1.9;
+        color: #a5adbd;
+    }
+
+    .hero-meta {
+        display: grid;
+        gap: 22px;
+        padding-left: 28px;
+        border-left: 1px solid rgba(255, 255, 255, .1);
+        text-align: right;
+    }
+
+    .hero-meta b { display: block; font: 600 20px/1.2 var(--mono); }
+    .hero-meta span { display: block; margin-top: 5px; font: 9.5px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #7d8698; }
+
+    .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 42px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .chip { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .chip svg { width: 48px; height: 48px; display: block; border-radius: 10px; transition: transform .45s cubic-bezier(.22, 1, .36, 1); }
+    .chip:hover svg { transform: translateY(-3px) scale(1.05); }
+    .chip em { font: 8px/1 var(--mono); font-style: normal; letter-spacing: .12em; color: #67718a; }
+
+    /* ============ 区块标题 ============ */
+    .section { padding-top: 68px; }
+
+    .section-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .section-head h2 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -.025em;
+        font-weight: 600;
+    }
+
+    .section-head p {
+        margin: 0;
+        font-size: 11.5px;
+        line-height: 1.7;
+        color: #7b818b;
+        text-align: right;
+    }
+
+    /* ============ 评分矩阵 ============ */
+    .matrix-wrap {
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    table.matrix {
+        width: 100%;
+        min-width: 1020px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .matrix th, .matrix td {
+        border-top: 1px solid var(--line);
+        padding: 18px 12px;
+        vertical-align: top;
+    }
+
+    .matrix thead th { border-top: 0; padding-top: 18px; }
+
+    .matrix .criterion {
+        width: 186px;
+        min-width: 186px;
+        text-align: left;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: var(--paper);
+        padding-left: 0;
+        padding-right: 18px;
+    }
+
+    .matrix thead .criterion { z-index: 3; }
+
+    .matrix .col {
+        width: 104px;
+        text-align: center;
+        padding-left: 8px;
+        padding-right: 8px;
+        position: relative;
+    }
+
+    .matrix .col.best { background: #eef4ff; }
+
+    .mcol svg { width: 46px; height: 46px; display: block; margin: 0 auto 10px; }
+    .mcol b { display: block; font-size: 13px; font-weight: 600; }
+    .mcol em { display: block; margin-top: 4px; font: 9px/1 var(--mono); font-style: normal; letter-spacing: .12em; color: #8b909a; }
+
+    .mcol .rec {
+        display: inline-block;
+        margin-bottom: 8px;
+        padding: 4px 7px;
+        border-radius: 5px;
+        background: var(--orange);
+        color: #fff;
+        font: 600 8.5px/1 var(--mono);
+        letter-spacing: .1em;
+    }
+
+    .criterion b { display: block; font-size: 12.5px; font-weight: 600; }
+    .criterion small { display: block; margin-top: 4px; font: 9px/1 var(--mono); letter-spacing: .14em; color: #9ba0a9; }
+    .criterion-hint { font: 9px/1 var(--mono); letter-spacing: .12em; color: #9ba0a9; text-transform: uppercase; }
+    .criterion p { margin: 7px 0 0; font-size: 10.5px; line-height: 1.6; color: #7b818b; }
+
+    .score {
+        display: flex;
+        justify-content: center;
+        gap: 3px;
+        margin-bottom: 7px;
+    }
+
+    .score i {
+        width: 7px;
+        height: 5px;
+        border-radius: 2px;
+        background: #dedfd9;
+    }
+
+    .score i.on { background: #2b3038; }
+    .matrix .col.best .score i.on { background: var(--orange); }
+
+    .note {
+        display: block;
+        font-size: 10px;
+        line-height: 1.5;
+        color: #7c828b;
+        text-align: center;
+    }
+
+    .total-row th, .total-row td { border-top: 2px solid #c9cabf; padding-top: 16px; padding-bottom: 10px; }
+    .total-row .criterion b { font-size: 12px; }
+    .total-row .num b { font: 600 23px/1 var(--mono); letter-spacing: -.03em; }
+    .total-row .num span { font: 9px/1 var(--mono); color: #9ba0a9; margin-left: 2px; }
+
+    /* ============ 尺寸墙 ============ */
+    .size-wrap { overflow-x: auto; scrollbar-width: thin; }
+
+    table.sizes {
+        width: 100%;
+        min-width: 1000px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .sizes th, .sizes td { border-top: 1px solid var(--line); text-align: center; padding: 10px 8px; }
+
+    .sizes thead th { border-top: 0; padding-top: 16px; padding-bottom: 14px; }
+
+    .sizes .crit {
+        width: 76px;
+        text-align: left;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: var(--paper);
+        padding-left: 0;
+        font: 10px/1.4 var(--mono);
+        letter-spacing: .08em;
+        color: #8b909a;
+    }
+
+    .sizes thead .crit { color: #9ba0a9; }
+
+    .sizes .col.best { background: #eef4ff; }
+
+    .sizes thead .sizecol svg { width: 26px; height: 26px; display: block; margin: 0 auto 6px; }
+    .sizes thead .sizecol b { display: block; font-size: 10.5px; font-weight: 600; }
+    .sizes thead .sizecol em { display: block; font: 8.5px/1 var(--mono); font-style: normal; color: #9ba0a9; margin-top: 3px; }
+
+    .sizes td svg { display: block; margin: 0 auto; }
+    .sizes tbody tr:last-child td { padding-bottom: 18px; }
+
+    /* ============ 定稿 ============ */
+    .pick { margin-top: 84px; background: #080b12; color: #fff; }
+
+    .pick-inner {
+        display: grid;
+        grid-template-columns: 430px 1fr;
+        gap: 66px;
+        align-items: center;
+        padding: 74px 0 78px;
+    }
+
+    .pv {
+        position: relative;
+        height: 408px;
+        border-radius: 24px;
+        background: #0b1220;
+        border: 1px solid #1b2536;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .pv::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(55% 55% at 50% 42%, rgba(22, 119, 255, .18), transparent 72%);
+        pointer-events: none;
+    }
+
+    .pv svg { position: relative; width: 236px; height: 236px; }
+    .pv .tag-no { position: absolute; top: 22px; left: 26px; font: 10px/1 var(--mono); letter-spacing: .18em; color: #5e6b82; }
+    .pv .tag-score { position: absolute; bottom: 22px; left: 26px; font: 10px/1 var(--mono); letter-spacing: .12em; color: var(--orange); }
+    .pv .tag-score b { font-size: 14px; }
+
+    .pick-copy .eyebrow { color: #7d8698; }
+    .pick-copy h2 {
+        margin: 14px 0 0;
+        font-size: 46px;
+        line-height: 1.05;
+        letter-spacing: -.04em;
+        font-weight: 600;
+    }
+
+    .pick-copy h2 small {
+        display: block;
+        margin-top: 6px;
+        font: 500 12px/1 var(--mono);
+        letter-spacing: .2em;
+        text-transform: uppercase;
+        color: #6c7689;
+    }
+
+    .pick-copy .desc {
+        max-width: 60ch;
+        margin: 22px 0 0;
+        font-size: 14px;
+        line-height: 1.9;
+        color: #a8b0bf;
+    }
+
+    .pick-pts {
+        list-style: none;
+        margin: 26px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 11px;
+    }
+
+    .pick-pts li {
+        position: relative;
+        padding-left: 17px;
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: #c3cad6;
+    }
+
+    .pick-pts li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 7px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--orange);
+    }
+
+    .pick-pts li.warn { color: #8f97a6; }
+    .pick-pts li.warn::before { background: #4b566b; }
+
+    .mocks { display: flex; flex-wrap: wrap; gap: 13px; align-items: flex-end; margin-top: 30px; }
+
+    .tab {
+        width: 238px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 11px;
+        background: #fff;
+        border-radius: 10px 10px 0 0;
+        font-size: 11px;
+        color: #343a42;
+    }
+
+    .tab svg { width: 16px; height: 16px; flex: 0 0 16px; }
+    .tab i { margin-left: auto; font-style: normal; color: #a2a7ae; font-size: 12px; }
+
+    .side {
+        width: 74px;
+        height: 104px;
+        background: #0b1220;
+        border: 1px solid #1b2536;
+        border-radius: 10px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .side .top {
+        width: 40px;
+        height: 40px;
+        border-radius: 9px;
+        background: #131c2d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .side .top svg { width: 24px; height: 24px; }
+    .side .ln { display: block; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .15); }
+    .side .ln.w1 { width: 38px; }
+    .side .ln.w2 { width: 26px; }
+    .side .ln.w3 { width: 33px; }
+
+    .login {
+        width: 178px;
+        padding: 14px 13px 13px;
+        background: #fff;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, .3);
+    }
+
+    .login svg { width: 40px; height: 40px; }
+    .login h4 { margin: 8px 0 2px; font-size: 11px; font-weight: 600; color: #20242b; }
+    .login p { margin: 0; font-size: 9.5px; color: #8b909a; }
+
+    .login .btn {
+        margin-top: 10px;
+        height: 21px;
+        border-radius: 6px;
+        background: var(--blue);
+        color: #fff;
+        font-size: 9px;
+        letter-spacing: .1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ============ 备选 ============ */
+    .alts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 46px;
+        padding: 26px 0 0;
+    }
+
+    .alt { display: grid; grid-template-columns: 116px 1fr; gap: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
+    .alt .vis { display: flex; align-items: center; justify-content: center; background: #ececeb; border-radius: 14px; height: 116px; }
+    .alt .vis svg { width: 86px; height: 86px; }
+    .alt h3 { margin: 2px 0 0; font-size: 19px; letter-spacing: -.02em; font-weight: 600; }
+    .alt h3 small { margin-left: 8px; font: 500 9px/1 var(--mono); letter-spacing: .14em; color: #8b909a; text-transform: uppercase; }
+    .alt p { margin: 9px 0 0; font-size: 12.5px; line-height: 1.8; color: #5b626c; }
+    .alt .when { margin-top: 10px; font-size: 11px; line-height: 1.7; color: #8a6751; }
+    .alt .when b { font-weight: 600; color: #6f4b34; }
+
+    /* ============ 落地 ============ */
+    .next { margin-top: 76px; background: #080b12; color: #fff; }
+
+    .next-inner {
+        display: grid;
+        grid-template-columns: 370px 1fr;
+        gap: 56px;
+        padding: 58px 0 62px;
+    }
+
+    .next h2 { margin: 0; font-size: 30px; letter-spacing: -.025em; font-weight: 600; }
+    .next h2 span { color: #6f788a; }
+    .next .note2 { margin: 15px 0 0; font-size: 13px; line-height: 1.9; color: #98a0b0; }
+
+    .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 15px; }
+
+    .steps li {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, .09);
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: #b9c0cc;
+    }
+
+    .steps li b { display: block; font: 600 11px/1.7 var(--mono); letter-spacing: .1em; color: #5b6a86; }
+    .steps li strong { display: block; font-size: 12.5px; color: #fff; font-weight: 500; margin-bottom: 3px; }
+
+    .foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 0 40px;
+        border-top: 1px solid rgba(255, 255, 255, .09);
+        color: #737a88;
+        font: 10px/1.8 var(--mono);
+        letter-spacing: .04em;
+    }
+
+    .foot a { color: #9aa3b4; text-decoration: none; border-bottom: 1px solid #333d50; padding-bottom: 2px; }
+    .foot a:hover { color: #fff; border-color: var(--orange); }
+
+    /* ============ 入场 ============ */
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    .hero .eyebrow { animation: rise .7s .05s both cubic-bezier(.22, 1, .36, 1); }
+    .hero h1 { animation: rise .8s .12s both cubic-bezier(.22, 1, .36, 1); }
+    .hero .lead { animation: rise .8s .2s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-meta { animation: rise .8s .26s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-chips { animation: rise .9s .32s both cubic-bezier(.22, 1, .36, 1); }
+
+    .section-head, .matrix-wrap, .size-wrap { animation: rise .8s both cubic-bezier(.22, 1, .36, 1); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero .eyebrow, .hero h1, .hero .lead, .hero-meta, .hero-chips,
+        .section-head, .matrix-wrap, .size-wrap, .chip svg {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+
+    /* ============ 响应式 ============ */
+    @media (max-width: 1040px) {
+        .hero-inner { grid-template-columns: 1fr; gap: 32px; align-items: start; }
+        .hero-meta { display: flex; gap: 40px; padding: 22px 0 0; border: 0; border-top: 1px solid rgba(255, 255, 255, .1); text-align: left; }
+        .pick-inner { grid-template-columns: 360px 1fr; gap: 40px; }
+        .pv { height: 340px; }
+        .pv svg { width: 190px; height: 190px; }
+        .next-inner { grid-template-columns: 1fr; gap: 34px; }
+    }
+
+    @media (max-width: 840px) {
+        .wrap { padding: 0 24px; }
+        .hero-inner { padding: 54px 0 42px; }
+        .section { padding-top: 52px; }
+        .section-head { display: block; }
+        .section-head p { margin-top: 10px; text-align: left; }
+        .pick-inner { grid-template-columns: 1fr; gap: 34px; padding: 52px 0 58px; }
+        .pv { height: 300px; }
+        .pv svg { width: 170px; height: 170px; }
+        .pick-copy h2 { font-size: 38px; }
+        .alts { grid-template-columns: 1fr; gap: 30px; }
+        .next-inner { padding: 46px 0 50px; }
+    }
+
+    @media (max-width: 520px) {
+        .hero-chips { gap: 14px; }
+        .chip svg { width: 40px; height: 40px; }
+        .pick-copy h2 { font-size: 33px; }
+        .mocks { gap: 10px; }
+        .tab { width: 204px; }
+        .login { width: 164px; }
+        .alt { grid-template-columns: 92px 1fr; gap: 18px; }
+        .alt .vis { height: 92px; }
+        .alt .vis svg { width: 68px; height: 68px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ============ 图形定义 ============ -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+    <defs>
+        <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4C9BFF"/>
+            <stop offset="1" stop-color="#0B47D0"/>
+        </linearGradient>
+        <linearGradient id="gDeep" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1A3352"/>
+            <stop offset="1" stop-color="#060D1A"/>
+        </linearGradient>
+        <linearGradient id="gOrange" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFB25C"/>
+            <stop offset="1" stop-color="#FF5B22"/>
+        </linearGradient>
+
+        <!-- 07 单元 -->
+        <symbol id="f4" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M256 96 L394 176 L394 336 L256 416 L118 336 L118 176 Z"
+                  fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linejoin="miter"/>
+            <path d="M256 164 L336 210 L336 302 L256 348 L176 302 L176 210 Z" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 01 基石 -->
+        <symbol id="f1" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M120 402 V264 A136 136 0 0 1 392 264 V402 H328 V264 A72 72 0 0 0 184 264 V402 Z" fill="#FFFFFF"/>
+            <path d="M256 128 L292 160 L256 192 L220 160 Z" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 11 层叠 -->
+        <symbol id="f6" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <rect x="184" y="118" width="216" height="216" rx="20" fill="#3E6291"/>
+            <rect x="160" y="160" width="216" height="216" rx="20" fill="#93B4E8"/>
+            <rect x="136" y="202" width="216" height="216" rx="20" fill="#FFFFFF"/>
+        </symbol>
+
+        <!-- 04 环带 -->
+        <symbol id="f3" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M256 256 C 190 150 90 160 90 256 C 90 352 190 362 256 256 C 322 150 422 160 422 256 C 422 352 322 362 256 256"
+                  fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+            <circle cx="256" cy="256" r="25" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 09 陀螺仪 -->
+        <symbol id="f5" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <g fill="none" stroke="#FFFFFF" stroke-width="16">
+                <ellipse cx="256" cy="256" rx="176" ry="76"/>
+                <ellipse cx="256" cy="256" rx="176" ry="76" transform="rotate(60 256 256)"/>
+                <ellipse cx="256" cy="256" rx="176" ry="76" transform="rotate(120 256 256)"/>
+            </g>
+            <circle cx="256" cy="256" r="44" fill="#FFFFFF"/>
+            <circle cx="256" cy="256" r="16" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 13 准星 -->
+        <symbol id="f7" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <circle cx="256" cy="256" r="128" fill="none" stroke="#FFFFFF" stroke-width="8" opacity=".35"/>
+            <g fill="#FFFFFF">
+                <rect x="244" y="40" width="24" height="88" rx="12"/>
+                <rect x="244" y="384" width="24" height="88" rx="12"/>
+                <rect x="40" y="244" width="88" height="24" rx="12"/>
+                <rect x="384" y="244" width="88" height="24" rx="12"/>
+            </g>
+            <circle cx="256" cy="256" r="24" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 20 涟漪 -->
+        <symbol id="f8" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <circle cx="256" cy="256" r="170" fill="none" stroke="#FFFFFF" stroke-width="14" opacity=".34"/>
+            <circle cx="256" cy="256" r="120" fill="none" stroke="#FFFFFF" stroke-width="14" opacity=".6"/>
+            <circle cx="256" cy="256" r="70" fill="none" stroke="#FFFFFF" stroke-width="14"/>
+            <circle cx="256" cy="256" r="26" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 02 光圈 -->
+        <symbol id="f2" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <g fill="#FFFFFF">
+                <path d="M224 86 L288 86 L272 202 L240 202 Z"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(60 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(120 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(180 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(240 256 256)"/>
+                <path d="M224 86 L288 86 L272 202 L240 202 Z" transform="rotate(300 256 256)"/>
+            </g>
+            <circle cx="256" cy="256" r="58" fill="url(#gOrange)"/>
+        </symbol>
+    </defs>
+</svg>
+
+<!-- ============ 首屏 ============ -->
+<header class="hero">
+    <div class="hero-grid"></div>
+    <div class="wrap">
+        <div class="hero-inner">
+            <div>
+                <div class="eyebrow"><s></s>RocketAdmin / Identity finals</div>
+                <h1>八进一<span>。</span></h1>
+                <p class="lead">三十个方向，留下八个。按“通用后台”的五个维度重新打分：不指向具体行业、16px 可辨、深色可用、单色可用、能长成一套系统。这一轮不看故事，只看适配。</p>
+                <div class="hero-chips" id="heroChips"></div>
+            </div>
+            <aside class="hero-meta">
+                <div><b>08</b><span>Finalists</span></div>
+                <div><b>05</b><span>Criteria</span></div>
+                <div><b>01</b><span>Pick</span></div>
+            </aside>
+        </div>
+    </div>
+</header>
+
+<div class="wrap">
+
+    <!-- ============ 评分矩阵 ============ -->
+    <section class="section">
+        <div class="section-head">
+            <h2>评分矩阵</h2>
+            <p>1–5 分，只看通用后台场景。分数不代表设计好坏，只代表适配度。</p>
+        </div>
+        <div class="matrix-wrap">
+            <table class="matrix" id="matrix"></table>
+        </div>
+    </section>
+
+    <!-- ============ 尺寸墙 ============ -->
+    <section class="section">
+        <div class="section-head">
+            <h2>真实尺寸</h2>
+            <p>同一屏里比较 16 / 24 / 32 / 48 / 64 / 96px，横向滚动可看全部候选。</p>
+        </div>
+        <div class="size-wrap">
+            <table class="sizes" id="sizeTable"></table>
+        </div>
+    </section>
+
+</div>
+
+<!-- ============ 定稿 ============ -->
+<section class="pick">
+    <div class="wrap">
+        <div class="pick-inner">
+            <div class="pv">
+                <span class="tag-no">07 / CELL</span>
+                <svg viewBox="0 0 512 512" role="img" aria-label="单元 Cell"><use href="#f4"></use></svg>
+                <span class="tag-score"><b>25</b> / 25</span>
+            </div>
+            <div class="pick-copy">
+                <div class="eyebrow"><s></s>Recommended pick</div>
+                <h2>单元<small>Cell · 07</small></h2>
+                <p class="desc">六边形里再套一个六边形。它不指向任何行业，也不依赖某种文化；缩到 16px 是一个干净的六边形，放到 180px 仍然有内外的层次。对通用后台来说，它是最不需要解释的一个。</p>
+                <ul class="pick-pts">
+                    <li>通用性满分：没有行业、地域或具体功能的指向</li>
+                    <li>小尺寸与单色都成立：去掉颜色仍是一个可识别的六边形</li>
+                    <li>可延展：蜂巢式图标、模块状态、加载动画都能从它长出来</li>
+                    <li class="warn">代价：个性偏弱，需要靠字标和配色建立品牌；也可能被读成“螺母”</li>
+                </ul>
+                <div class="mocks">
+                    <div class="tab"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#f4"></use></svg><span>RocketAdmin — 仪表盘</span><i>×</i></div>
+                    <div class="side"><div class="top"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#f4"></use></svg></div><span class="ln w1"></span><span class="ln w2"></span><span class="ln w3"></span></div>
+                    <div class="login"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#f4"></use></svg><h4>欢迎回来</h4><p>登录 RocketAdmin</p><div class="btn">登 录</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 备选 ============ -->
+<div class="wrap">
+    <section class="section">
+        <div class="section-head">
+            <h2>两个备选</h2>
+            <p>如果你对“个性偏弱”有顾虑，这两个方向更值得考虑。</p>
+        </div>
+        <div class="alts">
+            <div class="alt">
+                <div class="vis"><svg viewBox="0 0 512 512" role="img" aria-label="基石 Keystone"><use href="#f1"></use></svg></div>
+                <div>
+                    <h3>基石<small>Keystone · 01</small></h3>
+                    <p>拱券加一颗橙色楔石，天然表达“承重、可靠”。它比六边形多一层叙事，16px 下也仍然读得出拱形。</p>
+                    <div class="when"><b>什么时候选它：</b>想要一个更有性格、更像“基础设施”的标识。</div>
+                </div>
+            </div>
+            <div class="alt">
+                <div class="vis"><svg viewBox="0 0 512 512" role="img" aria-label="层叠 Layers"><use href="#f6"></use></svg></div>
+                <div>
+                    <h3>层叠<small>Layers · 11</small></h3>
+                    <p>三张错开的纸，是最直白的“分层”：数据、逻辑、界面。块面对比强，缩小后依然清楚。</p>
+                    <div class="when"><b>什么时候选它：</b>产品强调架构、版本与环境；能接受单色版本另做简化。</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ============ 落地 ============ -->
+<section class="next">
+    <div class="wrap">
+        <div class="next-inner">
+            <div>
+                <h2>定稿之后<br><span>剩下的交给实现</span></h2>
+                <p class="note2">回复 07 或备选编号即可。我会同时给出主标与小尺寸简化版，避免 favicon 阶段再返工。</p>
+            </div>
+            <ul class="steps">
+                <li><b>01</b><div><strong>确认方向</strong>07 单元（默认推荐）／01 基石／11 层叠，三选一。</div></li>
+                <li><b>02</b><div><strong>全尺寸资源</strong>favicon.ico（16 / 32 / 48）、logo.svg、apple-touch-icon 180、Android 192 / 512、maskable 512。</div></li>
+                <li><b>03</b><div><strong>接入页面</strong>替换 public/favicon.ico 与 public/assets/img/favicon.ico；更新 meta.html；header.html 改为图标加字标；登录页 brand-logo 同步。</div></li>
+                <li><b>04</b><div><strong>两版同步</strong>tp6 与 tp8 仓库保持一致，版本相关的路径差异单独处理。</div></li>
+            </ul>
+        </div>
+        <div class="foot">
+            <span>8 finalists · 5 criteria · 1 pick</span>
+            <span><a href="logo-exploration.html">第一批 10 个</a> &nbsp;·&nbsp; <a href="logo-exploration-2.html">第二批 20 个</a></span>
+        </div>
+    </div>
+</section>
+
+<script>
+    const criteria = [
+        { label: '通用性', en: 'GENERAL', desc: '是否指向具体行业、文化或地域' },
+        { label: '16px', en: 'SMALL', desc: '缩到浏览器标签页仍能读出主体' },
+        { label: '深色', en: 'DARK', desc: '夜间主题与深色底不糊' },
+        { label: '单色', en: 'MONO', desc: '去色、压印、刺绣仍成立' },
+        { label: '延展', en: 'SYSTEM', desc: '能否长出整套图标与动效' }
+    ];
+
+    const finalists = [
+        {
+            id: 'f4', no: '07', name: '单元', en: 'Cell', best: true,
+            scores: [5, 5, 5, 5, 5], total: 25,
+            notes: ['不指行业', '边缘锐利', '白底最稳', '纯形可用', '可成体系']
+        },
+        {
+            id: 'f1', no: '01', name: '基石', en: 'Keystone', best: false,
+            scores: [5, 4, 5, 5, 4], total: 23,
+            notes: ['建筑中性', '拱形可辨', '对比强', '纯形可用', '权限模块']
+        },
+        {
+            id: 'f6', no: '11', name: '层叠', en: 'Layers', best: false,
+            scores: [5, 5, 4, 4, 4], total: 22,
+            notes: ['架构语义', '块面清楚', '需调层次', '依赖色阶', '版本环境']
+        },
+        {
+            id: 'f3', no: '04', name: '环带', en: 'Möbius', best: false,
+            scores: [5, 2, 5, 5, 4], total: 21,
+            notes: ['流程循环', '环线偏细', '白线最稳', '纯线可用', '加载动效']
+        },
+        {
+            id: 'f5', no: '09', name: '陀螺仪', en: 'Gyroscope', best: false,
+            scores: [5, 2, 5, 5, 4], total: 21,
+            notes: ['稳定语义', '三环合并', '深色最稳', '纯线可用', '旋转动效']
+        },
+        {
+            id: 'f7', no: '13', name: '准星', en: 'Crosshair', best: false,
+            scores: [3, 5, 5, 5, 3], total: 21,
+            notes: ['语气偏硬', '极清晰', '强', '强', '偏游戏']
+        },
+        {
+            id: 'f8', no: '20', name: '涟漪', en: 'Ripple', best: false,
+            scores: [4, 4, 4, 4, 4], total: 20,
+            notes: ['广播扩散', '两圈可辨', '良好', '良好', '扩散动效']
+        },
+        {
+            id: 'f2', no: '02', name: '光圈', en: 'Aperture', best: false,
+            scores: [4, 3, 4, 4, 4], total: 19,
+            notes: ['光学隐喻', '叶片合并', '良好', '良好', '可换状态色']
+        }
+    ];
+
+    function art(id, cls) {
+        const item = finalists.find(d => d.id === id);
+        return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 512 512" role="img" aria-label="' + item.name + ' ' + item.en + '"><use href="#' + id + '"></use></svg>';
+    }
+
+    document.getElementById('heroChips').innerHTML = finalists.map(d =>
+        '<div class="chip" title="' + d.name + ' / ' + d.en + '">' + art(d.id) + '<em>' + d.no + '</em></div>'
+    ).join('');
+
+    // 评分矩阵
+    let html = '<thead><tr><th class="criterion"><span class="criterion-hint">候选 / 维度</span></th>';
+    finalists.forEach(d => {
+        html += '<th class="col' + (d.best ? ' best' : '') + '">' +
+            '<div class="mcol">' +
+                (d.best ? '<span class="rec">推荐</span>' : '') +
+                art(d.id) +
+                '<b>' + d.name + '</b>' +
+                '<em>' + d.no + ' · ' + d.en.toUpperCase() + '</em>' +
+            '</div>' +
+        '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    criteria.forEach((c, i) => {
+        html += '<tr><th class="criterion" scope="row"><b>' + c.label + '</b><small>' + c.en + '</small><p>' + c.desc + '</p></th>';
+        finalists.forEach(d => {
+            const filled = '<i class="on"></i>'.repeat(d.scores[i]) + '<i></i>'.repeat(5 - d.scores[i]);
+            html += '<td class="col' + (d.best ? ' best' : '') + '"><div class="score">' + filled + '</div><span class="note">' + d.notes[i] + '</span></td>';
+        });
+        html += '</tr>';
+    });
+
+    html += '<tr class="total-row"><th class="criterion" scope="row"><b>总分</b><small>TOTAL</small></th>';
+    finalists.forEach(d => {
+        html += '<td class="col num' + (d.best ? ' best' : '') + '"><b>' + d.total + '</b><span>/ 25</span></td>';
+    });
+    html += '</tr></tbody>';
+
+    document.getElementById('matrix').innerHTML = html;
+
+    // 尺寸墙
+    const sizes = [16, 24, 32, 48, 64, 96];
+    let sh = '<thead><tr><th class="crit">尺寸</th>';
+    finalists.forEach(d => {
+        sh += '<th class="sizecol' + (d.best ? ' col best' : '') + '">' +
+            art(d.id) + '<b>' + d.name + '</b><em>' + d.no + '</em>' +
+        '</th>';
+    });
+    sh += '</tr></thead><tbody>';
+
+    sizes.forEach(s => {
+        sh += '<tr><th class="crit">' + s + 'px</th>';
+        finalists.forEach(d => {
+            sh += '<td class="' + (d.best ? 'col best' : '') + '"><svg style="width:' + s + 'px;height:' + s + 'px" viewBox="0 0 512 512" aria-hidden="true"><use href="#' + d.id + '"></use></svg></td>';
+        });
+        sh += '</tr>';
+    });
+    sh += '</tbody>';
+
+    document.getElementById('sizeTable').innerHTML = sh;
+</script>
+</body>
+</html>

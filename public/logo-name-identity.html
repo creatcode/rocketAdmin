@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>RocketAdmin · 名称标识探索</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<style>
+    :root {
+        --paper: #f6f6f4;
+        --ink: #12151a;
+        --muted: #6c727c;
+        --line: #e2e2dd;
+        --blue: #1677ff;
+        --orange: #ff6b2c;
+        --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 0 40px; }
+
+    /* ============ 首屏 ============ */
+    .hero { position: relative; overflow: hidden; background: #080b12; color: #fff; }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        inset: -20% -10% auto -10%;
+        height: 130%;
+        background:
+            radial-gradient(50% 60% at 18% 6%, rgba(22, 119, 255, .2), transparent 68%),
+            radial-gradient(40% 55% at 88% 88%, rgba(255, 107, 44, .12), transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+        background-size: 96px 96px;
+        mask-image: radial-gradient(70% 60% at 26% 22%, #000 8%, transparent 78%);
+        -webkit-mask-image: radial-gradient(70% 60% at 26% 22%, #000 8%, transparent 78%);
+        pointer-events: none;
+    }
+
+    .hero-inner {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 48px;
+        align-items: end;
+        padding: 74px 0 42px;
+    }
+
+    .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font: 10px/1 var(--mono);
+        letter-spacing: .22em;
+        color: #8a93a6;
+        text-transform: uppercase;
+    }
+
+    .eyebrow s { display: block; width: 30px; height: 1px; background: var(--orange); opacity: .9; }
+
+    h1 {
+        margin: 22px 0 0;
+        font-size: clamp(44px, 6.4vw, 78px);
+        line-height: .97;
+        letter-spacing: -.045em;
+        font-weight: 600;
+    }
+
+    h1 span { color: #737c8f; font-weight: 500; }
+
+    .lead {
+        max-width: 660px;
+        margin: 24px 0 0;
+        font-size: 14.5px;
+        line-height: 1.9;
+        color: #a5adbd;
+    }
+
+    .hero-meta {
+        display: grid;
+        gap: 22px;
+        padding-left: 28px;
+        border-left: 1px solid rgba(255, 255, 255, .1);
+        text-align: right;
+    }
+
+    .hero-meta b { display: block; font: 600 20px/1.2 var(--mono); }
+    .hero-meta span { display: block; margin-top: 5px; font: 9.5px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #7d8698; }
+
+    /* 名称 */
+    .wordmark {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-top: 34px;
+        font-size: clamp(26px, 3.6vw, 40px);
+        letter-spacing: -.035em;
+        font-weight: 600;
+    }
+
+    .wordmark span { color: #6f788a; font-weight: 500; }
+
+    .wordmark s {
+        display: block;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--orange);
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 6px rgba(255, 107, 44, .14);
+    }
+
+    .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 18px;
+        margin-top: 38px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .chip { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .chip svg { width: 46px; height: 46px; display: block; transition: transform .45s cubic-bezier(.22, 1, .36, 1); }
+    .chip:hover svg { transform: translateY(-3px) scale(1.05); }
+    .chip em { font: 8px/1 var(--mono); font-style: normal; letter-spacing: .12em; color: #67718a; }
+
+    /* ============ 列表 ============ */
+    .list { padding: 8px 0 16px; }
+
+    .row {
+        display: grid;
+        grid-template-columns: 356px 1fr;
+        gap: 56px;
+        padding: 58px 0;
+        border-top: 1px solid var(--line);
+        align-items: start;
+    }
+
+    .row:first-child { border-top: 0; padding-top: 40px; }
+
+    .stage { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+
+    .tile {
+        position: relative;
+        height: 168px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .tile.light { background: #ececeb; }
+    .tile.dark { background: #0a0f18; }
+
+    .tile .art { width: 124px; height: 124px; transition: transform .55s cubic-bezier(.22, 1, .36, 1); }
+    .tile:hover .art { transform: scale(1.07); }
+
+    .tile .cap {
+        position: absolute;
+        left: 13px;
+        bottom: 10px;
+        font: 8.5px/1 var(--mono);
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: #9ba0a9;
+    }
+
+    .tile.dark .cap { color: #4c5566; }
+
+    .strip { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: 22px; padding-top: 9px; }
+    .strip .sz { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .strip .sz svg { display: block; }
+    .strip .sz em { font: 8.5px/1 var(--mono); font-style: normal; color: #8b909a; }
+    .strip .note { margin-left: auto; font: 9.5px/1 var(--mono); letter-spacing: .08em; color: #9ba0a9; white-space: nowrap; }
+
+    .meta .idx { font: 10px/1 var(--mono); letter-spacing: .18em; color: #9ba0a9; text-transform: uppercase; }
+
+    .meta h2 {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 11px 0 0;
+        font-size: 26px;
+        letter-spacing: -.022em;
+        font-weight: 600;
+    }
+
+    .meta h2 small { font: 500 10px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: #8b909a; }
+
+    .tag {
+        font: 10px/1 var(--mono);
+        letter-spacing: .08em;
+        color: #6e747e;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: #fff;
+    }
+
+    .desc { max-width: 62ch; margin: 16px 0 0; font-size: 14px; line-height: 1.85; color: #4b515a; }
+
+    .pts {
+        list-style: none;
+        margin: 22px 0 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 26px;
+        max-width: 650px;
+    }
+
+    .pts li { position: relative; padding-left: 15px; font-size: 12.5px; line-height: 1.65; color: #3f4650; }
+
+    .pts li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 7px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #c9ccd2;
+    }
+
+    .pts li.warn { color: #8a6751; }
+    .pts li.warn::before { background: var(--orange); }
+
+    /* 字标组合 */
+    .lockup {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 26px;
+        padding: 15px 18px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        max-width: 520px;
+    }
+
+    .lockup svg { width: 32px; height: 32px; flex: 0 0 32px; }
+    .lockup b { font-size: 15px; letter-spacing: -.02em; font-weight: 600; }
+    .lockup b span { color: #8b909a; font-weight: 500; }
+    .lockup em { margin-left: auto; font: 9px/1 var(--mono); font-style: normal; letter-spacing: .12em; color: #a3a8b0; }
+
+    .mocks { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 12px; }
+
+    .tab {
+        width: 236px;
+        height: 41px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 11px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-bottom: 0;
+        border-radius: 10px 10px 0 0;
+        font-size: 11px;
+        color: #343a42;
+    }
+
+    .tab svg { width: 16px; height: 16px; flex: 0 0 16px; }
+    .tab i { margin-left: auto; font-style: normal; color: #a2a7ae; font-size: 12px; }
+
+    .row.hit .tile { outline: 2px solid var(--orange); outline-offset: -2px; }
+
+    .row.reveal { opacity: 0; transform: translateY(16px); transition: opacity .65s ease, transform .65s cubic-bezier(.22, 1, .36, 1); }
+    .row.reveal.in { opacity: 1; transform: none; }
+
+    /* ============ 建议 ============ */
+    .guide { border-top: 1px solid var(--line); padding-top: 64px; }
+
+    .guide-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+    .guide-head h2 { margin: 0; font-size: 28px; letter-spacing: -.025em; font-weight: 600; }
+    .guide-head p { margin: 0; font-size: 11.5px; line-height: 1.7; color: #7b818b; text-align: right; }
+
+    .gcols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 44px; margin-top: 34px; }
+
+    .gcol { padding-top: 20px; border-top: 1px solid var(--line); }
+    .gcol .top { display: flex; align-items: center; gap: 13px; }
+    .gcol .top svg { width: 44px; height: 44px; }
+    .gcol h3 { margin: 0; font-size: 15px; font-weight: 600; }
+    .gcol h3 small { margin-left: 7px; font: 500 9px/1 var(--mono); letter-spacing: .14em; color: #8b909a; text-transform: uppercase; }
+    .gcol p { margin: 11px 0 0; font-size: 12.5px; line-height: 1.8; color: #5b626c; }
+    .gcol .why { margin-top: 9px; font-size: 11px; line-height: 1.7; color: #8a6751; }
+
+    /* ============ 落地 ============ */
+    .next { margin-top: 72px; background: #080b12; color: #fff; }
+
+    .next-inner { display: grid; grid-template-columns: 380px 1fr; gap: 56px; padding: 56px 0 60px; }
+
+    .next h2 { margin: 0; font-size: 30px; letter-spacing: -.025em; font-weight: 600; }
+    .next h2 span { color: #6f788a; }
+    .next .note2 { margin: 15px 0 0; font-size: 13px; line-height: 1.9; color: #98a0b0; }
+
+    .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 15px; }
+
+    .steps li {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, .09);
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: #b9c0cc;
+    }
+
+    .steps li b { display: block; font: 600 11px/1.7 var(--mono); letter-spacing: .1em; color: #5b6a86; }
+    .steps li strong { display: block; font-size: 12.5px; color: #fff; font-weight: 500; margin-bottom: 3px; }
+
+    .foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 0 40px;
+        border-top: 1px solid rgba(255, 255, 255, .09);
+        color: #737a88;
+        font: 10px/1.8 var(--mono);
+        letter-spacing: .04em;
+    }
+
+    .foot a { color: #9aa3b4; text-decoration: none; border-bottom: 1px solid #333d50; padding-bottom: 2px; }
+    .foot a:hover { color: #fff; border-color: var(--orange); }
+
+    /* ============ 入场 ============ */
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    .hero .eyebrow { animation: rise .7s .05s both cubic-bezier(.22, 1, .36, 1); }
+    .hero h1 { animation: rise .8s .12s both cubic-bezier(.22, 1, .36, 1); }
+    .hero .lead { animation: rise .8s .2s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-meta { animation: rise .8s .26s both cubic-bezier(.22, 1, .36, 1); }
+    .hero .wordmark { animation: rise .85s .3s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-chips { animation: rise .9s .36s both cubic-bezier(.22, 1, .36, 1); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero .eyebrow, .hero h1, .hero .lead, .hero-meta, .hero .wordmark, .hero-chips,
+        .chip svg, .tile .art, .row.reveal {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+
+    /* ============ 响应式 ============ */
+    @media (max-width: 1040px) {
+        .hero-inner { grid-template-columns: 1fr; gap: 32px; align-items: start; }
+        .hero-meta { display: flex; gap: 40px; padding: 22px 0 0; border: 0; border-top: 1px solid rgba(255, 255, 255, .1); text-align: left; }
+        .row { grid-template-columns: 320px 1fr; gap: 38px; }
+        .next-inner { grid-template-columns: 1fr; gap: 34px; }
+    }
+
+    @media (max-width: 840px) {
+        .wrap { padding: 0 24px; }
+        .hero-inner { padding: 54px 0 38px; }
+        .row { grid-template-columns: 1fr; gap: 32px; padding: 44px 0; }
+        .tile { height: 152px; }
+        .tile .art { width: 110px; height: 110px; }
+        .pts { grid-template-columns: 1fr; }
+        .guide-head { display: block; }
+        .guide-head p { margin-top: 10px; text-align: left; }
+        .gcols { grid-template-columns: 1fr; gap: 28px; }
+        .next-inner { padding: 46px 0 50px; }
+    }
+
+    @media (max-width: 520px) {
+        .hero-chips { gap: 13px; }
+        .chip svg { width: 40px; height: 40px; }
+        .tile { height: 134px; }
+        .tile .art { width: 94px; height: 94px; }
+        .meta h2 { font-size: 22px; }
+        .lockup { padding: 12px 14px; }
+        .tab { width: 210px; }
+        .strip .note { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ============ 图形定义 ============ -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+    <defs>
+        <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4C9BFF"/>
+            <stop offset="1" stop-color="#0B47D0"/>
+        </linearGradient>
+        <linearGradient id="gDeep" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1A3352"/>
+            <stop offset="1" stop-color="#060D1A"/>
+        </linearGradient>
+        <linearGradient id="gOrange" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFA45C"/>
+            <stop offset="1" stop-color="#FF5F1F"/>
+        </linearGradient>
+
+        <!-- R 字形 -->
+        <g id="rGlyph" fill="#FFFFFF">
+            <path d="M132 132 h48 v248 h-48 z"/>
+            <path fill-rule="evenodd" d="M180 132 H260 A84 84 0 0 1 260 300 H180 Z M180 178 H256 A38 38 0 0 1 256 254 H180 Z"/>
+            <path d="M222 292 h52 l98 88 h-58 z"/>
+        </g>
+
+        <!-- 01 R Lift -->
+        <symbol id="k1" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <use href="#rGlyph"/>
+            <circle cx="352" cy="404" r="20" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 02 A Apex -->
+        <symbol id="k2" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M256 112 L148 396 M256 112 L364 396 M198 310 H314"
+                  fill="none" stroke="#FFFFFF" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="256" cy="104" r="22" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 03 K Launch -->
+        <symbol id="k3" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <rect x="146" y="140" width="46" height="236" fill="#FFFFFF"/>
+            <path d="M192 258 L348 140 M348 376 L192 258"
+                  fill="none" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round"/>
+            <circle cx="356" cy="132" r="22" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 04 O Window -->
+        <symbol id="k4" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <circle cx="256" cy="256" r="140" fill="none" stroke="#FFFFFF" stroke-width="44"/>
+            <circle cx="256" cy="294" r="52" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 05 R Porthole -->
+        <symbol id="k5" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <circle cx="256" cy="256" r="164" fill="none" stroke="#FFFFFF" stroke-width="28"/>
+            <g transform="translate(256 256) scale(.62) translate(-256 -256)">
+                <use href="#rGlyph"/>
+            </g>
+            <circle cx="232" cy="231" r="13" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 06 Trajectory -->
+        <symbol id="k6" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M112 404 C 190 344 300 252 396 116"
+                  fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+            <circle cx="200" cy="330" r="8" fill="#FFFFFF" opacity=".5"/>
+            <circle cx="296" cy="240" r="8" fill="#FFFFFF" opacity=".7"/>
+            <circle cx="396" cy="116" r="30" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 07 Bracket R -->
+        <symbol id="k7" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M196 140 H136 V372 H196 M316 140 H376 V372 H316"
+                  fill="none" stroke="#FFFFFF" stroke-width="30"/>
+            <g transform="translate(256 256) scale(.54) translate(-256 -256)">
+                <use href="#rGlyph"/>
+            </g>
+            <circle cx="398" cy="122" r="18" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 08 T Tower -->
+        <symbol id="k8" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <rect x="136" y="136" width="240" height="54" rx="12" fill="#FFFFFF"/>
+            <rect x="230" y="190" width="52" height="186" fill="#FFFFFF"/>
+            <path d="M352 306 V362" stroke="url(#gOrange)" stroke-width="9" stroke-linecap="round" opacity=".65"/>
+            <circle cx="352" cy="392" r="26" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 09 RA Monogram -->
+        <symbol id="k9" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <text x="256" y="332" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+                  font-size="208" font-weight="700" letter-spacing="-14" fill="#FFFFFF">RA</text>
+            <circle cx="366" cy="132" r="22" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 10 Orbit RA -->
+        <symbol id="k10" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <ellipse cx="256" cy="256" rx="200" ry="76" fill="none" stroke="#FFFFFF" stroke-width="12" transform="rotate(-20 256 256)"/>
+            <text x="256" y="310" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+                  font-size="148" font-weight="700" letter-spacing="-8" fill="#FFFFFF">RA</text>
+            <circle cx="444" cy="187" r="14" fill="url(#gOrange)"/>
+        </symbol>
+    </defs>
+</svg>
+
+<!-- ============ 首屏 ============ -->
+<header class="hero">
+    <div class="hero-grid"></div>
+    <div class="wrap">
+        <div class="hero-inner">
+            <div>
+                <div class="eyebrow"><s></s>RocketAdmin / Name identity — round 05</div>
+                <h1>名字，<br><span>就是标识。</span></h1>
+                <p class="lead">以 RocketAdmin 这个名字为主体，做十种创意：改一个字母、换一个视角、或让整串名字变成一条轨迹。每个方案都保留一颗橙色信号点，作为「正在运行」的证据。</p>
+            </div>
+            <aside class="hero-meta">
+                <div><b>010</b><span>Name marks</span></div>
+                <div><b>004</b><span>Key letters</span></div>
+                <div><b>001</b><span>Orange dot</span></div>
+            </aside>
+        </div>
+
+        <div class="wordmark">Rocket<span>Admin</span><s></s></div>
+
+        <div class="hero-chips" id="heroChips"></div>
+    </div>
+</header>
+
+<!-- ============ 列表 ============ -->
+<main class="wrap">
+    <div class="list" id="list"></div>
+</main>
+
+<!-- ============ 建议 ============ -->
+<div class="wrap">
+    <section class="guide">
+        <div class="guide-head">
+            <h2>先看这三个</h2>
+            <p>如果只从名字里挑一枚，优先看它们。三个方向解决三个不同的问题。</p>
+        </div>
+        <div class="gcols">
+            <div class="gcol">
+                <div class="top">
+                    <svg viewBox="0 0 512 512" role="img" aria-label="R Lift"><use href="#k1"></use></svg>
+                    <h3>R Lift<small>01 · 正式标</small></h3>
+                </div>
+                <p>R 加一颗橙点，最像品牌标。识别延续、结构稳定，16px 下仍然完整。</p>
+                <div class="why">适合：正式标识、favicon、应用图标</div>
+            </div>
+            <div class="gcol">
+                <div class="top">
+                    <svg viewBox="0 0 512 512" role="img" aria-label="Trajectory"><use href="#k6"></use></svg>
+                    <h3>Trajectory<small>06 · 品牌叙事</small></h3>
+                </div>
+                <p>一条上升的线加一颗橙点，不写字母，但把「上升」留了下来。最有气质，也最抽象。</p>
+                <div class="why">适合：官网、启动页、品牌图形</div>
+            </div>
+            <div class="gcol">
+                <div class="top">
+                    <svg viewBox="0 0 512 512" role="img" aria-label="Bracket R"><use href="#k7"></use></svg>
+                    <h3>Bracket R<small>07 · 后台语义</small></h3>
+                </div>
+                <p>括号包住 R，范围、对象、信号一次说完。它最像「管理后台」，而不只是「火箭」。</p>
+                <div class="why">适合：权限、容器、分组管理</div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ============ 落地 ============ -->
+<section class="next">
+    <div class="wrap">
+        <div class="next-inner">
+            <div>
+                <h2>定稿之后<br><span>剩下的交给实现</span></h2>
+                <p class="note2">回复编号即可（例如“01”）。字标会继续用系统无衬线做锁定组合，正式交付时再转成定制字形，保证跨平台一致。</p>
+            </div>
+            <ul class="steps">
+                <li><b>01</b><div><strong>确认方向</strong>从 01–10 里选一枚；也可以指定「主标 + 字标组合」。</div></li>
+                <li><b>02</b><div><strong>小尺寸优化</strong>单独输出 16 / 32px 版本：字母加粗、橙点放大、去掉细线与小细节。</div></li>
+                <li><b>03</b><div><strong>全尺寸资源</strong>favicon.ico、logo.svg、apple-touch-icon 180、Android 192 / 512、maskable 512。</div></li>
+                <li><b>04</b><div><strong>接入与同步</strong>替换两处 favicon，更新 meta.html；header.html 改为图标加字标；登录页 brand-logo 同步；tp6 与 tp8 保持一致。</div></li>
+            </ul>
+        </div>
+        <div class="foot">
+            <span>10 name marks · 1 orange dot</span>
+            <span><a href="logo-finalists.html">决赛圈</a> &nbsp;·&nbsp; <a href="logo-exploration-3.html">第三批</a> &nbsp;·&nbsp; <a href="logo-evolution.html">旧标进化</a></span>
+        </div>
+    </div>
+</section>
+
+<script>
+    const data = [
+        {
+            id: 'k1', name: 'R Lift', en: 'Lift', tag: '字母 · 推进',
+            desc: '给 R 的右下角加一颗橙点，像发动机留下的光。字母没变，但重心往下沉了一点，整枚标有了“推力”。',
+            pts: ['最像正式品牌标', '16px 下结构仍然完整', '橙点可承担状态与加载'],
+            warn: '与常见 R 字标结构接近，需要靠配色区分'
+        },
+        {
+            id: 'k2', name: 'A Apex', en: 'Apex', tag: '字母 · 顶点',
+            desc: 'A 的顶点换成橙色。整个标志第一次有了“朝上”的焦点，也把 Admin 推到前面。',
+            pts: ['结构最简单，缩到 16px 不散', '橙点位置天然，不需要解释', '可做 A 系列的模块图标'],
+            warn: 'A 太常见，单靠字母难以独占'
+        },
+        {
+            id: 'k3', name: 'K Launch', en: 'Launch', tag: '字母 · 起飞',
+            desc: 'K 的上臂延长成一条起飞轨迹，橙点停在末端。名字里的 Rocket 被藏进一个字母。',
+            pts: ['有故事，适合官网与启动页', '对角动势强，缩略图醒目', '橙点是终点，也是信号'],
+            warn: '只取 K，会丢失品牌名的完整性'
+        },
+        {
+            id: 'k4', name: 'O Window', en: 'Window', tag: '字母 · 舷窗',
+            desc: '把 Rocket 里的 O 做成舷窗，橙点是窗里的地平线。它不画火箭，只画火箭里看到的东西。',
+            pts: ['圆环加点，16px 最稳', '可做呼吸与扫描动效', '深色背景下最好看'],
+            warn: 'O 单独出现时，指向性偏弱'
+        },
+        {
+            id: 'k5', name: 'R Porthole', en: 'Porthole', tag: '字母 + 窗',
+            desc: 'R 装进一个环形窗口，橙点落在字腔里。字母和窗口互相解释，像一枚真正的徽章。',
+            pts: ['结构完整，适合应用图标', '字腔里的点是记忆点', '可延展成窗口系列'],
+            warn: '细节多，16px 会拥挤'
+        },
+        {
+            id: 'k6', name: 'Trajectory', en: 'Trajectory', tag: '抽象 · 轨迹',
+            desc: '一条上升的线，末端一颗橙点。没有字母，但名字里的“上升”还在。',
+            pts: ['最抽象，气质最好', '16px 仍清楚', '可做轨迹生长的动效'],
+            warn: '与名称的关联最弱，需要字标辅助'
+        },
+        {
+            id: 'k7', name: 'Bracket R', en: 'Bracket', tag: '字母 + 范围',
+            desc: 'R 被一对括号包住，橙点放在右上角。范围、对象、信号，三层意思。',
+            pts: ['后台语义最强', '造型少见，辨识度高', '适合权限、容器、分组'],
+            warn: '括号在 16px 会吃掉 R 的空间'
+        },
+        {
+            id: 'k8', name: 'T Tower', en: 'Tower', tag: '字母 · 发射塔',
+            desc: 'Rocket 里的 T 变成发射塔，橙点是正在升空的那一点。',
+            pts: ['有画面感，容易讲成故事', '橙点位置巧，打破对称', '适合启动页与加载页'],
+            warn: 'T 太单薄，作为主标不够'
+        },
+        {
+            id: 'k9', name: 'RA Monogram', en: 'Monogram', tag: '组合字母',
+            desc: 'R 与 A 并置成一个组合字母，橙点做它们的连接符。两段名字，一个符号。',
+            pts: ['最紧凑的双字母标', '适合 favicon 与头像', '可做 RA 系列延展'],
+            warn: '双字母在小尺寸容易糊'
+        },
+        {
+            id: 'k10', name: 'Orbit RA', en: 'Orbit', tag: '组合 + 轨道',
+            desc: 'RA 组合放进一条轨道，橙点沿轨道运行。名字、平台、动感，三件事一次说完。',
+            pts: ['平台感最强，适合生态叙事', '可做卫星绕行的动态标识', '深色底表现最好'],
+            warn: '元素最多，16px 只剩一个圆'
+        }
+    ];
+
+    function art(id, cls) {
+        const item = data.find(d => d.id === id);
+        return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 512 512" role="img" aria-label="' + item.name + '"><use href="#' + id + '"></use></svg>';
+    }
+
+    function artSize(id, size) {
+        return '<svg style="width:' + size + 'px;height:' + size + 'px" viewBox="0 0 512 512" aria-hidden="true"><use href="#' + id + '"></use></svg>';
+    }
+
+    document.getElementById('heroChips').innerHTML = data.map((d, i) =>
+        '<div class="chip" title="' + d.name + '">' + art(d.id) + '<em>' + String(i + 1).padStart(2, '0') + '</em></div>'
+    ).join('');
+
+    document.getElementById('list').innerHTML = data.map((d, i) => {
+        const num = String(i + 1).padStart(2, '0');
+        const pts = d.pts.map(p => '<li>' + p + '</li>').join('') + (d.warn ? '<li class="warn">' + d.warn + '</li>' : '');
+        const lockup =
+            '<div class="lockup">' + art(d.id) +
+                '<b>Rocket<span>Admin</span></b>' +
+                '<em>LOCKUP</em>' +
+            '</div>' +
+            '<div class="mocks"><div class="tab">' + art(d.id) + '<span>RocketAdmin — 仪表盘</span><i>×</i></div></div>';
+
+        return '<article class="row" id="c' + (i + 1) + '">' +
+            '<div class="stage">' +
+                '<div class="tile light">' + art(d.id, 'art') + '<span class="cap">Light</span></div>' +
+                '<div class="tile dark">' + art(d.id, 'art') + '<span class="cap">Dark</span></div>' +
+                '<div class="strip">' +
+                    '<div class="sz">' + artSize(d.id, 16) + '<em>16</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 24) + '<em>24</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 32) + '<em>32</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 48) + '<em>48</em></div>' +
+                    '<span class="note">favicon 实际尺寸</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="meta">' +
+                '<div class="idx">' + num + ' / ' + d.en.toUpperCase() + '</div>' +
+                '<h2>' + d.name + '<small>' + d.en + '</small><span class="tag">' + d.tag + '</span></h2>' +
+                '<p class="desc">' + d.desc + '</p>' +
+                '<ul class="pts">' + pts + '</ul>' +
+                lockup +
+            '</div>' +
+        '</article>';
+    }).join('');
+
+    const rows = Array.from(document.querySelectorAll('.row'));
+    rows.forEach(r => r.classList.add('reveal'));
+
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in');
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        rows.forEach(r => io.observe(r));
+    } else {
+        rows.forEach(r => r.classList.add('in'));
+    }
+</script>
+</body>
+</html>

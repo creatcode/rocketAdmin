@@ -144,7 +144,7 @@ class Backend extends BaseController
                 $url = Session::get('referer');
                 $url = $url ?: $this->request->url();
                 if (in_array($this->request->pathinfo(), ['/', 'index/index'])) {
-                    $this->redirect('index/login', [], 302, ['referer' => $url]);
+                    $this->redirect((string)url('index/login', [], false), 302, ['referer' => $url]);
                     exit;
                 }
                 $this->error(__('Please login first'), (string)url('index/login', ['url' => $url]));
@@ -165,7 +165,7 @@ class Backend extends BaseController
                 return $matches[2] == '&' ? $matches[1] : '';
             }, $this->request->url());
             $url = (string)url($url, [], false);
-            $this->redirect('index/index', [], 302, ['referer' => $url]);
+            $this->redirect((string)url('index/index', [], false), 302, ['referer' => $url]);
             exit;
         }
 

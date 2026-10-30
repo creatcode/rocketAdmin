@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>RocketAdmin · 第二批二十个方向</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<style>
+    :root {
+        --paper: #f6f6f4;
+        --ink: #12151a;
+        --muted: #6c727c;
+        --line: #e2e2dd;
+        --blue: #1677ff;
+        --orange: #ff6b35;
+        --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============ 首屏 ============ */
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: #080b12;
+        color: #fff;
+    }
+
+    .hero::before {
+        content: "";
+        position: absolute;
+        inset: -20% -10% auto -10%;
+        height: 130%;
+        background:
+            radial-gradient(52% 62% at 16% 8%, rgba(22, 119, 255, .2), transparent 68%),
+            radial-gradient(42% 55% at 88% 86%, rgba(255, 107, 53, .11), transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+        background-size: 96px 96px;
+        mask-image: radial-gradient(70% 60% at 30% 20%, #000 10%, transparent 78%);
+        -webkit-mask-image: radial-gradient(70% 60% at 30% 20%, #000 10%, transparent 78%);
+        pointer-events: none;
+    }
+
+    .hero-inner {
+        position: relative;
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 76px 40px 50px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 48px;
+        align-items: end;
+    }
+
+    .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font: 10px/1 var(--mono);
+        letter-spacing: .22em;
+        color: #8a93a6;
+        text-transform: uppercase;
+    }
+
+    .eyebrow s {
+        display: block;
+        width: 30px;
+        height: 1px;
+        background: var(--orange);
+        opacity: .85;
+    }
+
+    h1 {
+        margin: 24px 0 0;
+        font-size: clamp(42px, 6.2vw, 76px);
+        line-height: .98;
+        letter-spacing: -.045em;
+        font-weight: 600;
+    }
+
+    h1 span { color: #767f92; font-weight: 500; }
+
+    .lead {
+        max-width: 680px;
+        margin: 24px 0 0;
+        font-size: 14.5px;
+        line-height: 1.9;
+        color: #a5adbd;
+    }
+
+    .hero-meta {
+        display: grid;
+        gap: 22px;
+        padding-left: 28px;
+        border-left: 1px solid rgba(255, 255, 255, .1);
+        text-align: right;
+    }
+
+    .hero-meta div b {
+        display: block;
+        font: 600 21px/1.2 var(--mono);
+        letter-spacing: -.02em;
+    }
+
+    .hero-meta div span {
+        display: block;
+        margin-top: 5px;
+        font: 9.5px/1 var(--mono);
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: #7d8698;
+    }
+
+    .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px 16px;
+        margin-top: 42px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+        max-width: 800px;
+    }
+
+    .chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .chip svg {
+        width: 40px;
+        height: 40px;
+        display: block;
+        border-radius: 9px;
+        transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .chip:hover svg { transform: translateY(-3px) scale(1.06); }
+
+    .chip em {
+        font: 8px/1 var(--mono);
+        font-style: normal;
+        letter-spacing: .1em;
+        color: #67718a;
+    }
+
+    /* ============ 吸顶实测条 ============ */
+    .dock {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(246, 246, 244, .93);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .dock-inner {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 40px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .dock-label {
+        font: 9.5px/1 var(--mono);
+        letter-spacing: .18em;
+        color: #8b909a;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .seg {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        flex: 0 0 auto;
+    }
+
+    .seg button {
+        border: 0;
+        background: transparent;
+        padding: 7px 10px;
+        font: 10.5px/1 var(--mono);
+        color: #6f747d;
+        cursor: pointer;
+        transition: background .18s, color .18s;
+    }
+
+    .seg button + button { border-left: 1px solid var(--line); }
+    .seg button.on { background: var(--ink); color: #fff; }
+
+    .themebtn {
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 8px;
+        padding: 7px 11px;
+        font: 10.5px/1 var(--mono);
+        color: #6f747d;
+        cursor: pointer;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+
+    .themebtn.on { background: #0b0f17; color: #fff; border-color: #0b0f17; }
+
+    .dock-icons {
+        --px: 22px;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding: 4px;
+        border-radius: 10px;
+        transition: background .2s;
+    }
+
+    .dock-icons::-webkit-scrollbar { display: none; }
+
+    .dock-icons.dark { background: #0b0f17; }
+
+    .dock-icons .d {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 3px;
+        cursor: pointer;
+        transition: border-color .18s;
+    }
+
+    .dock-icons.dark .d { background: #0b0f17; border-color: #232b3a; }
+    .dock-icons .d:hover { border-color: #b9bec6; }
+    .dock-icons .d svg { width: var(--px); height: var(--px); display: block; }
+
+    /* ============ 章节 ============ */
+    .list {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 40px 20px;
+    }
+
+    .chapter {
+        display: grid;
+        grid-template-columns: 240px 1fr auto;
+        gap: 28px;
+        align-items: end;
+        padding: 60px 0 4px;
+        border-top: 1px solid var(--line);
+    }
+
+    .chapter:first-child { border-top: 0; padding-top: 40px; }
+
+    .ch-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+
+    .ch-roman {
+        font: 600 10px/1 var(--mono);
+        letter-spacing: .12em;
+        color: var(--orange);
+    }
+
+    .ch-head h3 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -.02em;
+        font-weight: 600;
+    }
+
+    .ch-head small {
+        font: 10px/1 var(--mono);
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: #8b909a;
+    }
+
+    .chapter p {
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.75;
+        color: #737a84;
+        max-width: 54ch;
+    }
+
+    .ch-range {
+        font: 10px/1 var(--mono);
+        letter-spacing: .12em;
+        color: #9ba0a9;
+        white-space: nowrap;
+    }
+
+    /* ============ 方案行 ============ */
+    .row {
+        display: grid;
+        grid-template-columns: 356px 1fr;
+        gap: 56px;
+        padding: 58px 0;
+        border-top: 1px solid var(--line);
+        align-items: start;
+    }
+
+    .row:first-child { border-top: 0; }
+
+    .stage {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 13px;
+    }
+
+    .tile {
+        position: relative;
+        height: 168px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .tile.light { background: #ececeb; }
+    .tile.dark { background: #0a0f18; }
+
+    .tile .art {
+        width: 124px;
+        height: 124px;
+        transition: transform .55s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .tile:hover .art { transform: scale(1.07); }
+
+    .tile .cap {
+        position: absolute;
+        left: 13px;
+        bottom: 10px;
+        font: 8.5px/1 var(--mono);
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: #9ba0a9;
+    }
+
+    .tile.dark .cap { color: #4c5566; }
+
+    .strip {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: flex-end;
+        gap: 22px;
+        padding-top: 9px;
+    }
+
+    .strip .sz { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .strip .sz svg { display: block; }
+    .strip .sz em { font: 8.5px/1 var(--mono); font-style: normal; color: #8b909a; }
+
+    .strip .note {
+        margin-left: auto;
+        font: 9.5px/1 var(--mono);
+        letter-spacing: .08em;
+        color: #9ba0a9;
+        white-space: nowrap;
+    }
+
+    .meta .idx {
+        font: 10px/1 var(--mono);
+        letter-spacing: .18em;
+        color: #9ba0a9;
+        text-transform: uppercase;
+    }
+
+    .meta h2 {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 11px 0 0;
+        font-size: 26px;
+        letter-spacing: -.022em;
+        font-weight: 600;
+    }
+
+    .meta h2 small {
+        font: 500 10px/1 var(--mono);
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        color: #8b909a;
+    }
+
+    .tag {
+        font: 10px/1 var(--mono);
+        letter-spacing: .08em;
+        color: #6e747e;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: #fff;
+    }
+
+    .desc {
+        max-width: 62ch;
+        margin: 16px 0 0;
+        font-size: 14px;
+        line-height: 1.85;
+        color: #4b515a;
+    }
+
+    .pts {
+        list-style: none;
+        margin: 22px 0 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 26px;
+        max-width: 650px;
+    }
+
+    .pts li {
+        position: relative;
+        padding-left: 15px;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: #3f4650;
+    }
+
+    .pts li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 7px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #c9ccd2;
+    }
+
+    .pts li.warn { color: #8a6751; }
+    .pts li.warn::before { background: var(--orange); }
+
+    .mocks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 13px;
+        align-items: flex-end;
+        margin-top: 26px;
+    }
+
+    .tab {
+        width: 236px;
+        height: 41px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 11px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-bottom: 0;
+        border-radius: 10px 10px 0 0;
+        font-size: 11px;
+        color: #343a42;
+    }
+
+    .tab svg { width: 16px; height: 16px; flex: 0 0 16px; }
+    .tab i { margin-left: auto; font-style: normal; color: #a2a7ae; font-size: 12px; }
+
+    .side {
+        width: 74px;
+        height: 104px;
+        background: #0b1220;
+        border-radius: 10px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .side .top {
+        width: 40px;
+        height: 40px;
+        border-radius: 9px;
+        background: #131c2d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .side .top svg { width: 24px; height: 24px; }
+    .side .ln { display: block; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .15); }
+    .side .ln.w1 { width: 38px; }
+    .side .ln.w2 { width: 26px; }
+    .side .ln.w3 { width: 33px; }
+
+    .login {
+        width: 178px;
+        padding: 14px 13px 13px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 26px rgba(15, 20, 30, .06);
+    }
+
+    .login svg { width: 40px; height: 40px; }
+    .login h4 { margin: 8px 0 2px; font-size: 11px; font-weight: 600; }
+    .login p { margin: 0; font-size: 9.5px; color: #8b909a; }
+
+    .login .btn {
+        margin-top: 10px;
+        height: 21px;
+        border-radius: 6px;
+        background: var(--blue);
+        color: #fff;
+        font-size: 9px;
+        letter-spacing: .1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .row.hit .tile { outline: 2px solid var(--orange); outline-offset: -2px; }
+
+    .row.reveal {
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity .65s ease, transform .65s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .row.reveal.in { opacity: 1; transform: none; }
+
+    /* ============ 建议 ============ */
+    .guide {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 72px 40px 0;
+        border-top: 1px solid var(--line);
+    }
+
+    .guide-head h2 { margin: 0; font-size: 30px; letter-spacing: -.025em; font-weight: 600; }
+    .guide-head p { margin: 12px 0 0; font-size: 13px; color: var(--muted); line-height: 1.8; }
+
+    .gcols {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 44px;
+        margin-top: 38px;
+    }
+
+    .gcol { padding-top: 20px; border-top: 1px solid var(--line); }
+    .gcol h3 { margin: 0; font-size: 13px; font-weight: 600; }
+    .gcol p { margin: 8px 0 0; font-size: 12.5px; line-height: 1.8; color: #5b626c; }
+
+    .picks { display: flex; gap: 13px; margin-top: 16px; }
+
+    .pick {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        font: 9px/1 var(--mono);
+        color: #7b818b;
+        text-decoration: none;
+    }
+
+    .pick svg { width: 36px; height: 36px; }
+    .pick:hover { color: var(--ink); }
+
+    /* ============ 落地 ============ */
+    .next { margin-top: 76px; background: #080b12; color: #fff; }
+
+    .next-inner {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 60px 40px 66px;
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 56px;
+    }
+
+    .next h2 { margin: 0; font-size: 30px; letter-spacing: -.025em; font-weight: 600; }
+    .next h2 span { color: #6f788a; }
+    .next .note { margin: 15px 0 0; font-size: 13px; line-height: 1.9; color: #98a0b0; }
+
+    .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 15px; }
+
+    .steps li {
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, .09);
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: #b9c0cc;
+    }
+
+    .steps li b { display: block; font: 600 11px/1.7 var(--mono); letter-spacing: .1em; color: #5b6a86; }
+    .steps li strong { display: block; font-size: 12.5px; color: #fff; font-weight: 500; margin-bottom: 3px; }
+
+    .foot {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 24px 40px 42px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        justify-content: space-between;
+        align-items: center;
+        color: #737a88;
+        font: 10px/1.8 var(--mono);
+        letter-spacing: .04em;
+    }
+
+    .foot a { color: #9aa3b4; text-decoration: none; border-bottom: 1px solid #333d50; padding-bottom: 2px; }
+    .foot a:hover { color: #fff; border-color: var(--orange); }
+
+    .foot-icons { display: flex; gap: 7px; flex-wrap: wrap; }
+    .foot-icons svg { width: 24px; height: 24px; }
+
+    /* ============ 入场 ============ */
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    .hero .eyebrow { animation: rise .7s .05s both cubic-bezier(.22, 1, .36, 1); }
+    .hero h1 { animation: rise .8s .12s both cubic-bezier(.22, 1, .36, 1); }
+    .hero .lead { animation: rise .8s .2s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-meta { animation: rise .8s .26s both cubic-bezier(.22, 1, .36, 1); }
+    .hero-chips { animation: rise .9s .32s both cubic-bezier(.22, 1, .36, 1); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero .eyebrow, .hero h1, .hero .lead, .hero-meta, .hero-chips,
+        .chip svg, .tile .art, .row.reveal {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+
+    /* ============ 响应式 ============ */
+    @media (max-width: 1080px) {
+        .hero-inner { grid-template-columns: 1fr; gap: 34px; align-items: start; }
+        .hero-meta { display: flex; gap: 40px; padding: 22px 0 0; border: 0; border-top: 1px solid rgba(255, 255, 255, .1); text-align: left; }
+        .row { grid-template-columns: 320px 1fr; gap: 38px; }
+        .chapter { grid-template-columns: 200px 1fr auto; gap: 20px; }
+        .next-inner { grid-template-columns: 1fr; gap: 34px; }
+    }
+
+    @media (max-width: 860px) {
+        .hero-inner { padding: 54px 24px 40px; }
+        .dock-inner { height: auto; padding: 11px 24px; flex-wrap: wrap; gap: 10px; }
+        .dock-label { display: none; }
+        .dock-icons { width: 100%; margin-left: 0; }
+        .list { padding: 0 24px; }
+        .row { grid-template-columns: 1fr; gap: 32px; padding: 44px 0; }
+        .chapter { grid-template-columns: 1fr; gap: 10px; padding-top: 44px; }
+        .chapter p { max-width: none; }
+        .tile { height: 152px; }
+        .tile .art { width: 110px; height: 110px; }
+        .pts { grid-template-columns: 1fr; }
+        .guide, .next-inner, .foot { padding-left: 24px; padding-right: 24px; }
+        .gcols { grid-template-columns: 1fr; gap: 28px; }
+        .strip .note { display: none; }
+    }
+
+    @media (max-width: 520px) {
+        .hero-chips { gap: 12px; }
+        .chip svg { width: 36px; height: 36px; }
+        .tile { height: 134px; }
+        .tile .art { width: 94px; height: 94px; }
+        .meta h2 { font-size: 22px; }
+        .mocks { gap: 10px; }
+        .tab { width: 204px; }
+        .login { width: 164px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ============ 图形定义 ============ -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+    <defs>
+        <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4C9BFF"/>
+            <stop offset="1" stop-color="#0B47D0"/>
+        </linearGradient>
+        <linearGradient id="gDeep" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1A3352"/>
+            <stop offset="1" stop-color="#060D1A"/>
+        </linearGradient>
+        <linearGradient id="gOrange" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFB25C"/>
+            <stop offset="1" stop-color="#FF5B22"/>
+        </linearGradient>
+
+        <!-- 01 灯塔 -->
+        <symbol id="n1" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <g fill="#FF7A45" opacity=".3">
+                <path d="M256 136 L68 88 L68 182 Z"/>
+                <path d="M256 136 L444 88 L444 182 Z"/>
+            </g>
+            <path d="M214 150 H298 L330 392 H182 Z" fill="#FFFFFF"/>
+            <rect x="220" y="124" width="72" height="28" rx="8" fill="#FFFFFF"/>
+            <circle cx="256" cy="138" r="13" fill="url(#gOrange)"/>
+            <rect x="166" y="392" width="180" height="22" rx="11" fill="#FFFFFF" opacity=".92"/>
+        </symbol>
+
+        <!-- 02 罗盘 -->
+        <symbol id="n2" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <circle cx="256" cy="256" r="152" fill="none" stroke="#FFFFFF" stroke-width="32"/>
+            <polygon points="256,104 300,256 212,256" fill="url(#gOrange)"/>
+            <polygon points="256,408 300,256 212,256" fill="#FFFFFF"/>
+            <circle cx="256" cy="256" r="15" fill="#0B47D0"/>
+        </symbol>
+
+        <!-- 03 沙漏 -->
+        <symbol id="n3" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M188 106 H324 L256 256 Z" fill="#FFFFFF"/>
+            <path d="M188 406 H324 L256 256 Z" fill="#FFFFFF"/>
+            <path d="M224 204 H288 L256 256 Z" fill="url(#gOrange)"/>
+            <path d="M214 376 H298 L256 318 Z" fill="url(#gOrange)"/>
+            <rect x="176" y="84" width="160" height="22" rx="11" fill="#FFFFFF"/>
+            <rect x="176" y="406" width="160" height="22" rx="11" fill="#FFFFFF"/>
+        </symbol>
+
+        <!-- 04 节拍器 -->
+        <symbol id="n4" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M212 108 H300 L356 400 H156 Z" fill="#FFFFFF"/>
+            <path d="M256 164 L318 352" stroke="url(#gOrange)" stroke-width="16" stroke-linecap="round"/>
+            <circle cx="318" cy="352" r="24" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 05 望远镜 -->
+        <symbol id="n5" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <g transform="rotate(-38 256 256)">
+                <rect x="112" y="238" width="250" height="44" rx="22" fill="#FFFFFF"/>
+                <rect x="344" y="220" width="52" height="80" rx="16" fill="#FFFFFF"/>
+                <circle cx="370" cy="260" r="20" fill="url(#gOrange)"/>
+            </g>
+        </symbol>
+
+        <!-- 06 算盘 -->
+        <symbol id="n6" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <rect x="104" y="112" width="304" height="288" rx="24" fill="none" stroke="#FFFFFF" stroke-width="26"/>
+            <g stroke="#FFFFFF" stroke-width="7" opacity=".7">
+                <path d="M178 150 V362"/>
+                <path d="M256 150 V362"/>
+                <path d="M334 150 V362"/>
+            </g>
+            <g fill="#FFFFFF">
+                <circle cx="178" cy="196" r="21"/>
+                <circle cx="178" cy="252" r="21"/>
+                <circle cx="334" cy="196" r="21"/>
+                <circle cx="334" cy="252" r="21"/>
+                <circle cx="256" cy="196" r="21"/>
+            </g>
+            <circle cx="256" cy="300" r="21" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 07 印章 -->
+        <symbol id="n7" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <rect x="216" y="116" width="80" height="112" rx="40" fill="#FFFFFF"/>
+            <rect x="176" y="228" width="160" height="56" rx="12" fill="#FFFFFF"/>
+            <rect x="136" y="284" width="240" height="92" rx="16" fill="#FFFFFF"/>
+            <rect x="226" y="318" width="60" height="30" rx="7" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 08 漏斗 -->
+        <symbol id="n8" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M112 124 H400 L296 286 V376 H216 V286 Z" fill="#FFFFFF"/>
+            <rect x="216" y="328" width="80" height="16" rx="8" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 09 陀螺仪 -->
+        <symbol id="n9" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <g fill="none" stroke="#FFFFFF" stroke-width="16">
+                <ellipse cx="256" cy="256" rx="176" ry="76"/>
+                <ellipse cx="256" cy="256" rx="176" ry="76" transform="rotate(60 256 256)"/>
+                <ellipse cx="256" cy="256" rx="176" ry="76" transform="rotate(120 256 256)"/>
+            </g>
+            <circle cx="256" cy="256" r="44" fill="#FFFFFF"/>
+            <circle cx="256" cy="256" r="16" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 10 交织 -->
+        <symbol id="n10" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="#0B47D0"/>
+            <circle cx="206" cy="256" r="104" fill="none" stroke="#FFFFFF" stroke-width="34"/>
+            <circle cx="306" cy="256" r="104" fill="none" stroke="url(#gOrange)" stroke-width="34"/>
+        </symbol>
+
+        <!-- 11 层叠 -->
+        <symbol id="n11" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <rect x="184" y="118" width="216" height="216" rx="20" fill="#3E6291"/>
+            <rect x="160" y="160" width="216" height="216" rx="20" fill="#93B4E8"/>
+            <rect x="136" y="202" width="216" height="216" rx="20" fill="#FFFFFF"/>
+        </symbol>
+
+        <!-- 12 棱面 -->
+        <symbol id="n12" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <polygon points="256,88 368,172 318,392 194,392 144,172" fill="#FFFFFF"/>
+            <polygon points="256,88 312,172 200,172" fill="url(#gOrange)"/>
+            <g stroke="#0B47D0" stroke-width="6" opacity=".22" fill="none">
+                <path d="M200 172 L256 300 L312 172"/>
+                <path d="M256 300 V392"/>
+                <path d="M144 172 L256 300 L368 172"/>
+            </g>
+        </symbol>
+
+        <!-- 13 准星 -->
+        <symbol id="n13" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <circle cx="256" cy="256" r="128" fill="none" stroke="#FFFFFF" stroke-width="8" opacity=".35"/>
+            <g fill="#FFFFFF">
+                <rect x="244" y="40" width="24" height="88" rx="12"/>
+                <rect x="244" y="384" width="24" height="88" rx="12"/>
+                <rect x="40" y="244" width="88" height="24" rx="12"/>
+                <rect x="384" y="244" width="88" height="24" rx="12"/>
+            </g>
+            <circle cx="256" cy="256" r="24" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 14 螺旋 -->
+        <symbol id="n14" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M268 256 L270 260 L271 264 L270 270 L267 275 L262 279 L256 282 L249 284 L240 283 L232 280 L225 274 L219 266 L215 256 L214 245 L216 233 L222 222 L231 212 L242 205 L256 201 L271 200 L286 204 L300 212 L312 224 L321 239 L326 256 L326 275 L321 293 L310 310 L296 325 L277 335 L256 340 L234 340 L211 333 L191 321 L175 303 L163 281 L157 256 L158 230 L166 204 L181 181 L202 162 L227 149 L256 143 L286 144 L315 154 L341 171 L362 195 L377 224 L384 256 L382 290 L371 322 L351 351 L325 375 L292 391 L256 398 L219 396 L183 383 L150 362 L125 332 L107 296 L99 256 L102 215 L116 175 L140 140 L173 112 L212 93 L256 85 L301 89 L344 104 L382 130 L412 166 L433 209"
+                  fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round"/>
+        </symbol>
+
+        <!-- 15 多米诺 -->
+        <symbol id="n15" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <g transform="rotate(-13 190 268)">
+                <rect x="142" y="160" width="96" height="216" rx="18" fill="#FFFFFF"/>
+                <circle cx="190" cy="214" r="11" fill="#0B47D0"/>
+                <circle cx="190" cy="278" r="11" fill="#0B47D0"/>
+            </g>
+            <g transform="rotate(9 326 258)">
+                <rect x="278" y="150" width="96" height="216" rx="18" fill="#DCE9FF"/>
+                <circle cx="326" cy="204" r="11" fill="url(#gOrange)"/>
+                <circle cx="326" cy="268" r="11" fill="url(#gOrange)"/>
+            </g>
+        </symbol>
+
+        <!-- 16 新芽 -->
+        <symbol id="n16" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <path d="M256 412 V260" fill="none" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round"/>
+            <path d="M256 302 C 196 302 168 258 176 210 C 226 216 256 250 256 302 Z" fill="#FFFFFF"/>
+            <path d="M256 268 C 316 264 344 220 336 172 C 286 180 254 214 256 268 Z" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 17 纸飞机 -->
+        <symbol id="n17" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M256 82 L424 402 L256 330 L88 402 Z" fill="#FFFFFF"/>
+            <path d="M424 402 L256 330 L256 82 Z" fill="#C9DCFF"/>
+        </symbol>
+
+        <!-- 18 风车 -->
+        <symbol id="n18" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <g fill="#FFFFFF">
+                <path d="M256 256 L226 112 L304 92 Z"/>
+                <path d="M256 256 L226 112 L304 92 Z" transform="rotate(90 256 256)"/>
+                <path d="M256 256 L226 112 L304 92 Z" transform="rotate(180 256 256)"/>
+                <path d="M256 256 L226 112 L304 92 Z" transform="rotate(270 256 256)"/>
+            </g>
+            <circle cx="256" cy="256" r="30" fill="url(#gOrange)"/>
+        </symbol>
+
+        <!-- 19 迷宫 -->
+        <symbol id="n19" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gDeep)"/>
+            <path d="M120 396 H392 V120 H120 V320 H336 V176 H176 V264 H280"
+                  fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round"/>
+        </symbol>
+
+        <!-- 20 涟漪 -->
+        <symbol id="n20" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="url(#gBlue)"/>
+            <circle cx="256" cy="256" r="170" fill="none" stroke="#FFFFFF" stroke-width="14" opacity=".34"/>
+            <circle cx="256" cy="256" r="120" fill="none" stroke="#FFFFFF" stroke-width="14" opacity=".6"/>
+            <circle cx="256" cy="256" r="70" fill="none" stroke="#FFFFFF" stroke-width="14"/>
+            <circle cx="256" cy="256" r="26" fill="url(#gOrange)"/>
+        </symbol>
+    </defs>
+</svg>
+
+<!-- ============ 首屏 ============ -->
+<header class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+        <div>
+            <div class="eyebrow"><s></s>Visual identity / round 02</div>
+            <h1>Rocket<span>Admin</span></h1>
+            <p class="lead">第二批全部重画，和第一批的十个方向不重复。从器物、结构与生长里，再找二十个能独立成立的符号——每个都给出 favicon 实测、标签页、侧栏和登录页的落地效果。</p>
+            <div class="hero-chips" id="heroChips"></div>
+        </div>
+        <aside class="hero-meta">
+            <div><b>020</b><span>Directions</span></div>
+            <div><b>03</b><span>Chapters</span></div>
+            <div><b>SVG</b><span>Vector only</span></div>
+        </aside>
+    </div>
+</header>
+
+<!-- ============ 吸顶实测条 ============ -->
+<div class="dock">
+    <div class="dock-inner">
+        <span class="dock-label">Favicon</span>
+        <div class="seg" id="sizeSeg">
+            <button data-size="16">16</button>
+            <button data-size="24" class="on">24</button>
+            <button data-size="32">32</button>
+            <button data-size="48">48</button>
+        </div>
+        <button class="themebtn" id="themeBtn">浅色底</button>
+        <div class="dock-icons" id="dockIcons"></div>
+    </div>
+</div>
+
+<main class="list" id="list"></main>
+
+<!-- ============ 建议 ============ -->
+<section class="guide">
+    <div class="guide-head">
+        <h2>怎么选</h2>
+        <p>二十个方向里，先想清楚一件事：这个图标主要出现在 16px 的标签页，还是 48px 以上的登录页和物料上。前者优先看“缩得住”，后者优先看“有气质”。</p>
+    </div>
+    <div class="gcols">
+        <div class="gcol">
+            <h3>要稳，缩到 16px 也不糊</h3>
+            <p>闭合的轮廓、粗线条、少量元素。这类符号在任何尺寸下都能成立，也最耐久。</p>
+            <div class="picks">
+                <a class="pick" href="#c2"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n2"></use></svg>02</a>
+                <a class="pick" href="#c13"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n13"></use></svg>13</a>
+                <a class="pick" href="#c8"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n8"></use></svg>08</a>
+            </div>
+        </div>
+        <div class="gcol">
+            <h3>要气质，要不像模板</h3>
+            <p>深色底、层次多、留白大。它们适合登录页、启动页与官网，也更适合深色主题的后台。</p>
+            <div class="picks">
+                <a class="pick" href="#c1"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n1"></use></svg>01</a>
+                <a class="pick" href="#c9"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n9"></use></svg>09</a>
+                <a class="pick" href="#c12"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n12"></use></svg>12</a>
+            </div>
+        </div>
+        <div class="gcol">
+            <h3>要记忆点，要和别人不一样</h3>
+            <p>器物与游戏化的形态在管理后台里很少见，一旦接受，辨识度会远高于几何抽象标。</p>
+            <div class="picks">
+                <a class="pick" href="#c6"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n6"></use></svg>06</a>
+                <a class="pick" href="#c15"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n15"></use></svg>15</a>
+                <a class="pick" href="#c19"><svg viewBox="0 0 512 512" aria-hidden="true"><use href="#n19"></use></svg>19</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 落地 ============ -->
+<section class="next">
+    <div class="next-inner">
+        <div>
+            <h2>选定之后<br><span>剩下的交给实现</span></h2>
+            <p class="note">回复编号即可。可以只选一个，也可以指定“主标 + 小尺寸简化版”的组合。二十个方向都能继续延展成加载动画、空状态插图与插件图标。</p>
+        </div>
+        <ul class="steps">
+            <li><b>01</b><div><strong>全尺寸资源</strong>favicon.ico（16 / 32 / 48）、logo.svg、apple-touch-icon 180、Android 192 / 512、maskable 512。</div></li>
+            <li><b>02</b><div><strong>替换图标入口</strong>public/favicon.ico 与 public/assets/img/favicon.ico，并同步 app/admin/view/common/meta.html 的引用。</div></li>
+            <li><b>03</b><div><strong>接入页面</strong>header.html 的 logo 区改为“图标 + 字标”锁定组合；登录页的 brand-logo 换成同一枚图标。</div></li>
+            <li><b>04</b><div><strong>两版同步</strong>tp6 与 tp8 仓库保持一致，版本相关的路径差异单独处理。</div></li>
+        </ul>
+    </div>
+    <div class="foot">
+        <span>20 marks · objects / structures / growth</span>
+        <div class="foot-icons" id="footIcons"></div>
+        <a href="logo-exploration.html">← 回到第一批 10 个方向</a>
+    </div>
+</section>
+
+<script>
+    const chapters = {
+        1: { roman: 'I', name: '器物', en: 'Objects', range: '01 — 08', note: '把后台的功能翻译成可以拿在手里的东西：塔、盘、漏、算。它们比抽象形更容易被解释。' },
+        2: { roman: 'II', name: '结构', en: 'Structures', range: '09 — 15', note: '不描摹具体物体，只留下秩序、比例与方向。它们在越小的地方，越能看出功力。' },
+        3: { roman: 'III', name: '生长', en: 'Growth', range: '16 — 20', note: '让系统看起来是活的：会发芽、会起飞、会转动、会扩散。' }
+    };
+
+    const data = [
+        {
+            id: 'n1', name: '灯塔', en: 'Beacon', tag: '指引 · 监控', ch: 1,
+            desc: '一座塔，两束光。它的职责不是发光，而是让远处的船知道岸在哪——监控与告警，本质上也是这件事。',
+            pts: ['剪影明确，16px 仍能读出塔身', '光束可做成呼吸式动效', '适合运维、监控类后台'],
+            warn: '光束会被误读为“警示”，需要控制颜色强度'
+        },
+        {
+            id: 'n2', name: '罗盘', en: 'Compass', tag: '方位 · 判断', ch: 1,
+            desc: '一个环，一根针。针尖是橙色，指哪不重要，重要的是始终有方向。',
+            pts: ['圆形结构在标签页里最稳定', '橙白对比强，缩小不糊', '可换针形做不同模块标识'],
+            warn: '与常见导航图标相似，需靠配色区分'
+        },
+        {
+            id: 'n3', name: '沙漏', en: 'Hourglass', tag: '时间 · 任务', ch: 1,
+            desc: '两段三角，一粒橙色的沙。它不谈效率，只谈时间：任务、超时、倒计时。',
+            pts: ['形状对称，缩到 16px 也不变形', '可做倒计时与进度动画', '适合任务与调度系统'],
+            warn: '容易联想到“加载中”，需配合文案'
+        },
+        {
+            id: 'n4', name: '节拍器', en: 'Metronome', tag: '节奏 · 调度', ch: 1,
+            desc: '一个梯形，一根摆杆。它提醒的不是速度，而是节奏——系统需要稳定地运转。',
+            pts: ['斜杆带来动势，辨识度高', '适合定时任务、调度、自动化', '可做左右摆动动效'],
+            warn: '造型偏专业，普通用户可能不熟悉'
+        },
+        {
+            id: 'n5', name: '望远镜', en: 'Spyglass', tag: '观察 · 洞察', ch: 1,
+            desc: '一个斜着的镜筒，一枚橙色镜片。它表示“看得更远”，也代表可观测性。',
+            pts: ['对角构图在方形里更有张力', '适合日志、监控、数据分析', '可做“查看详情”的品牌动作'],
+            warn: '16px 会简化成一根斜杠，需要配字标'
+        },
+        {
+            id: 'n6', name: '算盘', en: 'Abacus', tag: '数据 · 计算', ch: 1,
+            desc: '一个框，三根杆，几颗珠子。最古老的计数器，也是最直白的“数据”隐喻。',
+            pts: ['在二十个方向里最独特', '适合财务、统计、报表场景', '珠子少而大，缩略图仍可数'],
+            warn: '16px 下珠子会粘连，需减到 4 颗'
+        },
+        {
+            id: 'n7', name: '印章', en: 'Stamp', tag: '确认 · 权限', ch: 1,
+            desc: '一个手柄，一块底座。它的动作是“确认”，是后台里最重要的一次点击。',
+            pts: ['轮廓厚重，适合权限与审批', '可做盖章动效', '与中后台语境自然贴合'],
+            warn: '容易被读成“锤子”，需要更明显的底座'
+        },
+        {
+            id: 'n8', name: '漏斗', en: 'Funnel', tag: '筛选 · 转化', ch: 1,
+            desc: '上面很宽，下面很窄。所有数据都要经过它，最后只留下值得看的部分。',
+            pts: ['形状一眼可读，16px 最稳', '适合转化、筛选、报表', '可做数据流动画'],
+            warn: '与常见筛选图标相似，独特性一般'
+        },
+        {
+            id: 'n9', name: '陀螺仪', en: 'Gyroscope', tag: '稳定 · 纵深', ch: 2,
+            desc: '三个环套着一个核心，无论怎么转，中心都不动。稳定，是它唯一的承诺。',
+            pts: ['三层环带来纵深，适合深色主题', '可做旋转加载动画', '与高可用、稳定性语义契合'],
+            warn: '环线在 16px 会合并成圆团'
+        },
+        {
+            id: 'n10', name: '交织', en: 'Weave', tag: '连接 · 集成', ch: 2,
+            desc: '两个环互相穿过，没有谁在上、谁在下。系统之间的连接，本来就该是这样。',
+            pts: ['双色环对比清晰，缩小仍可辨', '适合集成、插件、开放平台', '可延展成多环组合'],
+            warn: '交叠处若处理不好会像 Venn 图，需要明确的穿插关系'
+        },
+        {
+            id: 'n11', name: '层叠', en: 'Layers', tag: '架构 · 版本', ch: 2,
+            desc: '三张纸叠在一起，边缘错开。后台的每一层——数据、逻辑、界面——都在这里。',
+            pts: ['块面对比强，任何尺寸都清楚', '适合架构、版本、环境切换', '可扩展成堆叠式图标'],
+            warn: '与“复制 / 多页”图标相似，个性偏弱'
+        },
+        {
+            id: 'n12', name: '棱面', en: 'Facet', tag: '价值 · 切面', ch: 2,
+            desc: '一个被切开的宝石，顶部是橙色。价值不在表面，而在每一道切面。',
+            pts: ['多边形轮廓锋利，适合小尺寸', '适合会员、计费、增长', '可换切面数量形成家族'],
+            warn: '宝石语义偏“商业化”，与工具型后台有距离'
+        },
+        {
+            id: 'n13', name: '准星', en: 'Crosshair', tag: '精确 · 聚焦', ch: 2,
+            desc: '四根刻度，一个橙点。它不瞄准谁，只表示“正在精确地看”。',
+            pts: ['结构极简，16px 最清晰', '适合筛选、定位、精确查询', '可做聚焦与扫描动效'],
+            warn: '容易被读成“武器 / 游戏”，语气偏硬'
+        },
+        {
+            id: 'n14', name: '螺旋', en: 'Spiral', tag: '迭代 · 演进', ch: 2,
+            desc: '一条不断向外扩的线。版本在迭代，系统在长大，但始终是同一根线。',
+            pts: ['线条连续，可做生长动画', '适合版本、迭代、演进叙事', '单色可用'],
+            warn: '16px 下会糊成一团，只适合 32px 以上'
+        },
+        {
+            id: 'n15', name: '多米诺', en: 'Domino', tag: '连锁 · 自动化', ch: 2,
+            desc: '两块牌，一次推倒。自动化真正迷人的地方，是第一张牌之后的连锁反应。',
+            pts: ['双块构图有趣，记忆点强', '适合流程、自动化、触发器', '可做依次倒下的动效'],
+            warn: '小尺寸下容易被误认为骰子'
+        },
+        {
+            id: 'n16', name: '新芽', en: 'Sprout', tag: '生长 · 培育', ch: 3,
+            desc: '一根茎，两片叶。它表示“还在长”，也提醒后台不是一次建成的。',
+            pts: ['有机形与几何形成对比', '适合成长、培育、社区', '可做成季度与版本节点标识'],
+            warn: '16px 会只剩一个色块般的形状，需简化'
+        },
+        {
+            id: 'n17', name: '纸飞机', en: 'Paper Plane', tag: '发布 · 轻快', ch: 3,
+            desc: '一张纸折成的飞机。轻、快、直接——通知、发布、上线，都该是这种感觉。',
+            pts: ['轮廓经典，16px 依然清楚', '适合发布、消息、部署', '可做飞出画面的动效'],
+            warn: '与常见“发送”图标高度重合，独特性弱'
+        },
+        {
+            id: 'n18', name: '风车', en: 'Windmill', tag: '循环 · 调度', ch: 3,
+            desc: '四片叶子绕着一个橙点。它靠风转动，也靠规则转动。',
+            pts: ['旋转对称，缩略图稳定', '适合定时、轮询、调度', '可做持续旋转的加载态'],
+            warn: '与风扇、螺旋桨相近，语义模糊'
+        },
+        {
+            id: 'n19', name: '迷宫', en: 'Maze', tag: '路径 · 复杂', ch: 3,
+            desc: '一条不断拐弯的线。后台从来不是直线，找到出口才是工作。',
+            pts: ['形态独特，大尺寸有故事感', '适合权限、流程、复杂系统', '可做成解谜式插画'],
+            warn: '16px 完全糊掉，只能做辅助图形'
+        },
+        {
+            id: 'n20', name: '涟漪', en: 'Ripple', tag: '扩散 · 广播', ch: 3,
+            desc: '三圈水纹，一颗橙色的心。一次操作，向外扩散——权限、通知、影响范围。',
+            pts: ['同心圆结构极稳，16px 可辨', '适合权限扩散、消息广播', '可做扩散动效'],
+            warn: '与雷达、信号图标接近，需要配色区分'
+        }
+    ];
+
+    function art(id, cls) {
+        const item = data.find(d => d.id === id);
+        return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 512 512" role="img" aria-label="' + item.name + ' ' + item.en + '"><use href="#' + id + '"></use></svg>';
+    }
+
+    function artSize(id, size) {
+        return '<svg style="width:' + size + 'px;height:' + size + 'px" viewBox="0 0 512 512" aria-hidden="true"><use href="#' + id + '"></use></svg>';
+    }
+
+    document.getElementById('heroChips').innerHTML = data.map((d, i) =>
+        '<div class="chip" title="' + d.name + ' / ' + d.en + '">' + art(d.id) + '<em>' + String(i + 1).padStart(2, '0') + '</em></div>'
+    ).join('');
+
+    document.getElementById('dockIcons').innerHTML = data.map((d, i) =>
+        '<button class="d" data-target="c' + (i + 1) + '" aria-label="查看方案 ' + (i + 1) + '：' + d.name + '">' + art(d.id) + '</button>'
+    ).join('');
+
+    document.getElementById('footIcons').innerHTML = data.map(d => art(d.id)).join('');
+
+    let lastChapter = 0;
+    document.getElementById('list').innerHTML = data.map((d, i) => {
+        const num = String(i + 1).padStart(2, '0');
+        let head = '';
+
+        if (d.ch !== lastChapter) {
+            const c = chapters[d.ch];
+            head = '<div class="chapter">' +
+                '<div class="ch-head"><span class="ch-roman">' + c.roman + '</span><h3>' + c.name + '</h3><small>' + c.en + '</small></div>' +
+                '<p>' + c.note + '</p>' +
+                '<span class="ch-range">' + c.range + '</span>' +
+            '</div>';
+            lastChapter = d.ch;
+        }
+
+        const pts = d.pts.map(p => '<li>' + p + '</li>').join('') + (d.warn ? '<li class="warn">' + d.warn + '</li>' : '');
+        const mocks =
+            '<div class="tab">' + art(d.id) + '<span>RocketAdmin — 仪表盘</span><i>×</i></div>' +
+            '<div class="side"><div class="top">' + art(d.id) + '</div><span class="ln w1"></span><span class="ln w2"></span><span class="ln w3"></span></div>' +
+            '<div class="login">' + art(d.id) + '<h4>欢迎回来</h4><p>登录 RocketAdmin</p><div class="btn">登 录</div></div>';
+
+        return head + '<article class="row" id="c' + (i + 1) + '">' +
+            '<div class="stage">' +
+                '<div class="tile light">' + art(d.id, 'art') + '<span class="cap">Light</span></div>' +
+                '<div class="tile dark">' + art(d.id, 'art') + '<span class="cap">Dark</span></div>' +
+                '<div class="strip">' +
+                    '<div class="sz">' + artSize(d.id, 16) + '<em>16</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 24) + '<em>24</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 32) + '<em>32</em></div>' +
+                    '<div class="sz">' + artSize(d.id, 48) + '<em>48</em></div>' +
+                    '<span class="note">favicon 实际尺寸</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="meta">' +
+                '<div class="idx">' + num + ' / ' + d.en.toUpperCase() + '</div>' +
+                '<h2>' + d.name + '<small>' + d.en + '</small><span class="tag">' + d.tag + '</span></h2>' +
+                '<p class="desc">' + d.desc + '</p>' +
+                '<ul class="pts">' + pts + '</ul>' +
+                '<div class="mocks">' + mocks + '</div>' +
+            '</div>' +
+        '</article>';
+    }).join('');
+
+    const dockIcons = document.getElementById('dockIcons');
+    document.querySelectorAll('#sizeSeg button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#sizeSeg button').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on');
+            dockIcons.style.setProperty('--px', btn.dataset.size + 'px');
+        });
+    });
+
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.addEventListener('click', () => {
+        const dark = dockIcons.classList.toggle('dark');
+        themeBtn.classList.toggle('on', dark);
+        themeBtn.textContent = dark ? '深色底' : '浅色底';
+    });
+
+    dockIcons.addEventListener('click', e => {
+        const btn = e.target.closest('.d');
+        if (!btn) return;
+        const target = document.getElementById(btn.dataset.target);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.classList.add('hit');
+        setTimeout(() => target.classList.remove('hit'), 1400);
+    });
+
+    const rows = Array.from(document.querySelectorAll('.row'));
+    rows.forEach(r => r.classList.add('reveal'));
+
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in');
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        rows.forEach(r => io.observe(r));
+    } else {
+        rows.forEach(r => r.classList.add('in'));
+    }
+</script>
+</body>
+</html>

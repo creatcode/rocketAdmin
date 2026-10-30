@@ -82,7 +82,7 @@ class Index extends Backend
     public function login()
     {
         $url = $this->request->get('url', '', 'url_clean');
-        $url = $url ?: 'index/index';
+        $url = $url ?: (string)url('index/index', [], false);
         if ($this->auth->isLogin()) {
             $this->success(__("You have logged in, do not login again"), $url);
         }
