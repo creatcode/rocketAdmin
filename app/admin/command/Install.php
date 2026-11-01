@@ -3,6 +3,7 @@
 namespace app\admin\command;
 
 use Exception;
+use app\common\service\InstallService;
 use PDO;
 use think\console\Command;
 use think\console\Input;
@@ -69,7 +70,7 @@ class Install extends Command
         $username = $input->getOption('username');
         $password = $input->getOption('password');
 
-        $installLockFile = INSTALL_PATH . "install.lock";
+        $installLockFile = (new InstallService())->getLockFile();
         if (is_file($installLockFile) && !$force) {
             throw new Exception("\nFastAdmin already installed!\nIf you need to reinstall again, use the parameter --force=true ");
         }
@@ -111,10 +112,10 @@ class Install extends Command
             Lang::load(INSTALL_PATH . 'zh-cn.php');
         }
 
-        $installLockFile = INSTALL_PATH . "install.lock";
+        $installLockFile = (new InstallService())->getLockFile();
 
         if (is_file($installLockFile)) {
-            echo __('The system has been installed. If you need to reinstall, please remove %s first', 'install.lock');
+            echo __('The system has been installed. If you need to reinstall, please remove %s first', $installLockFile);
             exit;
         }
         $output = function ($code, $msg, $url = null, $data = null) {
@@ -300,11 +301,11 @@ class Install extends Command
             file_put_contents($siteConfigFile, '<?php' . "\n\nreturn " . var_export_short($siteConfig) . ";\n");
         }
 
-        $installLockFile = INSTALL_PATH . "install.lock";
+        $installLockFile = (new InstallService())->getLockFile();
         //检测能否成功写入lock文件
         $result = @file_put_contents($installLockFile, 1);
         if (!$result) {
-            throw new Exception(__('The current permissions are insufficient to write the file %s', 'application/admin/command/Install/install.lock'));
+            throw new Exception(__('The current permissions are insufficient to write the file %s', $installLockFile));
         }
 
         try {

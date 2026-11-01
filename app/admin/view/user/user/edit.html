@@ -1,6 +1,8 @@
 <form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
     {:token_field()}
     <input type="hidden" name="row[id]" value="{$row.id}">
+    <input type="hidden" name="original[money]" value="{$row.money|htmlentities}">
+    <input type="hidden" name="original[score]" value="{$row.score|htmlentities}">
     <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Group')}:</label>
         <div class="col-xs-12 col-sm-4">

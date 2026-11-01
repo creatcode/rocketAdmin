@@ -132,6 +132,45 @@ LUA;
     }
 
     /**
+     * Lua 原子轮换，与 clear/delete 串行执行，防止已撤销会话复活。
+     */
+    public function rotate($oldToken, $newToken, $user_id, $expire = null): bool
+    {
+        if ($oldToken === $newToken) {
+            return false;
+        }
+        $expire = $expire ?? $this->options['expire'];
+        if ($expire instanceof \DateTime) {
+            $expire = $expire->getTimestamp() - time();
+        }
+        if ($expire < 0) {
+            throw new \InvalidArgumentException('Token 有效期不能为负数');
+        }
+        $script = <<<'LUA'
+if redis.call('GET', KEYS[3]) ~= ARGV[1] or redis.call('EXISTS', KEYS[1]) == 1 then
+    return 0
+end
+if tonumber(ARGV[2]) > 0 then
+    redis.call('SETEX', KEYS[1], ARGV[2], ARGV[1])
+else
+    redis.call('SET', KEYS[1], ARGV[1])
+end
+redis.call('SADD', KEYS[2], KEYS[1])
+redis.call('DEL', KEYS[3])
+redis.call('SREM', KEYS[2], KEYS[3])
+
+LUA;
+        $result = $this->handler->eval($script . self::INDEX_EXPIRY, [
+            $this->getEncryptedToken($newToken), $this->getUserKey($user_id),
+            $this->getEncryptedToken($oldToken), $user_id, $expire,
+        ], 3);
+        if ($result === false) {
+            throw new \RuntimeException('Token 轮换失败');
+        }
+        return $result === 1;
+    }
+
+    /**
      * 获取Token内的信息
      * @param   string $token
      * @return  array

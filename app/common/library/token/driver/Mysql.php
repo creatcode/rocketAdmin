@@ -41,7 +41,7 @@ class Mysql extends Driver
         $tokentime = cache('tokentime');
         if (!$tokentime || $tokentime < $time - 86400) {
             cache('tokentime', $time);
-            $this->handler->where('expiretime', '<', $time)->where('expiretime', '>', 0)->delete();
+            $this->handler->newQuery()->where('expiretime', '<', $time)->where('expiretime', '>', 0)->delete();
         }
     }
 
@@ -63,8 +63,30 @@ class Mysql extends Driver
         }
         $expiretime = $expire !== 0 ? time() + $expire : 0;
         $token = $this->getEncryptedToken($token);
-        $this->handler->insert(['token' => $token, 'user_id' => $user_id, 'createtime' => time(), 'expiretime' => $expiretime]);
+        $this->handler->newQuery()->insert(['token' => $token, 'user_id' => $user_id, 'createtime' => time(), 'expiretime' => $expiretime]);
         return true;
+    }
+
+    /**
+     * 在同一事务中验证并替换旧令牌，撤销或并发刷新后不得重新签发。
+     */
+    public function rotate($oldToken, $newToken, $user_id, $expire = null): bool
+    {
+        if ($oldToken === $newToken) {
+            return false;
+        }
+        return $this->handler->getConnection()->transaction(function () use ($oldToken, $newToken, $user_id, $expire) {
+            $old = $this->handler->newQuery()->where('token', $this->getEncryptedToken($oldToken))
+                ->where('user_id', $user_id)->lock(true)->find();
+            if (!$old || ($old['expiretime'] && $old['expiretime'] <= time())) {
+                return false;
+            }
+            if (!$this->set($newToken, $user_id, $expire)) {
+                throw new \RuntimeException('Token 写入失败');
+            }
+            $this->delete($oldToken);
+            return true;
+        });
     }
 
     /**
@@ -74,7 +96,7 @@ class Mysql extends Driver
      */
     public function get($token)
     {
-        $data = $this->handler->where('token', $this->getEncryptedToken($token))->find();
+        $data = $this->handler->newQuery()->where('token', $this->getEncryptedToken($token))->find();
         if ($data) {
             if (!$data['expiretime'] || $data['expiretime'] > time()) {
                 //返回未加密的token给客户端使用
@@ -108,7 +130,7 @@ class Mysql extends Driver
      */
     public function delete($token)
     {
-        $this->handler->where('token', $this->getEncryptedToken($token))->delete();
+        $this->handler->newQuery()->where('token', $this->getEncryptedToken($token))->delete();
         return true;
     }
 
@@ -119,7 +141,7 @@ class Mysql extends Driver
      */
     public function clear($user_id)
     {
-        $this->handler->where('user_id', $user_id)->delete();
+        $this->handler->newQuery()->where('user_id', $user_id)->delete();
         return true;
     }
 }

@@ -269,9 +269,9 @@ class Backend extends BaseController
         //新增自动计算页码
         $page = $limit ? intval($offset / $limit) + 1 : 1;
         if ($this->request->has("page")) {
-            $page = max(0, $this->request->get("page/d", 1));
+            $page = max(1, $this->request->get("page/d", 1));
         }
-        $this->request->get([config('paginate.var_page') => $page]);
+
         $filter = (array)json_decode($filter, true);
         $op = (array)json_decode($op, true);
         $filter = $filter ?: [];

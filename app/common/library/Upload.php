@@ -217,17 +217,18 @@ class Upload
      * 检测文件大小
      * @throws UploadException
      */
-    protected function checkSize()
+    protected function checkSize($fileSize = null)
     {
         preg_match('/([0-9\.]+)(\w+)/', $this->config['maxsize'], $matches);
         $size = $matches ? $matches[1] : $this->config['maxsize'];
         $type = $matches ? strtolower($matches[2]) : 'b';
         $typeDict = ['b' => 0, 'k' => 1, 'kb' => 1, 'm' => 2, 'mb' => 2, 'gb' => 3, 'g' => 3];
         $size = (int)($size * pow(1024, $typeDict[$type] ?? 0));
-        if ($this->fileInfo['size'] > $size) {
+        $fileSize = $fileSize ?? $this->fileInfo['size'];
+        if ($fileSize > $size) {
             throw new UploadException(__(
                 'File is too big (%sMiB), Max filesize: %sMiB.',
-                round($this->fileInfo['size'] / pow(1024, 2), 2),
+                round($fileSize / pow(1024, 2), 2),
                 round($size / pow(1024, 2), 2)
             ));
         }
@@ -329,10 +330,13 @@ class Upload
         }
         $destFile = null;
         try {
+            $totalSize = 0;
             for ($i = 0; $i < $chunkcount; $i++) {
                 if (!is_file("{$uploadPath}-{$i}.part")) {
                     throw new UploadException(__('Chunk file info error'));
                 }
+                $totalSize += filesize("{$uploadPath}-{$i}.part");
+                $this->checkSize($totalSize);
             }
             $destFile = @fopen($uploadPath, 'wb');
             if (!$destFile) {
@@ -362,7 +366,6 @@ class Upload
             $this->setFile($file);
             unset($file);
             $this->merging = true;
-            $this->config['maxsize'] = '1024G';
             $attachment = $this->upload();
             $this->clean($chunkid);
             return $attachment;
@@ -393,14 +396,38 @@ class Upload
             throw new UploadException(__('Invalid parameters'));
         }
 
-        $destDir = runtime_path() . 'chunks';
+        if ($chunkindex < 0 || $chunkcount <= 0 || $chunkindex >= $chunkcount) {
+            throw new UploadException(__('Invalid parameters'));
+        }
+
+        $destDir = $this->chunkDir;
         $fileName = $chunkid . "-" . $chunkindex . '.part';
         $destFile = $destDir . DIRECTORY_SEPARATOR . $fileName;
         if (!is_dir($destDir)) {
             @mkdir($destDir, 0755, true);
         }
-        if (!move_uploaded_file($this->file->getPathname(), $destFile)) {
+        // 仅串行保护本地分片落盘，防止并发请求同时通过累计大小检查。
+        $quotaLock = @fopen($destDir . DIRECTORY_SEPARATOR . '.upload.lock', 'c');
+        if (!$quotaLock || !flock($quotaLock, LOCK_EX)) {
+            if (is_resource($quotaLock)) {
+                fclose($quotaLock);
+            }
             throw new UploadException(__('Chunk file write error'));
+        }
+        try {
+            $totalSize = $this->fileInfo['size'];
+            foreach (new \GlobIterator($destDir . DIRECTORY_SEPARATOR . $chunkid . '-*.part') as $part) {
+                if ($part->getFilename() !== $fileName) {
+                    $totalSize += $part->getSize();
+                }
+            }
+            $this->checkSize($totalSize);
+            if (!move_uploaded_file($this->file->getPathname(), $destFile)) {
+                throw new UploadException(__('Chunk file write error'));
+            }
+        } finally {
+            flock($quotaLock, LOCK_UN);
+            fclose($quotaLock);
         }
         $file = new UploadedFile($destFile, $fileName);
         $this->setFile($file);
@@ -475,7 +502,9 @@ class Upload
         );
         $attachment = new Attachment();
         $attachment->data(array_filter($params));
-        $attachment->save();
+        if (!$attachment->save()) {
+            throw new UploadException('附件记录保存失败');
+        }
 
         Event::trigger("upload_after", $attachment);
         return $attachment;

@@ -127,27 +127,27 @@ class Config extends Backend
             $this->token();
             $row = $this->request->post("row/a", [], 'trim');
             if ($row) {
-                $configList = [];
-                foreach ($this->model->select() as $v) {
-                    if (isset($row[$v['name']])) {
-                        $value = $row[$v['name']];
-                        if (is_array($value) && isset($value['field'])) {
-                            $value = json_encode(ConfigModel::getArrayData($value), JSON_UNESCAPED_UNICODE);
-                        } else {
-                            $value = is_array($value) ? implode(',', $value) : $value;
+                try {
+                    Db::transaction(function () use ($row) {
+                        $configList = [];
+                        foreach ($this->model->lock(true)->select() as $v) {
+                            if (isset($row[$v['name']])) {
+                                $value = $row[$v['name']];
+                                if (is_array($value) && isset($value['field'])) {
+                                    $value = json_encode(ConfigModel::getArrayData($value), JSON_UNESCAPED_UNICODE);
+                                } else {
+                                    $value = is_array($value) ? implode(',', $value) : $value;
+                                }
+                                $v['value'] = $value;
+                                $configList[] = $v->toArray();
+                            }
                         }
-                        $v['value'] = $value;
-                        $configList[] = $v->toArray();
-                    }
-                }
-                try {
-                    $this->model->saveAll($configList);
-                } catch (Exception $e) {
-                    $this->error($e->getMessage());
-                }
-                try {
-                    ConfigModel::refreshFile();
-                } catch (Exception $e) {
+                        $this->model->saveAll($configList);
+                        if (!ConfigModel::refreshFile()) {
+                            throw new \think\Exception('发布配置文件失败');
+                        }
+                    });
+                } catch (\Throwable $e) {
                     $this->error($e->getMessage());
                 }
                 $this->success();

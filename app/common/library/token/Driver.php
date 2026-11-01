@@ -29,6 +29,11 @@ abstract class Driver
     abstract function set($token, $user_id, $expire = 0);
 
     /**
+     * 仅在旧令牌仍有效且属于该会员时原子轮换。
+     */
+    abstract function rotate($oldToken, $newToken, $user_id, $expire = null): bool;
+
+    /**
      * 获取Token内的信息
      * @param   string $token
      * @return  array

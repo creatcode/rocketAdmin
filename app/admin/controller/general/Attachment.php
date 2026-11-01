@@ -44,7 +44,7 @@ class Attachment extends Backend
             $filterArr = (array)json_decode($filter, true);
             if (isset($filterArr['category']) && $filterArr['category'] == 'unclassed') {
                 $filterArr['category'] = ',unclassed';
-                $this->request->get(['filter' => json_encode(array_diff_key($filterArr, ['category' => '']))]);
+
             }
             if (isset($filterArr['mimetype']) && preg_match("/(\/|\,|\*)/", $filterArr['mimetype'])) {
                 $mimetype = $filterArr['mimetype'];
@@ -56,7 +56,7 @@ class Attachment extends Backend
                     }
                 };
             }
-            $this->request->get(['filter' => json_encode($filterArr)]);
+            $this->request->withGet(array_replace($this->request->get(false), ['filter' => json_encode($filterArr)]));
 
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
             $total = $this->model
@@ -120,11 +120,13 @@ class Attachment extends Backend
         if ($ids) {
             \think\facade\Event::listen('upload_delete', function ($params) {
                 if ($params['storage'] == 'local') {
-                    $publicPath = realpath(root_path() . '/public');
+                    $publicPath = realpath(root_path() . '/public/uploads');
                     $attachmentFile = realpath(root_path() . '/public' . $params['url']);
                     $publicPath = $publicPath ? rtrim($publicPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '';
                     if ($publicPath && $attachmentFile && strpos($attachmentFile, $publicPath) === 0 && is_file($attachmentFile)) {
-                        @unlink($attachmentFile);
+                        if (!unlink($attachmentFile)) {
+                            $this->error('附件文件删除失败');
+                        }
                     }
                 }
             });
@@ -133,7 +135,9 @@ class Attachment extends Backend
             });
             $attachmentlist = $this->model->where('id', 'in', $ids)->select();
             foreach ($attachmentlist as $attachment) {
-                \think\facade\Event::trigger("upload_delete", $attachment);
+                if (!AttachmentModel::where('url', $attachment['url'])->where('storage', $attachment['storage'])->where('id', '<>', $attachment['id'])->find()) {
+                    \think\facade\Event::trigger("upload_delete", $attachment);
+                }
                 $attachment->delete();
             }
             $this->success();

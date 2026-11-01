@@ -8,6 +8,7 @@ use app\admin\model\AuthGroupAccess;
 use app\admin\model\AuthRule;
 use kernel\services\AuthService;
 use think\facade\Config;
+use think\facade\Db;
 use think\facade\Cookie;
 use think\facade\Event;
 use think\facade\Session;
@@ -36,30 +37,37 @@ class AdminAuth extends AuthService
      */
     public function login($username, $password, $keeptime = 0)
     {
-        $admin = Admin::where(['username' => $username])->find();
-        if (!$admin) {
-            $this->setError('Username is incorrect');
-            return false;
-        }
-        if ($admin['status'] == 'hidden') {
-            $this->setError('Admin is forbidden');
-            return false;
-        }
-        if (Config::get('rocket.login_failure_retry') && $admin->loginfailure >= 10 && time() - $admin->updatetime < 86400) {
-            $this->setError('Please try again after 1 day');
-            return false;
-        }
-        if ($admin->password != $this->getEncryptPassword($password, $admin->salt)) {
-            $admin->loginfailure++;
+        // 锁定账户行，避免并发登录少计失败次数。
+        $admin = Db::transaction(function () use ($username, $password) {
+            $admin = Admin::where(['username' => $username])->lock(true)->find();
+            if (!$admin) {
+                $this->setError('Username is incorrect');
+                return false;
+            }
+            if ($admin['status'] == 'hidden') {
+                $this->setError('Admin is forbidden');
+                return false;
+            }
+            if (Config::get('rocket.login_failure_retry') && $admin->loginfailure >= 10 && time() - $admin->updatetime < 86400) {
+                $this->setError('Please try again after 1 day');
+                return false;
+            }
+            if ($admin->password != $this->getEncryptPassword($password, $admin->salt)) {
+                $admin->loginfailure = (time() - $admin->updatetime >= 86400 ? 0 : $admin->loginfailure) + 1;
+                $admin->save();
+                $this->setError('Password is incorrect');
+                return false;
+            }
+            $admin->loginfailure = 0;
+            $admin->logintime = time();
+            $admin->loginip = request()->ip();
+            $admin->token = Random::uuid();
             $admin->save();
-            $this->setError('Password is incorrect');
+            return $admin;
+        });
+        if (!$admin) {
             return false;
         }
-        $admin->loginfailure = 0;
-        $admin->logintime = time();
-        $admin->loginip = request()->ip();
-        $admin->token = Random::uuid();
-        $admin->save();
         Session::set("admin", $admin->toArray());
         Session::set("admin.safecode", $this->getEncryptSafecode($admin));
         $this->keeplogin($admin, $keeptime);

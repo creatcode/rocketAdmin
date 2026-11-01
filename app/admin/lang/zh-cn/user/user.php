@@ -30,4 +30,5 @@ return [
     'Token'          => 'Token',
     'Status'         => '状态',
     'Leave password blank if dont want to change' => '不修改密码请留空',
+    'Account data changed, please refresh and try again' => '账户数据已变化，请刷新后重试',
 ];

@@ -36,7 +36,7 @@ class Adminlog extends Backend
         //设置过滤方法
         $this->request->filter(['strip_tags', 'trim']);
         if ($this->request->isAjax()) {
-            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
+            list($where, $sort, $order, $offset, $limit, $page) = $this->buildparams();
             $isSuperAdmin = $this->auth->isSuperAdmin();
             $childrenAdminIds = $this->childrenAdminIds;
             $list = $this->model
@@ -48,7 +48,7 @@ class Adminlog extends Backend
                 })
                 ->withoutField('content,useragent')
                 ->order($sort, $order)
-                ->paginate($limit);
+                ->paginate(['list_rows' => $limit, 'page' => $page]);
 
             $result = array("total" => $list->total(), "rows" => $list->items());
 

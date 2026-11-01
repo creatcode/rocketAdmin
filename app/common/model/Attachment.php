@@ -17,11 +17,10 @@ class Attachment extends Model
         'thumb_style'
     ];
 
-    protected static function onBeforeInsert($model)
+    protected static function onBeforeUpdate($model)
     {
-        // 如果已经上传该资源，则不再记录
-        if (self::where('url', '=', $model['url'])->where('storage', $model['storage'])->find()) {
-            return false;
+        if (array_diff(array_keys($model->getChangedData()), ['category', 'filename', 'updatetime'])) {
+            throw new \think\Exception('附件归属、路径和文件信息不允许修改');
         }
     }
 

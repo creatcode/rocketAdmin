@@ -55,14 +55,14 @@ class SystemGroup extends Backend
         if (false === $this->request->isAjax()) {
             return $this->view->fetch();
         }
-        [$where, $sort, $order, $offset, $limit] = $this->buildparams();
+        [$where, $sort, $order, $offset, $limit, $page] = $this->buildparams();
         $list = $this->model
             ->where($where)
             //字段定义只在编辑页面读取,列表不返回
             ->field('id,name,title,tip,weigh,status,createtime,updatetime')
             ->order($sort, $order)
             ->order('id', 'desc')
-            ->paginate($limit);
+            ->paginate(['list_rows' => $limit, 'page' => $page]);
         return json(['total' => $list->total(), 'rows' => $list->items()]);
     }
 

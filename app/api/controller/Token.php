@@ -38,17 +38,14 @@ class Token extends Api
             $this->error(__('Please login first'), null, 401);
         }
 
-        // 新 Token 创建并读取成功后才删除旧 Token，失败时保留原登录状态。
         $token = Random::uuid();
-        if (!TokenLib::set($token, $this->auth->id, $expire)) {
-            $this->error(__('Operation failed'));
+        if (!TokenLib::rotate($oldToken, $token, $this->auth->id, $expire)) {
+            $this->error(__('Please login first'), null, 401);
         }
         $tokenInfo = TokenLib::get($token);
         if (!$tokenInfo) {
-            TokenLib::delete($token);
-            $this->error(__('Operation failed'));
+            $this->error(__('Please login first'), null, 401);
         }
-        TokenLib::delete($oldToken);
         $this->success('', $this->formatTokenInfo($tokenInfo));
     }
 

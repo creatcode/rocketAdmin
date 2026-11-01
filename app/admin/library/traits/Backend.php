@@ -5,6 +5,7 @@ namespace app\admin\library\traits;
 use app\admin\library\AdminAuth;
 use Exception;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Reader\Csv as CsvReader;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
@@ -128,11 +129,11 @@ trait Backend
         if ($this->request->request('keyField')) {
             return $this->selectpage();
         }
-        [$where, $sort, $order, $offset, $limit] = $this->buildparams();
+        [$where, $sort, $order, $offset, $limit, $page] = $this->buildparams();
         $list = $this->model
             ->where($where)
             ->order($sort, $order)
-            ->paginate($limit);
+            ->paginate(['list_rows' => $limit, 'page' => $page]);
         $result = ['total' => $list->total(), 'rows' => $list->items()];
         return json($result);
     }
@@ -150,12 +151,12 @@ trait Backend
         if (false === $this->request->isAjax()) {
             return $this->view->fetch();
         }
-        [$where, $sort, $order, $offset, $limit] = $this->buildparams();
+        [$where, $sort, $order, $offset, $limit, $page] = $this->buildparams();
         $list = $this->model
             ->onlyTrashed()
             ->where($where)
             ->order($sort, $order)
-            ->paginate($limit);
+            ->paginate(['list_rows' => $limit, 'page' => $page]);
         $result = ['total' => $list->total(), 'rows' => $list->items()];
         return json($result);
     }
@@ -435,32 +436,6 @@ trait Backend
             $this->error(__('Unknown data format'));
         }
 
-        $tempFilePath = null;
-        // CSV文件需要转换为UTF-8编码
-        if ($ext === 'csv') {
-            $tempPath = tempnam(sys_get_temp_dir(), 'import_csv');
-            $fp = fopen($tempPath, 'w');
-            $fp2 = fopen($filePath, 'r');
-            $n = 0;
-            while ($line = fgets($fp2)) {
-                $line = rtrim($line, "\n\r\0");
-                $encoding = mb_detect_encoding($line, ['utf-8', 'gbk', 'latin1', 'big5']);
-                if ($encoding !== 'utf-8') {
-                    $line = mb_convert_encoding($line, 'utf-8', $encoding);
-                }
-                if ($n == 0 || preg_match('/^".*"$/', $line)) {
-                    fwrite($fp, $line . "\n");
-                } else {
-                    fwrite($fp, '"' . str_replace(['"', ','], ['""', '","'], $line) . "\"\n");
-                }
-                $n++;
-            }
-            fclose($fp2);
-            fclose($fp);
-            $tempFilePath = $tempPath;
-            $filePath = $tempFilePath;
-        }
-
         //导入文件首行类型,默认是注释,如果需要使用字段名称请使用name
         $importHeadType = !empty($this->importHeadType) ? $this->importHeadType : 'comment';
 
@@ -479,16 +454,18 @@ trait Backend
                 }
             }
         } catch (Exception $e) {
-            if ($tempFilePath) {
-                @unlink($tempFilePath);
-            }
             $this->error($e->getMessage());
         }
 
         //加载文件
         $insert = [];
         try {
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
+            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($filePath);
+            if ($reader instanceof CsvReader) {
+                $encoding = mb_detect_encoding(file_get_contents($filePath), ['UTF-8', 'GBK', 'ISO-8859-1', 'BIG5']);
+                $reader->setInputEncoding(CsvReader::guessEncoding($filePath, $encoding));
+            }
+            $spreadsheet = $reader->load($filePath);
 
             $sheet = $spreadsheet->getActiveSheet();
             $highestRow = $sheet->getHighestRow();
@@ -521,15 +498,8 @@ trait Backend
                 }
             }
             unset($spreadsheet, $sheet);
-        } catch (Exception $exception) {
-            if ($tempFilePath) {
-                @unlink($tempFilePath);
-            }
+        } catch (\Throwable $exception) {
             $this->error($exception->getMessage());
-        } finally {
-            if ($tempFilePath && file_exists($tempFilePath)) {
-                @unlink($tempFilePath);
-            }
         }
 
         if (!$insert) {
@@ -537,24 +507,54 @@ trait Backend
         }
 
         try {
-            $hasAdminId = in_array('admin_id', $fieldArr);
-            if ($hasAdminId) {
-                $auth = AdminAuth::instance();
-                foreach ($insert as &$val) {
-                    if (empty($val['admin_id'])) {
-                        $val['admin_id'] = $auth->isLogin() ? $auth->id : 0;
+            Db::transaction(function () use ($insert, $fieldArr) {
+                $pk = $this->model->getPk();
+                $modelClass = get_class($this->model);
+                $scopeField = $this->dataLimitField;
+                $adminIds = $this->getDataLimitAdminIds();
+                foreach ($insert as $params) {
+                    $params = $this->preExcludeFields($params);
+                    if (!empty($params[$pk])) {
+                        if (!$this->auth->check($this->request->controllerPath . '/edit')) {
+                            throw new \think\Exception(__('You have no permission'));
+                        }
+                        $query = $this->model->where($pk, $params[$pk]);
+                        if (is_array($adminIds)) {
+                            $query->whereIn($scopeField, $adminIds);
+                        }
+                        $row = $query->lock(true)->find();
+                        if (!$row) {
+                            throw new \think\Exception(__('You have no permission'));
+                        }
+                        if ($this->dataLimit) {
+                            unset($params[$scopeField]);
+                        }
+                        unset($params[$pk]);
+                    } else {
+                        unset($params[$pk]);
+                        if ($this->dataLimit && $this->dataLimitFieldAutoFill) {
+                            $params[$scopeField] = $this->auth->id;
+                        }
+                        if (in_array('admin_id', $fieldArr) && empty($params['admin_id'])) {
+                            $params['admin_id'] = $this->auth->isLogin() ? $this->auth->id : 0;
+                        }
+                        if (is_array($adminIds) && (!isset($params[$scopeField]) || !in_array($params[$scopeField], $adminIds))) {
+                            throw new \think\Exception(__('You have no permission'));
+                        }
+                        $row = new $modelClass();
+                    }
+                    if ($row->save($params) === false) {
+                        throw new \think\Exception(__('Operation failed'));
                     }
                 }
-                unset($val);
-            }
-            $this->model->saveAll($insert);
+            });
         } catch (PDOException $exception) {
             $msg = $exception->getMessage();
             if (preg_match("/.+Integrity constraint violation: 1062 Duplicate entry '(.+)' for key '(.+)'/is", $msg, $matches)) {
                 $msg = "导入失败，包含【{$matches[1]}】的记录已存在";
             }
             $this->error($msg);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->error($e->getMessage());
         }
 

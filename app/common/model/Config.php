@@ -219,10 +219,31 @@ class Config extends Model
             }
             $config[$value['name']] = $value['value'];
         }
-        file_put_contents(
-            app()->getConfigPath() . 'site.php',
-            '<?php' . "\n\nreturn " . var_export_short($config) . ";\n"
-        );
+        $filename = app()->getConfigPath() . 'site.php';
+        $contents = '<?php' . "\n\nreturn " . var_export_short($config) . ";\n";
+        $temporary = tempnam(dirname($filename), 'site_');
+        if ($temporary === false) {
+            throw new \RuntimeException('创建配置临时文件失败');
+        }
+        try {
+            if (file_put_contents($temporary, $contents) !== strlen($contents)) {
+                throw new \RuntimeException('写入配置文件失败');
+            }
+            if (is_file($filename) && !chmod($temporary, fileperms($filename) & 0777)) {
+                throw new \RuntimeException('设置配置文件权限失败');
+            }
+            // 同目录原子替换，其他请求始终读取完整的 PHP 配置。
+            if (!rename($temporary, $filename)) {
+                throw new \RuntimeException('发布配置文件失败');
+            }
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($filename, true);
+            }
+        } finally {
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
+        }
         return true;
     }
 

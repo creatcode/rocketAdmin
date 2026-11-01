@@ -126,13 +126,13 @@ class SystemGroupData extends Backend
             $this->assignconfig('fields', array_values((array)$group['fields']));
             return $this->view->fetch();
         }
-        [$where, $sort, $order, $offset, $limit] = $this->buildparams();
+        [$where, $sort, $order, $offset, $limit, $page] = $this->buildparams();
         $list = $this->model
             ->where('group_id', $group['id'])
             ->where($where)
             ->order($sort, $order)
             ->order('id', 'desc')
-            ->paginate($limit);
+            ->paginate(['list_rows' => $limit, 'page' => $page]);
         return json(['total' => $list->total(), 'rows' => $list->items()]);
     }
 

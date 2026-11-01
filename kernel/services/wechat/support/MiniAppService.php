@@ -93,7 +93,11 @@ class MiniAppService
             $payload['page'] = $page;
         }
 
-        return $this->app->app_code->getUnlimit($scene, $payload);
+        $response = $this->app->app_code->getUnlimit($scene, $payload);
+        if (!$response instanceof ResponseInterface) {
+            throw new \RuntimeException('小程序码生成失败：' . (is_array($response) ? ($response['errmsg'] ?? '未知响应') : '未知响应'));
+        }
+        return $response;
     }
 
     /**

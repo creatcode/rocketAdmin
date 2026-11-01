@@ -15,6 +15,10 @@ class InstallService
     public function __construct()
     {
         $this->lockFile = root_path() . '.install.lock';
+        $legacyLock = root_path() . 'app/admin/command/Install/install.lock';
+        if (!is_file($this->lockFile) && is_file($legacyLock)) {
+            $this->lockFile = $legacyLock;
+        }
     }
 
     public function getLockFile(): string
@@ -36,7 +40,7 @@ class InstallService
         $content = file_get_contents($this->lockFile);
         $data = json_decode((string)$content, true);
 
-        return is_array($data) ? $data : ['installed' => true];
+        return is_array($data) ? $data : ['installed' => true, 'lockFile' => $this->lockFile];
     }
 
     public function getEnvironmentStatus(): array

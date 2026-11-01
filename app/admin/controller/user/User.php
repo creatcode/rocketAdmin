@@ -40,13 +40,13 @@ class User extends Backend
             if ($this->request->request('keyField')) {
                 return $this->selectpage();
             }
-            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
+            list($where, $sort, $order, $offset, $limit, $page) = $this->buildparams();
             $list = $this->model
                 ->alias('user')
                 ->withJoin('group')
                 ->where($where)
                 ->order($sort, $order)
-                ->paginate($limit);
+                ->paginate(['list_rows' => $limit, 'page' => $page]);
             foreach ($list as $k => $v) {
                 $v->avatar = $v->avatar ? cdnurl($v->avatar, true) : letter_avatar($v->nickname);
                 $v->hidden(['password', 'salt']);
@@ -90,16 +90,55 @@ class User extends Backend
      */
     public function edit($ids = null)
     {
-        if ($this->request->isPost()) {
-            $this->token();
+        if (!$this->request->isPost()) {
+            $row = $this->model->find($ids);
+            if (!$row) {
+                $this->error(__('No Results were found'));
+            }
+            $this->view->assign('groupList', build_select('row[group_id]', \app\admin\model\UserGroup::column('name', 'id'), $row['group_id'], ['class' => 'form-control selectpicker']));
+            return parent::edit($ids);
         }
-        $row = $this->model->find($ids);
-        $this->modelValidate = true;
-        if (!$row) {
-            $this->error(__('No Results were found'));
+
+        $this->token();
+        if (!is_scalar($ids) || !ctype_digit((string)$ids) || $ids <= 0) {
+            $this->error(__('Invalid parameters'));
         }
-        $this->view->assign('groupList', build_select('row[group_id]', \app\admin\model\UserGroup::column('name', 'id'), $row['group_id'], ['class' => 'form-control selectpicker']));
-        return parent::edit($ids);
+        $params = $this->preExcludeFields($this->request->post('row/a', []));
+        if (!$params) {
+            $this->error(__('Invalid parameters'));
+        }
+        $original = $this->request->post('original/a', []);
+        $where = [];
+        foreach (['money' => '/^-?\d+(?:\.\d{1,2})?$/D', 'score' => '/^-?\d+$/D'] as $field => $pattern) {
+            if (array_key_exists($field, $params)) {
+                if (!isset($original[$field]) || !is_scalar($original[$field]) || !is_scalar($params[$field])
+                    || !preg_match($pattern, (string)$original[$field]) || !preg_match($pattern, (string)$params[$field])) {
+                    $this->error(__('Invalid parameters'));
+                }
+                $where[] = [$field, '=', $original[$field]];
+            }
+        }
+        unset($params['id']);
+        try {
+            Db::transaction(function () use ($ids, $params, $where) {
+                // 原值参与条件并锁行，旧表单及并发写入都不得覆盖新余额。
+                $row = $this->model->where($where)->lock(true)->find($ids);
+                if (!$row) {
+                    throw new \think\Exception(__('Account data changed, please refresh and try again'));
+                }
+                $adminIds = $this->getDataLimitAdminIds();
+                if (is_array($adminIds) && !in_array($row[$this->dataLimitField], $adminIds)) {
+                    throw new \think\Exception(__('You have no permission'));
+                }
+                validate(\app\admin\validate\User::class)->failException(true)->check(array_merge($params, ['id' => $row->id]));
+                if ($row->save($params) === false) {
+                    throw new \think\Exception(__('No rows were updated'));
+                }
+            });
+        } catch (\Throwable $e) {
+            $this->error($e->getMessage());
+        }
+        $this->success();
     }
 
     /**

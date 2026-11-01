@@ -44,7 +44,7 @@ class User extends Api
     public function login()
     {
         $account = $this->request->post('account');
-        $password = $this->request->post('password');
+        $password = $this->request->post('password', '', null);
         if (!$account || !$password) {
             $this->error(__('Invalid parameters'));
         }
@@ -111,12 +111,16 @@ class User extends Api
     public function register()
     {
         $username = $this->request->post('username');
-        $password = $this->request->post('password');
+        $password = $this->request->post('password', '', null);
         $email = $this->request->post('email');
         $mobile = $this->request->post('mobile');
         $code = $this->request->post('code');
         if (!$username || !$password) {
             $this->error(__('Invalid parameters'));
+        }
+        $validator = Validate::rule(['username' => 'require|length:3,30', 'password' => 'require|length:6,30']);
+        if (!$validator->check(['username' => $username, 'password' => $password])) {
+            $this->error($validator->getError());
         }
         if ($email && !Validate::is($email, "email")) {
             $this->error(__('Email is incorrect'));
@@ -312,7 +316,7 @@ class User extends Api
         $type = $this->request->post("type", "mobile");
         $mobile = $this->request->post("mobile");
         $email = $this->request->post("email");
-        $newpassword = $this->request->post("newpassword");
+        $newpassword = $this->request->post("newpassword", '', null);
         $captcha = $this->request->post("captcha");
         if (!$newpassword || !$captcha) {
             $this->error(__('Invalid parameters'));

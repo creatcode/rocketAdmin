@@ -119,6 +119,14 @@ class Token
     }
 
     /**
+     * 原子轮换有效令牌，旧令牌失效时不创建新令牌。
+     */
+    public static function rotate($oldToken, $newToken, $user_id, $expire = null): bool
+    {
+        return self::init()->rotate($oldToken, $newToken, $user_id, $expire);
+    }
+
+    /**
      * 删除Token(delete别名)
      * @access public
      * @param string $token Token标识

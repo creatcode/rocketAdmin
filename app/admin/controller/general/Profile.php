@@ -28,13 +28,13 @@ class Profile extends Backend
         $this->request->filter(['strip_tags', 'trim']);
         if ($this->request->isAjax()) {
             $this->model = new AdminLog();
-            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
+            list($where, $sort, $order, $offset, $limit, $page) = $this->buildparams();
 
             $list = $this->model
                 ->where($where)
                 ->where('admin_id', $this->auth->id)
                 ->order($sort, $order)
-                ->paginate($limit);
+                ->paginate(['list_rows' => $limit, 'page' => $page]);
 
             $result = array("total" => $list->total(), "rows" => $list->items());
 
