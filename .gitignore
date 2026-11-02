@@ -1,6 +1,5 @@
 *.log
 .env
-.install.lock
 composer.phar
 .DS_Store
 Thumbs.db

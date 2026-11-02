@@ -10,15 +10,16 @@ use util\Random;
 
 class InstallService
 {
+    /**
+     * 安装锁文件，沿用 FastAdmin 旧版位置。
+     */
+    public const LOCK_FILE = 'app/admin/command/Install/install.lock';
+
     protected string $lockFile;
 
     public function __construct()
     {
-        $this->lockFile = root_path() . '.install.lock';
-        $legacyLock = root_path() . 'app/admin/command/Install/install.lock';
-        if (!is_file($this->lockFile) && is_file($legacyLock)) {
-            $this->lockFile = $legacyLock;
-        }
+        $this->lockFile = root_path() . self::LOCK_FILE;
     }
 
     public function getLockFile(): string
@@ -100,7 +101,7 @@ class InstallService
     public function install(array $data, bool $force = false): array
     {
         if ($this->isInstalled() && !$force) {
-            throw new Exception(__('The system has been installed. If you need to reinstall, please remove %s first', '.install.lock'));
+            throw new Exception(__('The system has been installed. If you need to reinstall, please remove %s first', self::LOCK_FILE));
         }
 
         $this->checkEnv();
@@ -347,7 +348,7 @@ class InstallService
         ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
         if (file_put_contents($this->lockFile, $payload) === false) {
-            throw new Exception(__('The current permissions are insufficient to write the file %s', '.install.lock'));
+            throw new Exception(__('The current permissions are insufficient to write the file %s', self::LOCK_FILE));
         }
     }
 
@@ -424,10 +425,12 @@ class InstallService
                 },
             ],
             [
-                'label'   => '.install.lock',
-                'message' => __('The current permissions are insufficient to write the file %s', '.install.lock'),
+                'label'   => self::LOCK_FILE,
+                'message' => __('The current permissions are insufficient to write the file %s', self::LOCK_FILE),
                 'check'   => function () {
-                    return is_really_writable(root_path());
+                    return is_file($this->lockFile)
+                        ? is_really_writable($this->lockFile)
+                        : is_really_writable(dirname($this->lockFile));
                 },
             ],
         ];

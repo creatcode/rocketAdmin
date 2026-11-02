@@ -22,7 +22,7 @@ class Index extends BaseController
             if ($installService->isInstalled()) {
                 return json([
                     'code' => 0,
-                    'msg'  => __('The system has been installed. If you need to reinstall, please remove %s first', '.install.lock'),
+                    'msg'  => __('The system has been installed. If you need to reinstall, please remove %s first', InstallService::LOCK_FILE),
                 ]);
             }
 
@@ -72,7 +72,7 @@ class Index extends BaseController
             'installInfo'     => $installInfo,
             'envStatus'       => $installService->getEnvironmentStatus(),
             'adminUrl'        => $this->request->domain() . '/admin/index/login',
-            'lockFileDisplay' => $installInfo['lockFile'] ?? '.install.lock',
+            'lockFileDisplay' => $installInfo['lockFile'] ?? InstallService::LOCK_FILE,
             'installedSite'   => $installInfo['site'] ?? '-',
             'installedAdmin'  => $installInfo['admin_user'] ?? '-',
             'installedAt'     => $installInfo['installedAt'] ?? '-',
