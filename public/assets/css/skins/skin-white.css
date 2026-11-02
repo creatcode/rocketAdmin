@@ -177,36 +177,37 @@ body.inside-header .toolbar .dropdown {
 body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn,
 body.inside-header .bootstrap-table .fixed-table-toolbar .search .form-control {
     padding: 6px 12px !important;
-    border-radius: 3px;
-    color: #333;
+    border-radius: 4px;
+    color: #4e5969;
     background-color: #fff !important;
-    border-color: #ccc !important;
+    border-color: #dcdfe6 !important;
 }
 
 .skin-white .bootstrap-table .fixed-table-toolbar .columns-right .btn:hover,
 .skin-white .bootstrap-table .fixed-table-toolbar .columns-right .btn:focus,
 body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn:hover,
 body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn:focus {
-    color: #333;
-    background-color: #e6e6e6 !important;
-    border-color: #adadad !important;
+    color: #165dff;
+    background-color: #f0f5ff !important;
+    border-color: #adc6ff !important;
 }
 
-/* 右侧按钮连成一条 */
+/* 工具按钮分开显示，弱化边框。 */
 .skin-white .bootstrap-table .fixed-table-toolbar .columns .btn,
 body.inside-header .bootstrap-table .fixed-table-toolbar .columns .btn {
-    margin-left: -1px !important;
-    border-radius: 0 !important;
+    margin-left: 4px !important;
+    border-radius: 4px !important;
 }
 
 .skin-white .bootstrap-table .fixed-table-toolbar .columns-right .btn,
 body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right .btn {
-    border-radius: 0 !important;
+    border-radius: 4px !important;
+    border-color: transparent !important;
 }
 
 .skin-white .bootstrap-table .fixed-table-toolbar .columns-right,
 body.inside-header .bootstrap-table .fixed-table-toolbar .columns-right {
-    margin-left: -1px !important;
+    margin-left: 4px !important;
 }
 
 /* 未选中页码 */
@@ -367,8 +368,8 @@ body.inside-header .panel-heading .nav-tabs>li.active>a::after {
 }
 
 .skin-white #secondnav .nav-tabs>li.active {
-    background: #fff;
-    border: 1px solid #dcdfe6 !important;
+    background: #f0f5ff;
+    border: none !important;
     border-radius: 4px !important;
 }
 
@@ -470,6 +471,8 @@ body.inside-header .bootstrap-table .table-striped>tbody>tr:nth-of-type(odd) {
 .skin-white .bootstrap-table tbody tr td,
 body.inside-header .bootstrap-table tbody tr td {
     border-top-color: #f1f4f6;
+    border-left-width: 0 !important;
+    border-right-width: 0 !important;
 }
 
 .skin-white .bootstrap-table .table-hover>tbody>tr:hover,
@@ -485,7 +488,7 @@ body.inside-header .searchit .label {
 }
 
 .layui-layer.layui-layer-fast .layui-layer-title {
-    background: #fff !important;
+    background: #f6f8fb !important;
     color: #1d2129 !important;
     font-weight: 700 !important;
     font-size: 16px !important;
@@ -644,6 +647,33 @@ body.inside-header .panel-intro .panel-heading {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
     min-width: 330px;
 }
+
+/* 确认框沿用 Simple 的内容间距和右侧主操作，不影响消息提示及表单操作条。 */
+.layui-layer-fast.layui-layer-dialog:has(>.layui-layer-btn) .layui-layer-padding {
+    padding: 40px 24px 30px 76px;
+    text-align: left;
+}
+
+.layui-layer-fast.layui-layer-dialog:has(>.layui-layer-btn) .layui-layer-padding .layui-layer-ico {
+    top: 40px;
+    left: 32px;
+    width: 30px;
+    height: 30px;
+}
+
+.layui-layer-fast.layui-layer-dialog:has(>.layui-layer-btn)>.layui-layer-btn {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0 20px 20px;
+    box-shadow: none !important;
+}
+
+.layui-layer-fast.layui-layer-dialog:has(>.layui-layer-btn)>.layui-layer-btn>a {
+    margin: 0;
+}
+
 /* 合并弹层按钮公共样式 */
 .layui-layer-fast.layui-layer-dialog .layui-layer-btn0,
 .layui-layer-fast.layui-layer-prompt .layui-layer-btn0,
