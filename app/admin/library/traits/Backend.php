@@ -2,7 +2,6 @@
 
 namespace app\admin\library\traits;
 
-use app\admin\library\AdminAuth;
 use Exception;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Reader\Csv as CsvReader;

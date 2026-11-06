@@ -4,25 +4,20 @@ namespace GuzzleHttp\Tests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Handler\CurlMultiHandler;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Server\Server;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 
 class PoolTest extends TestCase
 {
-    public function testValidatesIterable()
-    {
-        $p = new Pool(new Client(), 'foo');
-
-        $this->expectException(\InvalidArgumentException::class);
-        $p->promise()->wait();
-    }
-
     public function testValidatesEachElement()
     {
         $c = new Client();
@@ -73,8 +68,9 @@ class PoolTest extends TestCase
         $handler = new MockHandler([
             static function (RequestInterface $request) use (&$h) {
                 $h[] = $request;
+
                 return new Response();
-            }
+            },
         ]);
         $c = new Client(['handler' => $handler]);
         $opts = ['options' => ['headers' => ['x-foo' => 'bar']]];
@@ -90,13 +86,15 @@ class PoolTest extends TestCase
         $handler = new MockHandler([
             static function (RequestInterface $request) use (&$h) {
                 $h[] = $request;
+
                 return new Response();
-            }
+            },
         ]);
         $c = new Client(['handler' => $handler]);
         $optHistory = [];
         $fn = static function (array $opts) use (&$optHistory, $c) {
             $optHistory = $opts;
+
             return $c->request('GET', 'http://example.com', $opts);
         };
         $opts = ['options' => ['headers' => ['x-foo' => 'bar']]];
@@ -115,7 +113,7 @@ class PoolTest extends TestCase
             new Request('GET', 'http://foo.com/404'),
         ];
         $fn = static function (RequestInterface $request) {
-            return new Response(\substr($request->getUri()->getPath(), 1));
+            return new Response((int) \substr($request->getUri()->getPath(), 1));
         };
         $mock = new MockHandler([$fn, $fn, $fn, $fn]);
         $handler = HandlerStack::create($mock);
@@ -133,18 +131,18 @@ class PoolTest extends TestCase
     {
         $requests = [
             new Request('GET', 'http://foo.com/200'),
-            new Request('GET', 'http://foo.com/201')
+            new Request('GET', 'http://foo.com/201'),
         ];
         $mock = new MockHandler([
             static function (RequestInterface $request) {
-                return new Response(\substr($request->getUri()->getPath(), 1));
-            }
+                return new Response((int) \substr($request->getUri()->getPath(), 1));
+            },
         ]);
         $client = new Client(['handler' => $mock]);
         $results = Pool::batch($client, $requests, [
             'fulfilled' => static function ($value) use (&$called) {
                 $called = true;
-            }
+            },
         ]);
         self::assertCount(2, $results);
         self::assertTrue($called);
@@ -173,20 +171,55 @@ class PoolTest extends TestCase
             'pool_size' => 2,
             'fulfilled' => static function ($res, $index) use (&$keys) {
                 $keys[] = $index;
-            }
+            },
         ]);
         $p->promise()->wait();
         self::assertCount(3, $keys);
         self::assertSame($keys, \array_keys($requests));
     }
 
+    public function testPoolHandlesInvalidResponseStatusAsResponseLessRejection()
+    {
+        $client = new Client([
+            'handler' => HandlerStack::create(new CurlMultiHandler()),
+        ]);
+        $requests = [
+            new Request('GET', Server::$url.'guzzle-server/bad-status'),
+            new Request('GET', Server::$url.'guzzle-server/bad-status'),
+        ];
+        $fulfilled = 0;
+        $rejected = [];
+
+        $pool = new Pool($client, $requests, [
+            'concurrency' => 2,
+            'fulfilled' => static function () use (&$fulfilled): void {
+                ++$fulfilled;
+            },
+            'rejected' => static function ($reason) use (&$rejected): void {
+                $rejected[] = $reason;
+            },
+        ]);
+
+        $pool->promise()->wait();
+
+        self::assertSame(0, $fulfilled);
+        self::assertCount(2, $rejected);
+
+        foreach ($rejected as $reason) {
+            self::assertInstanceOf(RequestException::class, $reason);
+            self::assertFalse($reason->hasResponse());
+            self::assertNull($reason->getResponse());
+        }
+    }
+
     private function getClient($total = 1)
     {
         $queue = [];
-        for ($i = 0; $i < $total; $i++) {
+        for ($i = 0; $i < $total; ++$i) {
             $queue[] = new Response();
         }
         $handler = new MockHandler($queue);
+
         return new Client(['handler' => $handler]);
     }
 }

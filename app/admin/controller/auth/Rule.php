@@ -80,7 +80,7 @@ class Rule extends Backend
                 validate(\app\admin\validate\AuthRule::class)->failException(true)->check($params);
                 $result = $this->model->save($params);
                 if ($result === false) {
-                    $this->error($this->model->getError());
+                    $this->error(__('Operation failed'));
                 }
                 Cache::delete('__menu__');
                 $this->success();
@@ -123,7 +123,7 @@ class Rule extends Backend
                 $ruleValidate->failException(true)->check($params);
                 $result = $row->data($params, true)->save();
                 if ($result === false) {
-                    $this->error($row->getError());
+                    $this->error(__('Operation failed'));
                 }
                 Cache::delete('__menu__');
                 $this->success();

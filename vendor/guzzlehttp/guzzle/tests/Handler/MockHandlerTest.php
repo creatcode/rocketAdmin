@@ -1,6 +1,6 @@
 <?php
 
-namespace GuzzleHttp\Test\Handler;
+namespace GuzzleHttp\Tests\Handler;
 
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\RequestException;
@@ -76,17 +76,22 @@ class MockHandlerTest extends TestCase
 
     public function testSinkFilename()
     {
-        $filename = \sys_get_temp_dir() . '/mock_test_' . \uniqid();
-        $res = new Response(200, [], 'TEST CONTENT');
-        $mock = new MockHandler([$res]);
-        $request = new Request('GET', '/');
-        $p = $mock($request, ['sink' => $filename]);
-        $p->wait();
+        $filename = \sys_get_temp_dir().'/mock_test_'.\uniqid();
 
-        self::assertFileExists($filename);
-        self::assertStringEqualsFile($filename, 'TEST CONTENT');
+        try {
+            $res = new Response(200, [], 'TEST CONTENT');
+            $mock = new MockHandler([$res]);
+            $request = new Request('GET', '/');
+            $p = $mock($request, ['sink' => $filename]);
+            $p->wait();
 
-        \unlink($filename);
+            self::assertFileExists($filename);
+            self::assertStringEqualsFile($filename, 'TEST CONTENT');
+        } finally {
+            if (\file_exists($filename)) {
+                \unlink($filename);
+            }
+        }
     }
 
     public function testSinkResource()
@@ -146,7 +151,7 @@ class MockHandlerTest extends TestCase
         $promise = $mock($request, [
             'on_headers' => static function () {
                 throw new \Exception('test');
-            }
+            },
         ]);
 
         $this->expectException(RequestException::class);

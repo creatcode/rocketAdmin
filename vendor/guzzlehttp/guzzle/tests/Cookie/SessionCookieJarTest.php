@@ -1,6 +1,6 @@
 <?php
 
-namespace GuzzleHttp\Tests\CookieJar;
+namespace GuzzleHttp\Tests\Cookie;
 
 use GuzzleHttp\Cookie\SessionCookieJar;
 use GuzzleHttp\Cookie\SetCookie;
@@ -20,6 +20,8 @@ class SessionCookieJarTest extends TestCase
         if (!isset($_SESSION)) {
             $_SESSION = [];
         }
+
+        unset($_SESSION[$this->sessionVar]);
     }
 
     public function testValidatesCookieSession()
@@ -28,6 +30,40 @@ class SessionCookieJarTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         new SessionCookieJar($this->sessionVar);
+    }
+
+    /**
+     * @dataProvider invalidCookieSessionProvider
+     *
+     * @param mixed $sessionData
+     */
+    public function testValidatesMalformedCookieSession($sessionData)
+    {
+        $_SESSION[$this->sessionVar] = $sessionData;
+
+        $this->expectException(\RuntimeException::class);
+        new SessionCookieJar($this->sessionVar);
+    }
+
+    public function testValidatesCookieSessionJsonEncoding(): void
+    {
+        $jar = new SessionCookieJar($this->sessionVar, true);
+        $jar->setCookie(new SetCookie([
+            'Name' => 'foo',
+            'Value' => "\x99",
+            'Domain' => 'foo.com',
+            'Expires' => \time() + 1000,
+        ]));
+
+        try {
+            $jar->save();
+            self::fail('Expected RuntimeException was not thrown');
+        } catch (\RuntimeException $e) {
+            self::assertSame('Unable to encode cookie data', $e->getMessage());
+        } finally {
+            $jar->clear();
+            unset($jar, $_SESSION[$this->sessionVar]);
+        }
     }
 
     public function testLoadsFromSession()
@@ -44,21 +80,21 @@ class SessionCookieJarTest extends TestCase
     {
         $jar = new SessionCookieJar($this->sessionVar, $testSaveSessionCookie);
         $jar->setCookie(new SetCookie([
-            'Name'    => 'foo',
-            'Value'   => 'bar',
-            'Domain'  => 'foo.com',
-            'Expires' => \time() + 1000
+            'Name' => 'foo',
+            'Value' => 'bar',
+            'Domain' => 'foo.com',
+            'Expires' => \time() + 1000,
         ]));
         $jar->setCookie(new SetCookie([
-            'Name'    => 'baz',
-            'Value'   => 'bar',
-            'Domain'  => 'foo.com',
-            'Expires' => \time() + 1000
+            'Name' => 'baz',
+            'Value' => 'bar',
+            'Domain' => 'foo.com',
+            'Expires' => \time() + 1000,
         ]));
         $jar->setCookie(new SetCookie([
-            'Name'    => 'boo',
-            'Value'   => 'bar',
-            'Domain'  => 'foo.com',
+            'Name' => 'boo',
+            'Value' => 'bar',
+            'Domain' => 'foo.com',
         ]));
 
         self::assertCount(3, $jar);
@@ -82,11 +118,63 @@ class SessionCookieJarTest extends TestCase
         unset($_SESSION[$this->sessionVar]);
     }
 
-    public function providerPersistsToSessionParameters()
+    public function testPersistsCookieWithoutDomain(): void
+    {
+        $jar = new SessionCookieJar($this->sessionVar);
+        $jar->setCookie(new SetCookie([
+            'Name' => 'foo',
+            'Value' => 'bar',
+            'Expires' => \time() + 1000,
+        ]));
+        $jar->save();
+
+        $reloaded = new SessionCookieJar($this->sessionVar);
+        $cookie = $reloaded->getCookieByName('foo');
+
+        self::assertInstanceOf(SetCookie::class, $cookie);
+        self::assertNull($cookie->getDomain());
+        self::assertFalse($cookie->getHostOnly());
+
+        unset($jar, $reloaded, $_SESSION[$this->sessionVar]);
+    }
+
+    public function testPersistsHostOnlyCookie(): void
+    {
+        $jar = new SessionCookieJar($this->sessionVar);
+        $jar->setCookie(new SetCookie([
+            'Name' => 'foo',
+            'Value' => 'bar',
+            'Domain' => 'example.com',
+            'HostOnly' => true,
+            'Expires' => \time() + 1000,
+        ]));
+        $jar->save();
+
+        $reloaded = new SessionCookieJar($this->sessionVar);
+        $cookie = $reloaded->getCookieByName('foo');
+
+        self::assertInstanceOf(SetCookie::class, $cookie);
+        self::assertTrue($cookie->getHostOnly());
+
+        unset($jar, $reloaded, $_SESSION[$this->sessionVar]);
+    }
+
+    public static function providerPersistsToSessionParameters()
     {
         return [
             [false],
-            [true]
+            [true],
+        ];
+    }
+
+    public static function invalidCookieSessionProvider(): array
+    {
+        return [
+            [[]],
+            [new \stdClass()],
+            ['[1]'],
+            ['[{"Name":"foo"}]'],
+            ['[{"HostOnly":"false"}]'],
         ];
     }
 }

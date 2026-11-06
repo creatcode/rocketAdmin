@@ -50,6 +50,26 @@ class PaymentService
     }
 
     /**
+     * 为旧版支付 SDK 适配 ThinkPHP 容器，避免引入 Swoole 依赖。
+     */
+    public static function configureSdk(array $config): void
+    {
+        $container = new class extends \think\Container {
+            public function set(string $name, $value): void
+            {
+                $this->bind($name, $value);
+            }
+
+            public function get($name)
+            {
+                return $this->make($name);
+            }
+        };
+        $container->instance(\Psr\Container\ContainerInterface::class, $container);
+        \Yansongda\Pay\Pay::config(array_merge($config, ['_force' => true]), $container);
+    }
+
+    /**
      * 动态注册支付渠道
      *
      * @param class-string<PaymentProviderInterface> $providerClass Provider 类名

@@ -10,7 +10,6 @@ use Exception;
 use think\facade\Cache;
 use think\facade\Config;
 use think\facade\Db;
-use think\facade\Env;
 
 /**
  * 插件管理
@@ -238,7 +237,7 @@ class Addon extends Backend
         $this->checkAddonName($name);
         //只有开启调试且为超级管理员才允许删除相关数据库
         $tables = [];
-        if ($droptables && Env::get("app_debug") && $this->auth->isSuperAdmin()) {
+        if ($droptables && env("app_debug") && $this->auth->isSuperAdmin()) {
             $tables = get_addon_tables($name);
         }
         try {

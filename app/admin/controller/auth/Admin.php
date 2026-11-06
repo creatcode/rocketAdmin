@@ -151,7 +151,7 @@ class Admin extends Backend
                     validate(\app\admin\validate\Admin::class)->scene('add')->failException(true)->check($params);
                     $result = $this->model->save($params);
                     if ($result === false) {
-                        $this->error($this->model->getError());
+                        $this->error(__('Operation failed'));
                     }
                     $group = $this->request->post("group/a");
 
@@ -218,7 +218,7 @@ class Admin extends Backend
                     }
                     $result = $row->save($params);
                     if ($result === false) {
-                        $this->error($row->getError());
+                        $this->error(__('Operation failed'));
                     }
 
                     // 先移除所有权限

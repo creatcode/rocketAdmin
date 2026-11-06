@@ -2,7 +2,7 @@
 
 namespace app\admin\controller\user;
 
-use app\admin\model\UserRule;
+use app\common\model\UserRule;
 use app\common\controller\Backend;
 use util\Tree;
 
@@ -15,7 +15,7 @@ class Rule extends Backend
 {
 
     /**
-     * @var \app\admin\model\UserRule
+     * @var \app\common\model\UserRule
      */
     protected $model = null;
     protected $rulelist = [];

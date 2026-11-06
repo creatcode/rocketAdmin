@@ -17,13 +17,15 @@ class User extends Model
     use \app\common\model\traits\UserIdentity;
 
 
+    // 表名
+    protected $name = 'user';
     // 开启自动写入时间戳字段
     protected $autoWriteTimestamp = 'int';
     // 定义时间戳字段名
     protected $createTime = 'createtime';
     protected $updateTime = 'updatetime';
 
-    // ORM 4 将 bigint 保留为字符串类型，自动时间字段需明确使用整数。
+    // PDO 会将 bigint 以字符串返回，自动时间字段需明确转换为整数。
     protected $type = ['createtime' => 'integer', 'updatetime' => 'integer'];
     // 追加属性
     protected $append = [
@@ -63,6 +65,77 @@ class User extends Model
     public function getGroupAttr($value, $data)
     {
         return UserGroup::find($data['group_id']);
+    }
+
+    /**
+     * 获取模型原始数据（后台变更日志使用）
+     */
+    public function getOriginData()
+    {
+        return $this->origin;
+    }
+
+    public function getGenderList()
+    {
+        return ['1' => __('Male'), '0' => __('Female')];
+    }
+
+    public function getStatusList()
+    {
+        return ['normal' => __('Normal'), 'hidden' => __('Hidden')];
+    }
+
+    public function getPrevtimeTextAttr($value, $data)
+    {
+        return $this->formatDateTimeAttr($value, $data['prevtime'] ?? null);
+    }
+
+    public function getLogintimeTextAttr($value, $data)
+    {
+        return $this->formatDateTimeAttr($value, $data['logintime'] ?? null);
+    }
+
+    public function getJointimeTextAttr($value, $data)
+    {
+        return $this->formatDateTimeAttr($value, $data['jointime'] ?? null);
+    }
+
+    protected function setPrevtimeAttr($value)
+    {
+        return $this->parseDateTimeAttr($value);
+    }
+
+    protected function setLogintimeAttr($value)
+    {
+        return $this->parseDateTimeAttr($value);
+    }
+
+    protected function setJointimeAttr($value)
+    {
+        return $this->parseDateTimeAttr($value);
+    }
+
+    /**
+     * 格式化日期时间获取器
+     * @param mixed $value
+     * @param mixed $fallback
+     * @return string
+     */
+    protected function formatDateTimeAttr($value, $fallback)
+    {
+        $value = $value ?: $fallback;
+
+        return is_numeric($value) ? date('Y-m-d H:i:s', $value) : $value;
+    }
+
+    /**
+     * 解析日期时间修改器
+     * @param mixed $value
+     * @return int|mixed
+     */
+    protected function parseDateTimeAttr($value)
+    {
+        return $value && !is_numeric($value) ? strtotime($value) : $value;
     }
 
     /**

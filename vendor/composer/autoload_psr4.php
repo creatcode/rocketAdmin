@@ -17,6 +17,8 @@ return array(
     'app\\' => array($baseDir . '/app'),
     'addons\\' => array($baseDir . '/addons'),
     'ZipStream\\' => array($vendorDir . '/maennchen/zipstream-php/src'),
+    'Yansongda\\Supports\\' => array($vendorDir . '/yansongda/supports/src'),
+    'Yansongda\\Pay\\' => array($vendorDir . '/yansongda/pay/src'),
     'Tx\\' => array($vendorDir . '/txthinking/mailer/src'),
     'Symfony\\Polyfill\\Php80\\' => array($vendorDir . '/symfony/polyfill-php80'),
     'Symfony\\Polyfill\\Php73\\' => array($vendorDir . '/symfony/polyfill-php73'),

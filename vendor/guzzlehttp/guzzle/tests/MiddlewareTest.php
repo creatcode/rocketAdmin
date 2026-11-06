@@ -31,12 +31,12 @@ class MiddlewareTest extends TestCase
                 static function (RequestInterface $request) {
                     return new Response(200, [
                         'Set-Cookie' => (string) new SetCookie([
-                            'Name'   => 'name',
-                            'Value'  => 'value',
-                            'Domain' => 'foo.com'
-                        ])
+                            'Name' => 'name',
+                            'Value' => 'value',
+                            'Domain' => 'foo.com',
+                        ]),
                     ]);
-                }
+                },
             ]
         );
         $f = $m($h);
@@ -50,7 +50,7 @@ class MiddlewareTest extends TestCase
         $h = new MockHandler([new Response(400, [], str_repeat('a', 1000))]);
         $f = $m($h);
         $p = $f(new Request('GET', 'http://foo.com'), ['http_errors' => true]);
-        self::assertTrue(P\Is::pending($p));
+        self::assertTrue(P\State::isPending($p));
 
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage(\sprintf("Client error: `GET http://foo.com` resulted in a `400 Bad Request` response:\n%s (truncated...)", str_repeat('a', 120)));
@@ -63,7 +63,7 @@ class MiddlewareTest extends TestCase
         $h = new MockHandler([new Response(404, [], str_repeat('b', 1000))]);
         $f = $m($h);
         $p = $f(new Request('GET', 'http://foo.com'), ['http_errors' => true]);
-        self::assertTrue(P\Is::pending($p));
+        self::assertTrue(P\State::isPending($p));
 
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage(\sprintf("Client error: `GET http://foo.com` resulted in a `404 Not Found` response:\n%s (truncated...)", str_repeat('b', 200)));
@@ -76,7 +76,7 @@ class MiddlewareTest extends TestCase
         $h = new MockHandler([new Response(500, [], 'Oh no!')]);
         $f = $m($h);
         $p = $f(new Request('GET', 'http://foo.com'), ['http_errors' => true]);
-        self::assertTrue(P\Is::pending($p));
+        self::assertTrue(P\State::isPending($p));
 
         $this->expectException(ServerException::class);
         $this->expectExceptionMessage("GET http://foo.com` resulted in a `500 Internal Server Error` response:\nOh no!");
@@ -115,11 +115,11 @@ class MiddlewareTest extends TestCase
         Middleware::history($nullContainer);
     }
 
-    public function getHistoryUseCases()
+    public static function getHistoryUseCases()
     {
         return [
             [[]],                // 1. Container is an array
-            [new \ArrayObject()] // 2. Container is an ArrayObject
+            [new \ArrayObject()], // 2. Container is an ArrayObject
         ];
     }
 
@@ -142,6 +142,7 @@ class MiddlewareTest extends TestCase
         $m = static function ($handler) use (&$calls) {
             return static function ($request, $options) use ($handler, &$calls) {
                 $calls[] = '2';
+
                 return $handler($request, $options);
             };
         };
@@ -171,8 +172,9 @@ class MiddlewareTest extends TestCase
         $h = new MockHandler([
             static function (RequestInterface $request, array $options) {
                 self::assertSame('foo', $request->getHeaderLine('Bar'));
+
                 return new Response(200);
-            }
+            },
         ]);
         $stack = new HandlerStack($h);
         $stack->push(Middleware::mapRequest(static function (RequestInterface $request) {

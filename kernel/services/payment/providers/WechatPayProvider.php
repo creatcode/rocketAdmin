@@ -46,6 +46,7 @@ class WechatPayProvider implements PaymentProviderInterface
     public function pay(string $scene, array $order)
     {
         $this->assertScene($scene);
+        $scene = $scene === 'h5' ? 'wap' : $scene;
 
         return $this->normalize(Pay::wechat()->{$scene}($this->withAccount($order)));
     }
@@ -120,7 +121,7 @@ class WechatPayProvider implements PaymentProviderInterface
      */
     protected function boot(): void
     {
-        Pay::config(array_merge($this->config, ['_force' => true]));
+        \kernel\services\payment\PaymentService::configureSdk($this->config);
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace GuzzleHttp\Promise\Tests;
 
 use GuzzleHttp\Promise as P;
@@ -10,23 +12,23 @@ use PHPUnit\Framework\TestCase;
 
 class EachTest extends TestCase
 {
-    public function testCallsEachLimit()
+    public function testCallsEachLimit(): void
     {
         $p = new Promise();
-        $aggregate = P\Each::ofLimit($p, 2);
+        $aggregate = P\Each::ofLimit([$p], 2);
 
         $p->resolve('a');
         P\Utils::queue()->run();
-        $this->assertTrue(P\Is::fulfilled($aggregate));
+        $this->assertTrue(P\State::isFulfilled($aggregate));
     }
 
-    public function testEachLimitAllRejectsOnFailure()
+    public function testEachLimitAllRejectsOnFailure(): void
     {
         $p = [new FulfilledPromise('a'), new RejectedPromise('b')];
         $aggregate = P\Each::ofLimitAll($p, 2);
 
         P\Utils::queue()->run();
-        $this->assertTrue(P\Is::rejected($aggregate));
+        $this->assertTrue(P\State::isRejected($aggregate));
 
         $result = P\Utils::inspect($aggregate);
         $this->assertSame('b', $result['reason']);

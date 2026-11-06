@@ -63,7 +63,7 @@ class User extends Backend
      */
     public function add()
     {
-        $groups = \app\admin\model\UserGroup::where('status', 'normal')->column('name', 'id');
+        $groups = \app\common\model\UserGroup::where('status', 'normal')->column('name', 'id');
         if ($this->request->isPost()) {
             $this->token();
             $post = $this->request->post();
@@ -95,7 +95,7 @@ class User extends Backend
             if (!$row) {
                 $this->error(__('No Results were found'));
             }
-            $this->view->assign('groupList', build_select('row[group_id]', \app\admin\model\UserGroup::column('name', 'id'), $row['group_id'], ['class' => 'form-control selectpicker']));
+            $this->view->assign('groupList', build_select('row[group_id]', \app\common\model\UserGroup::column('name', 'id'), $row['group_id'], ['class' => 'form-control selectpicker']));
             return parent::edit($ids);
         }
 

@@ -4,12 +4,17 @@ namespace GuzzleHttp\Tests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TooManyRedirectsException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\FnStream;
+use GuzzleHttp\Psr7\NoSeekStream;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\Utils;
 use GuzzleHttp\RedirectMiddleware;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
@@ -47,36 +52,57 @@ class RedirectMiddlewareTest extends TestCase
     {
         $mock = new MockHandler([
             new Response(302, ['Location' => 'http://test.com']),
-            new Response(200)
+            new Response(200),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
         $handler = $stack->resolve();
         $request = new Request('GET', 'http://example.com?a=b');
         $promise = $handler($request, [
-            'allow_redirects' => ['max' => 2]
+            'allow_redirects' => ['max' => 2],
         ]);
         $response = $promise->wait();
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('http://test.com', (string)$mock->getLastRequest()->getUri());
+        self::assertSame('http://test.com', (string) $mock->getLastRequest()->getUri());
     }
 
     public function testRedirectsWithRelativeUri()
     {
         $mock = new MockHandler([
             new Response(302, ['Location' => '/foo']),
-            new Response(200)
+            new Response(200),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
         $handler = $stack->resolve();
         $request = new Request('GET', 'http://example.com?a=b');
         $promise = $handler($request, [
-            'allow_redirects' => ['max' => 2]
+            'allow_redirects' => ['max' => 2],
         ]);
         $response = $promise->wait();
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('http://example.com/foo', (string)$mock->getLastRequest()->getUri());
+        self::assertSame('http://example.com/foo', (string) $mock->getLastRequest()->getUri());
+    }
+
+    public function testRelativeRedirectPreservesCustomRequestAndUriImplementations()
+    {
+        $mock = new MockHandler([
+            new Response(302, ['Location' => '/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new RedirectTestRequest('GET', new RedirectTestUri('http://example.com?a=b'));
+        $response = $handler($request, [
+            'allow_redirects' => ['max' => 2],
+        ])->wait();
+
+        $lastRequest = $mock->getLastRequest();
+        self::assertSame(200, $response->getStatusCode());
+        self::assertInstanceOf(RedirectTestRequest::class, $lastRequest);
+        self::assertInstanceOf(RedirectTestUri::class, $lastRequest->getUri());
+        self::assertSame('http://example.com/foo', (string) $lastRequest->getUri());
     }
 
     public function testLimitsToMaxRedirects()
@@ -85,7 +111,7 @@ class RedirectMiddlewareTest extends TestCase
             new Response(301, ['Location' => 'http://test.com']),
             new Response(302, ['Location' => 'http://test.com']),
             new Response(303, ['Location' => 'http://test.com']),
-            new Response(304, ['Location' => 'http://test.com'])
+            new Response(304, ['Location' => 'http://test.com']),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
@@ -102,7 +128,7 @@ class RedirectMiddlewareTest extends TestCase
     {
         $mock = new MockHandler([
             new Response(301, ['Location' => 'http://test.com']),
-            new Response(302, ['Location' => 'http://test.com'])
+            new Response(302, ['Location' => 'http://test.com']),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
@@ -113,7 +139,7 @@ class RedirectMiddlewareTest extends TestCase
         try {
             $promise->wait();
             self::fail();
-        } catch (\GuzzleHttp\Exception\TooManyRedirectsException $e) {
+        } catch (TooManyRedirectsException $e) {
             self::assertSame(302, $e->getResponse()->getStatusCode());
         }
     }
@@ -121,7 +147,7 @@ class RedirectMiddlewareTest extends TestCase
     public function testEnsuresProtocolIsValid()
     {
         $mock = new MockHandler([
-            new Response(301, ['Location' => 'ftp://test.com'])
+            new Response(301, ['Location' => 'ftp://test.com']),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
@@ -137,18 +163,18 @@ class RedirectMiddlewareTest extends TestCase
     {
         $mock = new MockHandler([
             new Response(302, ['Location' => 'http://test.com']),
-            new Response(200)
+            new Response(200),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
         $handler = $stack->resolve();
-        $request = new Request('GET', 'http://example.com?a=b');
+        $request = new Request('GET', 'http://example.com/path?a=b#secret');
         $promise = $handler($request, [
-            'allow_redirects' => ['max' => 2, 'referer' => true]
+            'allow_redirects' => ['max' => 2, 'referer' => true],
         ]);
         $promise->wait();
         self::assertSame(
-            'http://example.com?a=b',
+            'http://example.com/path?a=b',
             $mock->getLastRequest()->getHeaderLine('Referer')
         );
     }
@@ -157,14 +183,14 @@ class RedirectMiddlewareTest extends TestCase
     {
         $mock = new MockHandler([
             new Response(302, ['Location' => 'http://test.com']),
-            new Response(200)
+            new Response(200),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
         $handler = $stack->resolve();
         $request = new Request('GET', 'http://foo:bar@example.com?a=b');
         $promise = $handler($request, [
-            'allow_redirects' => ['max' => 2, 'referer' => true]
+            'allow_redirects' => ['max' => 2, 'referer' => true],
         ]);
         $promise->wait();
         self::assertSame(
@@ -179,7 +205,7 @@ class RedirectMiddlewareTest extends TestCase
             new Response(302, ['Location' => 'http://example.com']),
             new Response(302, ['Location' => 'http://example.com/foo']),
             new Response(302, ['Location' => 'http://example.com/bar']),
-            new Response(200)
+            new Response(200),
         ]);
 
         $stack = new HandlerStack($mock);
@@ -187,7 +213,7 @@ class RedirectMiddlewareTest extends TestCase
         $handler = $stack->resolve();
         $request = new Request('GET', 'http://example.com?a=b');
         $promise = $handler($request, [
-            'allow_redirects' => ['track_redirects' => true]
+            'allow_redirects' => ['track_redirects' => true],
         ]);
         $response = $promise->wait(true);
         self::assertSame(
@@ -207,7 +233,7 @@ class RedirectMiddlewareTest extends TestCase
             new Response(302, ['Location' => 'http://example.com/foo']),
             new Response(301, ['Location' => 'http://example.com/bar']),
             new Response(302, ['Location' => 'http://example.com/baz']),
-            new Response(200)
+            new Response(200),
         ]);
 
         $stack = new HandlerStack($mock);
@@ -215,7 +241,7 @@ class RedirectMiddlewareTest extends TestCase
         $handler = $stack->resolve();
         $request = new Request('GET', 'http://example.com?a=b');
         $promise = $handler($request, [
-            'allow_redirects' => ['track_redirects' => true]
+            'allow_redirects' => ['track_redirects' => true],
         ]);
         $response = $promise->wait(true);
         self::assertSame(
@@ -233,14 +259,14 @@ class RedirectMiddlewareTest extends TestCase
     {
         $mock = new MockHandler([
             new Response(302, ['Location' => 'http://test.com']),
-            new Response(200)
+            new Response(200),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
         $handler = $stack->resolve();
         $request = new Request('GET', 'https://example.com?a=b');
         $promise = $handler($request, [
-            'allow_redirects' => ['max' => 2, 'referer' => true]
+            'allow_redirects' => ['max' => 2, 'referer' => true],
         ]);
         $promise->wait();
         self::assertFalse($mock->getLastRequest()->hasHeader('Referer'));
@@ -250,7 +276,7 @@ class RedirectMiddlewareTest extends TestCase
     {
         $mock = new MockHandler([
             new Response(302, ['Location' => 'http://test.com']),
-            new Response(200)
+            new Response(200),
         ]);
         $stack = new HandlerStack($mock);
         $stack->push(Middleware::redirect());
@@ -265,16 +291,45 @@ class RedirectMiddlewareTest extends TestCase
                     self::assertSame('GET', $request->getMethod());
                     self::assertSame('http://test.com', (string) $uri);
                     $call = true;
-                }
-            ]
+                },
+            ],
         ]);
         $promise->wait();
         self::assertTrue($call);
     }
 
+    public function testDoesNotReapplyDelayOnRedirect()
+    {
+        $optionsSeen = [];
+        $mock = new MockHandler([
+            static function (RequestInterface $request, $options) use (&$optionsSeen) {
+                $optionsSeen[] = $options;
+
+                return new Response(302, ['Location' => 'http://test.com']);
+            },
+            static function (RequestInterface $request, $options) use (&$optionsSeen) {
+                $optionsSeen[] = $options;
+
+                return new Response(200);
+            },
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+
+        $response = $handler(new Request('GET', 'http://example.com'), [
+            'delay' => 1,
+            'allow_redirects' => true,
+        ])->wait();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertCount(2, $optionsSeen);
+        self::assertSame(1, $optionsSeen[0]['delay']);
+        self::assertArrayNotHasKey('delay', $optionsSeen[1]);
+    }
+
     /**
      * @testWith ["digest"]
-     *           ["ntlm"]
      */
     public function testRemoveCurlAuthorizationOptionsOnRedirectCrossHost($auth)
     {
@@ -293,8 +348,9 @@ class RedirectMiddlewareTest extends TestCase
                     isset($options['curl'][\CURLOPT_USERPWD]),
                     'curl options still contain CURLOPT_USERPWD entry'
                 );
+
                 return new Response(200);
-            }
+            },
         ]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
@@ -303,7 +359,6 @@ class RedirectMiddlewareTest extends TestCase
 
     /**
      * @testWith ["digest"]
-     *           ["ntlm"]
      */
     public function testRemoveCurlAuthorizationOptionsOnRedirectCrossPort($auth)
     {
@@ -322,8 +377,9 @@ class RedirectMiddlewareTest extends TestCase
                     isset($options['curl'][\CURLOPT_USERPWD]),
                     'curl options still contain CURLOPT_USERPWD entry'
                 );
+
                 return new Response(200);
-            }
+            },
         ]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
@@ -332,7 +388,6 @@ class RedirectMiddlewareTest extends TestCase
 
     /**
      * @testWith ["digest"]
-     *           ["ntlm"]
      */
     public function testRemoveCurlAuthorizationOptionsOnRedirectCrossScheme($auth)
     {
@@ -351,8 +406,9 @@ class RedirectMiddlewareTest extends TestCase
                     isset($options['curl'][\CURLOPT_USERPWD]),
                     'curl options still contain CURLOPT_USERPWD entry'
                 );
+
                 return new Response(200);
-            }
+            },
         ]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
@@ -361,7 +417,6 @@ class RedirectMiddlewareTest extends TestCase
 
     /**
      * @testWith ["digest"]
-     *           ["ntlm"]
      */
     public function testRemoveCurlAuthorizationOptionsOnRedirectCrossSchemeSamePort($auth)
     {
@@ -380,8 +435,9 @@ class RedirectMiddlewareTest extends TestCase
                     isset($options['curl'][\CURLOPT_USERPWD]),
                     'curl options still contain CURLOPT_USERPWD entry'
                 );
+
                 return new Response(200);
-            }
+            },
         ]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
@@ -390,7 +446,6 @@ class RedirectMiddlewareTest extends TestCase
 
     /**
      * @testWith ["digest"]
-     *           ["ntlm"]
      */
     public function testNotRemoveCurlAuthorizationOptionsOnRedirect($auth)
     {
@@ -409,15 +464,16 @@ class RedirectMiddlewareTest extends TestCase
                     isset($options['curl'][\CURLOPT_USERPWD]),
                     'curl options does not contain expected CURLOPT_USERPWD entry'
                 );
+
                 return new Response(200);
-            }
+            },
         ]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
         $client->get('http://example.com?a=b', ['auth' => ['testuser', 'testpass', $auth]]);
     }
 
-    public function crossOriginRedirectProvider()
+    public static function crossOriginRedirectProvider()
     {
         return [
             ['http://example.com/123', 'http://example.com/', false],
@@ -451,7 +507,7 @@ class RedirectMiddlewareTest extends TestCase
                 self::assertSame(!$isCrossOrigin, $request->hasHeader('Cookie'));
 
                 return new Response(200);
-            }
+            },
         ]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
@@ -464,12 +520,274 @@ class RedirectMiddlewareTest extends TestCase
             new Response(302, ['Location' => 'http://example.com/2']),
             static function (RequestInterface $request) {
                 self::assertTrue($request->hasHeader('Authorization'));
+
                 return new Response(200);
-            }
+            },
         ]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
         $client->get('http://example.com?a=b', ['auth' => ['testuser', 'testpass']]);
+    }
+
+    /**
+     * @dataProvider queryRedirectStatusProvider
+     */
+    public function testPreservesQueryMethodAndBodyOnRedirect($statusCode)
+    {
+        $mock = new MockHandler([
+            new Response($statusCode, ['Location' => 'http://example.com/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('QUERY', 'http://example.com', [
+            'Content-Length' => '11',
+            'Content-Type' => 'application/json',
+        ], '{"q":"foo"}');
+
+        $response = $handler($request, ['allow_redirects' => ['max' => 2]])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('QUERY', $lastRequest->getMethod());
+        self::assertSame('http://example.com/foo', (string) $lastRequest->getUri());
+        self::assertSame('{"q":"foo"}', (string) $lastRequest->getBody());
+        self::assertSame('11', $lastRequest->getHeaderLine('Content-Length'));
+        self::assertSame('application/json', $lastRequest->getHeaderLine('Content-Type'));
+    }
+
+    public static function queryRedirectStatusProvider()
+    {
+        return [
+            '301' => [301],
+            '302' => [302],
+            '307' => [307],
+            '308' => [308],
+        ];
+    }
+
+    /**
+     * @dataProvider queryMovedRedirectStatusProvider
+     */
+    public function testPreservesQueryMethodAndBodyOnStrictRedirect($statusCode)
+    {
+        $mock = new MockHandler([
+            new Response($statusCode, ['Location' => 'http://example.com/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('QUERY', 'http://example.com', [], 'a=b');
+
+        $response = $handler($request, [
+            'allow_redirects' => ['max' => 2, 'strict' => true],
+        ])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('QUERY', $lastRequest->getMethod());
+        self::assertSame('a=b', (string) $lastRequest->getBody());
+    }
+
+    public static function queryMovedRedirectStatusProvider()
+    {
+        return [
+            '301' => [301],
+            '302' => [302],
+        ];
+    }
+
+    public function testDowngradesQueryToBodilessGetOnSeeOther()
+    {
+        $mock = new MockHandler([
+            new Response(303, ['Location' => 'http://example.com/stored-query/42']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('QUERY', 'http://example.com', [
+            'Content-Type' => 'application/json',
+        ], '{"q":"foo"}');
+
+        $response = $handler($request, ['allow_redirects' => ['max' => 2]])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('GET', $lastRequest->getMethod());
+        self::assertSame('http://example.com/stored-query/42', (string) $lastRequest->getUri());
+        self::assertSame('', (string) $lastRequest->getBody());
+    }
+
+    public function testDowngradesQueryToBodilessGetOnSeeOtherWithStrictRedirects()
+    {
+        $mock = new MockHandler([
+            new Response(303, ['Location' => 'http://example.com/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('QUERY', 'http://example.com', [], 'a=b');
+
+        $response = $handler($request, [
+            'allow_redirects' => ['max' => 2, 'strict' => true],
+        ])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('GET', $lastRequest->getMethod());
+        self::assertSame('', (string) $lastRequest->getBody());
+    }
+
+    public function testDowngradesQueryToBodilessGetOnMultipleChoices()
+    {
+        $mock = new MockHandler([
+            new Response(300, ['Location' => 'http://example.com/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('QUERY', 'http://example.com', [], 'a=b');
+
+        $response = $handler($request, ['allow_redirects' => ['max' => 2]])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('GET', $lastRequest->getMethod());
+        self::assertSame('', (string) $lastRequest->getBody());
+    }
+
+    public function testDowngradesPostToBodilessGetOnNonStrictRedirect()
+    {
+        $mock = new MockHandler([
+            new Response(302, ['Location' => 'http://example.com/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('POST', 'http://example.com', [], 'a=b');
+
+        $response = $handler($request, ['allow_redirects' => ['max' => 2]])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('GET', $lastRequest->getMethod());
+        self::assertSame('', (string) $lastRequest->getBody());
+    }
+
+    /**
+     * @dataProvider discardedBodyFramingHeaderProvider
+     */
+    public function testBodyDiscardingRedirectRemovesFramingHeader($headerName, $headerValue)
+    {
+        $mock = new MockHandler([
+            new Response(303, ['Location' => 'http://example.com/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('POST', 'http://example.com', [$headerName => $headerValue], 'a=b');
+
+        $response = $handler($request, ['allow_redirects' => ['max' => 2]])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('GET', $lastRequest->getMethod());
+        self::assertSame('', (string) $lastRequest->getBody());
+        self::assertFalse($lastRequest->hasHeader('Content-Length'));
+        self::assertFalse($lastRequest->hasHeader('Transfer-Encoding'));
+    }
+
+    public static function discardedBodyFramingHeaderProvider()
+    {
+        return [
+            'Content-Length' => ['Content-Length', '3'],
+            'Transfer-Encoding' => ['Transfer-Encoding', 'chunked'],
+        ];
+    }
+
+    public function testCrossOriginQueryRedirectStripsCredentialsButPreservesBody()
+    {
+        $mock = new MockHandler([
+            new Response(302, ['Location' => 'https://other.example/search']),
+            static function (RequestInterface $request) {
+                self::assertSame('QUERY', $request->getMethod());
+                self::assertSame('secret=query', (string) $request->getBody());
+                self::assertFalse($request->hasHeader('Authorization'));
+                self::assertFalse($request->hasHeader('Cookie'));
+
+                return new Response(200);
+            },
+        ]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handler]);
+
+        $client->send(new Request('QUERY', 'https://example.com/search', [
+            'Authorization' => 'Bearer token',
+            'Cookie' => 'session=abc',
+        ], 'secret=query'));
+    }
+
+    public function testRedirectRequestBodyRewindFailureThrowsRequestException()
+    {
+        $previous = new \RuntimeException('cannot rewind');
+        $body = FnStream::decorate(Utils::streamFor('data'), [
+            'tell' => static function (): int {
+                return 4;
+            },
+            'rewind' => static function () use ($previous): void {
+                throw $previous;
+            },
+        ]);
+        $mock = new MockHandler([
+            new Response(307, ['Location' => 'http://example.com/redirected']),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $request = new Request('POST', 'http://example.com', [], $body);
+
+        try {
+            $handler($request, ['allow_redirects' => ['max' => 2]])->wait();
+
+            self::fail('Expected RequestException');
+        } catch (RequestException $e) {
+            self::assertNotInstanceOf(BadResponseException::class, $e);
+            self::assertSame($request, $e->getRequest());
+            self::assertSame(307, $e->getResponse()->getStatusCode());
+            self::assertSame(
+                'Redirect failed because the request body could not be rewound: cannot rewind',
+                $e->getMessage()
+            );
+            self::assertSame($previous, $e->getPrevious());
+        }
+    }
+
+    public function testNonSeekableBodyIsNotRewoundWhenRedirectDiscardsBody()
+    {
+        $mock = new MockHandler([
+            new Response(303, ['Location' => 'http://example.com/foo']),
+            new Response(200),
+        ]);
+        $stack = new HandlerStack($mock);
+        $stack->push(Middleware::redirect());
+        $handler = $stack->resolve();
+        $body = new NoSeekStream(Utils::streamFor('a=b'));
+        $body->getContents();
+        $request = new Request('POST', 'http://example.com', [], $body);
+
+        $response = $handler($request, ['allow_redirects' => ['max' => 2]])->wait();
+        $lastRequest = $mock->getLastRequest();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('GET', $lastRequest->getMethod());
+        self::assertSame('', (string) $lastRequest->getBody());
     }
 
     /**
@@ -504,7 +822,7 @@ class RedirectMiddlewareTest extends TestCase
     /**
      * @return array
      */
-    public function modifyRequestFollowRequyestMethodAndBodyProvider()
+    public static function modifyRequestFollowRequyestMethodAndBodyProvider()
     {
         return [
             'DELETE' => [
@@ -537,4 +855,12 @@ class RedirectMiddlewareTest extends TestCase
             ],
         ];
     }
+}
+
+final class RedirectTestRequest extends Request
+{
+}
+
+final class RedirectTestUri extends Uri
+{
 }

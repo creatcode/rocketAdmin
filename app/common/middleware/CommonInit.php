@@ -7,7 +7,6 @@ namespace app\common\middleware;
 use Closure;
 use think\Request;
 use think\Response;
-use think\facade\Env;
 use think\facade\Config;
 
 class CommonInit
@@ -57,7 +56,7 @@ class CommonInit
         // 设置替换字符串
         $url = ltrim(dirname(app()->request->root()), DIRECTORY_SEPARATOR);
         // 如果未设置__CDN__则自动匹配得出
-        $tpl_replace_string = Config::get('view.tpl_replace_string');
+        $tpl_replace_string = Config::get('view.tpl_replace_string') ?: [];
         if (!Config::get('view.tpl_replace_string.__CDN__')) {
             $tpl_replace_string['__CDN__'] = $url;
         }
@@ -69,6 +68,10 @@ class CommonInit
         if (!Config::get('view.tpl_replace_string.__ROOT__')) {
             $tpl_replace_string['__ROOT__'] = preg_replace("/\/public\/$/", '', $url . '/');
         }
+        // 如果未设置__STATIC__则自动匹配得出（插件模板常以__STATIC__引用assets）
+        if (!Config::get('view.tpl_replace_string.__STATIC__')) {
+            $tpl_replace_string['__STATIC__'] = rtrim($url, '/') . '/assets';
+        }
         Config::set(['tpl_replace_string' => $tpl_replace_string], 'view');
         if (!Config::get('site.cdnurl')) {
             Config::set(['cdnurl' => $url], 'site');
@@ -77,10 +80,6 @@ class CommonInit
         if (!Config::get('upload.cdnurl')) {
             Config::set(['cdnurl' => $url], 'upload');
         }
-        // Form别名
-        if (!class_exists('Form')) {
-            class_alias('util\\Form', 'Form');
-        }
     }
 
     /**
@@ -88,7 +87,7 @@ class CommonInit
      */
     private function initDebugEnv()
     {
-        if (Env::get('APP_DEBUG')) {
+        if (env('APP_DEBUG')) {
             // 如果是调试模式将version置为当前的时间戳可避免缓存
             Config::set(['version' => time()], 'site');
             //如果是调试模式将关闭视图缓存

@@ -54,7 +54,6 @@ class Ajax extends Backend
             return jsonp(['errmsg' => '参数错误'], 200, [], ['json_encode_param' => JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE]);
         }
 
-        $controllername = input("controllername");
         $className = $this->app->parseClass('controller', $controllername);
 
         //存在对应的类才加载

@@ -3,7 +3,7 @@
 namespace app\admin\controller;
 
 use app\admin\model\Admin;
-use app\admin\model\User;
+use app\common\model\User;
 use app\common\controller\Backend;
 use app\common\model\Attachment;
 use Carbon\Carbon;

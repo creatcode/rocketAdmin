@@ -109,7 +109,7 @@ class Config extends Backend
                     }
                     $this->success();
                 } else {
-                    $this->error($this->model->getError());
+                    $this->error(__('Operation failed'));
                 }
             }
             $this->error(__('Parameter %s can not be empty', ''));

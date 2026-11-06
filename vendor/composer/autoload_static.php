@@ -13,11 +13,11 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '35fab96057f1bf5e7aba31a8a6d5fdde' => __DIR__ . '/..' . '/topthink/think-orm/stubs/load_stubs.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
-        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         '0d59ee240a4cd96ddbb4ff164fccea4d' => __DIR__ . '/..' . '/symfony/polyfill-php73/bootstrap.php',
         'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
+        '6b998e7ad3182c0d21d23780badfa07b' => __DIR__ . '/..' . '/yansongda/supports/src/Functions.php',
         '088fd59a32edb8c3f40e422a278e15a9' => __DIR__ . '/..' . '/creatcode/easyaddons/src/helper.php',
         'dc1275c308c5b416beb314b6317daca2' => __DIR__ . '/..' . '/overtrue/pinyin/src/const.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
@@ -25,6 +25,7 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
         'cc56288302d9df745d97c934d6a6e5f0' => __DIR__ . '/..' . '/topthink/think-queue/src/common.php',
         '313a9b01f294d730dfc8ff43b9e56416' => __DIR__ . '/..' . '/w7corp/easywechat/src/Kernel/Support/Helpers.php',
         '8cfe2b61cc956a1edbaf214308e8c9a1' => __DIR__ . '/..' . '/w7corp/easywechat/src/Kernel/Helpers.php',
+        '8c783b3a3de2f6d9177022b5ccdcc841' => __DIR__ . '/..' . '/yansongda/pay/src/Functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -53,6 +54,11 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
         'Z' =>
         array (
             'ZipStream\\' => 10,
+        ),
+        'Y' =>
+        array (
+            'Yansongda\\Supports\\' => 19,
+            'Yansongda\\Pay\\' => 14,
         ),
         'T' =>
         array (
@@ -177,6 +183,14 @@ class ComposerStaticInit9d5433145098cfa6274639d53a3845b4
         'ZipStream\\' =>
         array (
             0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
+        ),
+        'Yansongda\\Supports\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/yansongda/supports/src',
+        ),
+        'Yansongda\\Pay\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/yansongda/pay/src',
         ),
         'Tx\\' =>
         array (

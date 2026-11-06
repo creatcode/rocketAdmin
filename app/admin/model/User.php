@@ -5,34 +5,22 @@ namespace app\admin\model;
 use app\common\library\Token;
 use app\common\model\MoneyLog;
 use app\common\model\ScoreLog;
-use think\Model;
+use app\common\model\User as UserModel;
 use util\Random;
 
-class User extends Model
+/**
+ * 后台会员模型
+ *
+ * 共用 common 会员模型的表定义与获取器，仅保留后台写入钩子和列表追加字段。
+ */
+class User extends UserModel
 {
-    use \app\common\model\traits\UserIdentity;
-
-    // 表名
-    protected $name = 'user';
-    // 自动写入时间戳字段
-    protected $autoWriteTimestamp = 'int';
-    // 定义时间戳字段名
-    protected $createTime = 'createtime';
-    protected $updateTime = 'updatetime';
-
-    // ORM 4 将 bigint 保留为字符串类型，自动时间字段需明确使用整数。
-    protected $type = ['createtime' => 'integer', 'updatetime' => 'integer'];
     // 追加属性
     protected $append = [
         'prevtime_text',
         'logintime_text',
         'jointime_text',
     ];
-
-    public function getOriginData()
-    {
-        return $this->origin;
-    }
 
     /**
      * 新增会员使用与登录校验一致的加盐密码格式。
@@ -86,71 +74,22 @@ class User extends Model
         }
     }
 
-    public function getGenderList()
+    // 编辑表单保留存储原值，避免将默认头像数据写回数据库。
+    public function getAvatarAttr($value, $data)
     {
-        return ['1' => __('Male'), '0' => __('Female')];
-    }
-
-    public function getStatusList()
-    {
-        return ['normal' => __('Normal'), 'hidden' => __('Hidden')];
-    }
-
-    public function getPrevtimeTextAttr($value, $data)
-    {
-        return $this->formatDateTimeAttr($value, $data['prevtime'] ?? null);
-    }
-
-    public function getLogintimeTextAttr($value, $data)
-    {
-        return $this->formatDateTimeAttr($value, $data['logintime'] ?? null);
-    }
-
-    public function getJointimeTextAttr($value, $data)
-    {
-        return $this->formatDateTimeAttr($value, $data['jointime'] ?? null);
-    }
-
-    protected function setPrevtimeAttr($value)
-    {
-        return $this->parseDateTimeAttr($value);
-    }
-
-    protected function setLogintimeAttr($value)
-    {
-        return $this->parseDateTimeAttr($value);
-    }
-
-    protected function setJointimeAttr($value)
-    {
-        return $this->parseDateTimeAttr($value);
-    }
-
-    /**
-     * 格式化日期时间获取器
-     * @param mixed $value
-     * @param mixed $fallback
-     * @return string
-     */
-    protected function formatDateTimeAttr($value, $fallback)
-    {
-        $value = $value ?: $fallback;
-
-        return is_numeric($value) ? date('Y-m-d H:i:s', $value) : $value;
-    }
-
-    /**
-     * 解析日期时间修改器
-     * @param mixed $value
-     * @return int|mixed
-     */
-    protected function parseDateTimeAttr($value)
-    {
-        return $value && !is_numeric($value) ? strtotime($value) : $value;
+        return $value;
     }
 
     public function group()
     {
-        return $this->belongsTo('UserGroup', 'group_id', 'id')->joinType('LEFT');
+        return $this->belongsTo(\app\common\model\UserGroup::class, 'group_id', 'id')->joinType('LEFT');
+    }
+
+    /**
+     * 后台沿用原始字符串，避免共享获取器改变列表输出结构。
+     */
+    public function getVerificationAttr($value, $data)
+    {
+        return $value;
     }
 }

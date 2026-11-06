@@ -27,10 +27,9 @@
     </style>
 </head>
 <body>
-{php}$codeText=$code == 1 ? 'success' : ($code == 0 ? 'error' : 'info');{/php}
-<div class="system-message {$codeText}">
+<div class="system-message {$code == 1 ? 'success' : ($code == 0 ? 'error' : 'info')}">
     <div class="image">
-        <img src="__CDN__/assets/img/{$codeText}.svg" alt="" width="120" />
+        <img src="__CDN__/assets/img/{$code == 1 ? 'success' : ($code == 0 ? 'error' : 'info')}.svg" alt="" width="120" />
     </div>
     <h1>{$msg}</h1>
     {if $url}

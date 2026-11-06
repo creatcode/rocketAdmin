@@ -9,7 +9,6 @@ return [
         'app\admin\command\Crud',
         'app\admin\command\Menu',
         'app\admin\command\Min',
-        'app\admin\command\Addon',
         'app\admin\command\AddonManifest',
         'app\admin\command\AddonCheck',
         'app\admin\command\AddonCreate',

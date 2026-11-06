@@ -17,17 +17,17 @@ class MessageFormatterTest extends TestCase
     public function testCreatesWithClfByDefault()
     {
         $f = new MessageFormatter();
-        self::assertEquals(MessageFormatter::CLF, Helpers::readObjectAttribute($f, 'template'));
+        self::assertEquals(MessageFormatter::CLF, self::readTemplate($f));
         $f = new MessageFormatter(null);
-        self::assertEquals(MessageFormatter::CLF, Helpers::readObjectAttribute($f, 'template'));
+        self::assertEquals(MessageFormatter::CLF, self::readTemplate($f));
     }
 
-    public function dateProvider()
+    public static function dateProvider()
     {
         return [
             ['{ts}', '/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}/'],
             ['{date_iso_8601}', '/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}/'],
-            ['{date_common_log}', '/^\d\d\/[A-Z][a-z]{2}\/[0-9]{4}/']
+            ['{date_common_log}', '/^\d\d\/[A-Z][a-z]{2}\/[0-9]{4}/'],
         ];
     }
 
@@ -48,7 +48,7 @@ class MessageFormatterTest extends TestCase
         }
     }
 
-    public function formatProvider()
+    public static function formatProvider()
     {
         $request = new Request('PUT', '/', ['x-test' => 'abc'], Psr7\Utils::streamFor('foo'));
         $response = new Response(200, ['X-Baz' => 'Bar'], Psr7\Utils::streamFor('baz'));
@@ -57,9 +57,9 @@ class MessageFormatterTest extends TestCase
         return [
             ['{request}', [$request], Psr7\Message::toString($request)],
             ['{response}', [$request, $response], Psr7\Message::toString($response)],
-            ['{request} {response}', [$request, $response], Psr7\Message::toString($request) . ' ' . Psr7\Message::toString($response)],
+            ['{request} {response}', [$request, $response], Psr7\Message::toString($request).' '.Psr7\Message::toString($response)],
             // Empty response yields no value
-            ['{request} {response}', [$request], Psr7\Message::toString($request) . ' '],
+            ['{request} {response}', [$request], Psr7\Message::toString($request).' '],
             ['{req_headers}', [$request], "PUT / HTTP/1.1\r\nx-test: abc"],
             ['{res_headers}', [$request, $response], "HTTP/1.1 200 OK\r\nX-Baz: Bar"],
             ['{res_headers}', [$request], 'NULL'],
@@ -74,7 +74,7 @@ class MessageFormatterTest extends TestCase
             ['{res_version}', [$request], 'NULL'],
             ['{host}', [$request], $request->getHeaderLine('Host')],
             ['{hostname}', [$request, $response], \gethostname()],
-            ['{hostname}{hostname}', [$request, $response], \gethostname() . \gethostname()],
+            ['{hostname}{hostname}', [$request, $response], \gethostname().\gethostname()],
             ['{code}', [$request, $response], $response->getStatusCode()],
             ['{code}', [$request], 'NULL'],
             ['{phrase}', [$request, $response], $response->getReasonPhrase()],
@@ -96,5 +96,14 @@ class MessageFormatterTest extends TestCase
     {
         $f = new MessageFormatter($template);
         self::assertSame((string) $result, $f->format(...$args));
+    }
+
+    private static function readTemplate(MessageFormatter $formatter): string
+    {
+        $readTemplate = \Closure::bind(static function (MessageFormatter $formatter): string {
+            return $formatter->template;
+        }, null, MessageFormatter::class);
+
+        return $readTemplate($formatter);
     }
 }

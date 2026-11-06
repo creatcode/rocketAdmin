@@ -5,6 +5,7 @@ namespace GuzzleHttp\Tests;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RetryMiddleware;
@@ -18,12 +19,15 @@ class RetryMiddlewareTest extends TestCase
         $calls = [];
         $decider = static function (...$args) use (&$calls) {
             $calls[] = $args;
+
             return \count($calls) < 3;
         };
-        $delay = static function ($retries, $response) use (&$delayCalls) {
-            $delayCalls++;
+        $delay = static function ($retries, $response, $request) use (&$delayCalls) {
+            ++$delayCalls;
             self::assertSame($retries, $delayCalls);
             self::assertInstanceOf(Response::class, $response);
+            self::assertInstanceOf(Request::class, $request);
+
             return 1;
         };
         $m = Middleware::retry($decider, $delay);
@@ -54,6 +58,7 @@ class RetryMiddlewareTest extends TestCase
         $calls = [];
         $decider = static function (...$args) use (&$calls) {
             $calls[] = $args;
+
             return $args[3] instanceof \Exception;
         };
         $m = Middleware::retry($decider);
@@ -70,12 +75,50 @@ class RetryMiddlewareTest extends TestCase
         self::assertNull($calls[1][3]);
     }
 
-    public function testBackoffCalculateDelay()
+    public function testUsesDefaultExponentialDelay()
     {
-        self::assertSame(0, RetryMiddleware::exponentialDelay(0));
-        self::assertSame(1000, RetryMiddleware::exponentialDelay(1));
-        self::assertSame(2000, RetryMiddleware::exponentialDelay(2));
-        self::assertSame(4000, RetryMiddleware::exponentialDelay(3));
-        self::assertSame(8000, RetryMiddleware::exponentialDelay(4));
+        $responses = [new Response(500), new Response(500), new Response(200)];
+        $delays = [];
+        $handler = static function ($request, array $options) use (&$responses, &$delays) {
+            if (isset($options['delay'])) {
+                $delays[] = $options['delay'];
+            }
+
+            return Create::promiseFor(\array_shift($responses));
+        };
+        $decider = static function ($retries) {
+            return $retries < 2;
+        };
+
+        $m = Middleware::retry($decider);
+        $p = $m($handler)(new Request('GET', 'http://test.com'), []);
+
+        self::assertSame(200, $p->wait()->getStatusCode());
+        self::assertSame([1000, 2000], $delays);
+    }
+
+    public function testExponentialDelayIsDeprecated()
+    {
+        $deprecations = [];
+
+        set_error_handler(static function (int $severity, string $message) use (&$deprecations): bool {
+            if ($severity !== \E_USER_DEPRECATED) {
+                return false;
+            }
+
+            $deprecations[] = $message;
+
+            return true;
+        });
+
+        try {
+            self::assertSame(1000, RetryMiddleware::exponentialDelay(1));
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([
+            'Since guzzlehttp/guzzle 7.11: GuzzleHttp\\RetryMiddleware::exponentialDelay() is deprecated and will be removed in 8.0.',
+        ], $deprecations);
     }
 }

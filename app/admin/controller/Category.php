@@ -127,7 +127,7 @@ class Category extends Backend
                     if ($result !== false) {
                         $this->success();
                     } else {
-                        $this->error($row->getError());
+                        $this->error(__('Operation failed'));
                     }
                 } catch (\think\db\exception\PDOException $e) {
                     $this->error($e->getMessage());

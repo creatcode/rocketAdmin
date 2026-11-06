@@ -2,11 +2,10 @@
 
 namespace app\api\controller;
 
+use app\api\library\UserVerify;
 use app\common\controller\Api;
 use app\common\library\Sms as Smslib;
-use app\common\model\User;
 use think\facade\Event;
-use think\facade\Validate;
 
 /**
  * 手机短信接口
@@ -28,11 +27,11 @@ class Sms extends Api
         $mobile = $this->request->post("mobile");
         $event = $this->request->post("event");
         $event = $event ?: 'register';
-        if (!preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
+        if (!UserVerify::isEvent($event)) {
             $this->error(__('事件名称错误'));
         }
 
-        if (!$mobile || !Validate::regex($mobile, "^1\d{10}$")) {
+        if (!UserVerify::isMobile($mobile)) {
             $this->error(__('手机号不正确'));
         }
         $last = Smslib::get($mobile, $event);
@@ -43,18 +42,8 @@ class Sms extends Api
         if ($ipSendTotal >= 5) {
             $this->error(__('发送频繁'));
         }
-        if ($event) {
-            $userinfo = User::getByMobile($mobile);
-            if ($event == 'register' && $userinfo) {
-                //已被注册
-                $this->error(__('已被注册'));
-            } elseif (in_array($event, ['changemobile']) && $userinfo) {
-                //被占用
-                $this->error(__('已被占用'));
-            } elseif (in_array($event, ['changepwd', 'resetpwd']) && !$userinfo) {
-                //未注册
-                $this->error(__('未注册'));
-            }
+        if ($message = UserVerify::checkMobileEvent($mobile, $event)) {
+            $this->error($message);
         }
         if (!Event::hasListener('sms_send')) {
             $this->error(__('请在后台插件管理安装短信验证插件'));
@@ -80,26 +69,16 @@ class Sms extends Api
         $mobile = $this->request->post("mobile");
         $event = $this->request->post("event");
         $event = $event ?: 'register';
-        if (!preg_match("/^[a-z0-9_\-]{3,30}$/i", $event)) {
+        if (!UserVerify::isEvent($event)) {
             $this->error(__('事件名称错误'));
         }
         $captcha = $this->request->post("captcha");
 
-        if (!$mobile || !Validate::regex($mobile, "^1\d{10}$")) {
+        if (!UserVerify::isMobile($mobile)) {
             $this->error(__('手机号不正确'));
         }
-        if ($event) {
-            $userinfo = User::getByMobile($mobile);
-            if ($event == 'register' && $userinfo) {
-                //已被注册
-                $this->error(__('已被注册'));
-            } elseif (in_array($event, ['changemobile']) && $userinfo) {
-                //被占用
-                $this->error(__('已被占用'));
-            } elseif (in_array($event, ['changepwd', 'resetpwd']) && !$userinfo) {
-                //未注册
-                $this->error(__('未注册'));
-            }
+        if ($message = UserVerify::checkMobileEvent($mobile, $event)) {
+            $this->error($message);
         }
         $ret = Smslib::check($mobile, $captcha, $event);
         if ($ret) {

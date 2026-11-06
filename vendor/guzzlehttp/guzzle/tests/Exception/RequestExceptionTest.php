@@ -21,13 +21,14 @@ class RequestExceptionTest extends TestCase
     {
         $req = new Request('GET', '/');
         $res = new Response(200);
-        $e = new RequestException('foo', $req, $res);
+        $e = new RequestException('foo', $req, $res, null, ['foo' => 'bar']);
         self::assertInstanceOf(RequestExceptionInterface::class, $e);
         self::assertNotInstanceOf(NetworkExceptionInterface::class, $e);
         self::assertSame($req, $e->getRequest());
         self::assertSame($res, $e->getResponse());
         self::assertTrue($e->hasResponse());
         self::assertSame('foo', $e->getMessage());
+        self::assertSame('bar', $e->getHandlerContext()['foo']);
     }
 
     public function testCreatesGenerateException()
@@ -87,7 +88,7 @@ class RequestExceptionTest extends TestCase
         throw RequestException::create(new Request('GET', '/'), new Response(600));
     }
 
-    public function dataPrintableResponses()
+    public static function dataPrintableResponses()
     {
         return [
             ['You broke the test!'],
@@ -122,7 +123,7 @@ class RequestExceptionTest extends TestCase
         $content = \str_repeat('+', 121);
         $response = new Response(500, [], $content);
         $e = RequestException::create(new Request('GET', '/'), $response);
-        $expected = \str_repeat('+', 120) . ' (truncated...)';
+        $expected = \str_repeat('+', 120).' (truncated...)';
         self::assertStringContainsString($expected, $e->getMessage());
     }
 
@@ -136,30 +137,6 @@ class RequestExceptionTest extends TestCase
     {
         $e = RequestException::create(new Request('GET', '/'), new Response(442));
         self::assertSame(442, $e->getCode());
-    }
-
-    public function testWrapsRequestExceptions()
-    {
-        $e = new \Exception('foo');
-        $r = new Request('GET', 'http://www.oo.com');
-        $ex = RequestException::wrapException($r, $e);
-        self::assertInstanceOf(RequestException::class, $ex);
-        self::assertSame($e, $ex->getPrevious());
-    }
-
-    public function testDoesNotWrapExistingRequestExceptions()
-    {
-        $r = new Request('GET', 'http://www.oo.com');
-        $e = new RequestException('foo', $r);
-        $e2 = RequestException::wrapException($r, $e);
-        self::assertSame($e, $e2);
-    }
-
-    public function testCanProvideHandlerContext()
-    {
-        $r = new Request('GET', 'http://www.oo.com');
-        $e = new RequestException('foo', $r, null, null, ['bar' => 'baz']);
-        self::assertSame(['bar' => 'baz'], $e->getHandlerContext());
     }
 
     public function testObfuscateUrlWithUsername()

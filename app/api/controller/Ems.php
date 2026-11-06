@@ -2,9 +2,9 @@
 
 namespace app\api\controller;
 
+use app\api\library\UserVerify;
 use app\common\controller\Api;
 use app\common\library\Ems as Emslib;
-use app\common\model\User;
 
 /**
  * 邮箱验证码接口
@@ -33,10 +33,10 @@ class Ems extends Api
         $event = $event ?: 'register';
         $captcha = $this->request->post("captcha");
 
-        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!UserVerify::isEmail($email)) {
             $this->error(__('邮箱格式错误'));
         }
-        if (!preg_match("/^[a-z0-9_\-]{3,30}\$/i", $event)) {
+        if (!UserVerify::isEvent($event)) {
             $this->error(__('事件名称错误'));
         }
 
@@ -47,7 +47,7 @@ class Ems extends Api
                 $this->error(__('验证码格式错误'));
             }
 
-            if (!\think\Validate::is($captcha, 'captcha')) {
+            if (!\think\facade\Validate::is($captcha, 'captcha')) {
                 $this->error("验证码不正确");
             }
         }
@@ -62,18 +62,8 @@ class Ems extends Api
             $this->error(__('发送频繁'));
         }
 
-        if ($event) {
-            $userinfo = User::getByEmail($email);
-            if ($event == 'register' && $userinfo) {
-                //已被注册
-                $this->error(__('已被注册'));
-            } elseif (in_array($event, ['changeemail']) && $userinfo) {
-                //被占用
-                $this->error(__('已被占用'));
-            } elseif (in_array($event, ['changepwd', 'resetpwd']) && !$userinfo) {
-                //未注册
-                $this->error(__('未注册'));
-            }
+        if ($message = UserVerify::checkEmailEvent($email, $event)) {
+            $this->error($message);
         }
         $ret = Emslib::send($email, null, $event);
         if ($ret) {
@@ -98,10 +88,10 @@ class Ems extends Api
         $event = $event ?: 'register';
         $captcha = $this->request->post("captcha");
 
-        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!UserVerify::isEmail($email)) {
             $this->error(__('邮箱格式错误'));
         }
-        if (!preg_match("/^[a-z0-9_\-]{3,30}\$/i", $event)) {
+        if (!UserVerify::isEvent($event)) {
             $this->error(__('事件名称错误'));
         }
 
@@ -109,18 +99,8 @@ class Ems extends Api
             $this->error(__('验证码格式错误'));
         }
 
-        if ($event) {
-            $userinfo = User::getByEmail($email);
-            if ($event == 'register' && $userinfo) {
-                //已被注册
-                $this->error(__('已被注册'));
-            } elseif (in_array($event, ['changeemail']) && $userinfo) {
-                //被占用
-                $this->error(__('已被占用'));
-            } elseif (in_array($event, ['changepwd', 'resetpwd']) && !$userinfo) {
-                //未注册
-                $this->error(__('未注册'));
-            }
+        if ($message = UserVerify::checkEmailEvent($email, $event)) {
+            $this->error($message);
         }
         $ret = Emslib::check($email, $captcha, $event);
         if ($ret) {

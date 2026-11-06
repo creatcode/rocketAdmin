@@ -3,17 +3,22 @@ name: Static analysis
 on:
   push:
     branches:
-      - master
   pull_request:
+
+permissions:
+  contents: read
+
+env:
+  COMPOSER_ROOT_VERSION: 7.16.x-dev
 
 jobs:
   phpstan:
     name: PHPStan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -33,11 +38,11 @@ jobs:
 
   php-cs-fixer:
     name: PHP-CS-Fixer
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -55,26 +60,19 @@ jobs:
       - name: Execute PHP CS Fixer
         run: vendor/bin/php-cs-fixer fix --diff --dry-run
 
-  psalm:
-    name: Psalm
-    runs-on: ubuntu-latest
+  composer-normalize:
+    name: Composer Normalize
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
           coverage: none
-          extensions: mbstring, intl
 
-      - name: Download dependencies
-        run: composer update --no-interaction --no-progress
-
-      - name: Download Psalm
-        run: composer bin psalm update --no-interaction --no-progress
-
-      - name: Execute Psalm
-        run: vendor/bin/psalm.phar --no-progress --output-format=github
+      - name: Execute Composer Normalize
+        run: make static-composer-normalize-check

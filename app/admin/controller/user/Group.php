@@ -2,8 +2,8 @@
 
 namespace app\admin\controller\user;
 
-use app\admin\model\UserGroup;
 use app\common\controller\Backend;
+use app\common\model\UserGroup;
 
 /**
  * 会员组管理
@@ -14,7 +14,7 @@ class Group extends Backend
 {
 
     /**
-     * @var \app\admin\model\UserGroup
+     * @var \app\common\model\UserGroup
      */
     protected $model = null;
 
@@ -30,7 +30,7 @@ class Group extends Backend
         if ($this->request->isPost()) {
             $this->token();
         }
-        $nodeList = \app\admin\model\UserRule::getTreeList();
+        $nodeList = \app\common\model\UserRule::getTreeList();
         $this->view->assign("nodeList", $nodeList);
         return parent::add();
     }
@@ -45,7 +45,7 @@ class Group extends Backend
             $this->error(__('No Results were found'));
         }
         $rules = explode(',', $row['rules']);
-        $nodeList = \app\admin\model\UserRule::getTreeList($rules);
+        $nodeList = \app\common\model\UserRule::getTreeList($rules);
         $this->view->assign("nodeList", $nodeList);
         return parent::edit($ids);
     }

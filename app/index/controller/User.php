@@ -31,7 +31,7 @@ class User extends Frontend
 
         //监听注册登录退出的事件
         Event::listen('user_login_successed', function ($user) use ($auth) {
-            $expire = input('post.keeplogin') ? 30 * 86400 : 0;
+            $expire = $this->request->post('keeplogin') ? 30 * 86400 : 0;
             Cookie::set('uid', $user->id, $expire);
             Cookie::set('token', $auth->getToken(), $expire);
         });
