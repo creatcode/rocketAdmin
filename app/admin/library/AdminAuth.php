@@ -78,14 +78,11 @@ class AdminAuth extends AuthService
     /**
      * 退出登录
      */
-    public function logout()
+    public function logout($revokeToken = true)
     {
-        if ($this->id) {
-            $admin = Admin::find(intval($this->id));
-            if ($admin) {
-                $admin->token = '';
-                $admin->save();
-            }
+        if ($revokeToken && $this->id && $this->token) {
+            // 旧会话只能撤销自身令牌，避免覆盖新登录。
+            Admin::where('id', $this->id)->where('token', $this->token)->update(['token' => '']);
         }
         $this->logined = false;
         Session::delete("admin");
@@ -256,8 +253,8 @@ class AdminAuth extends AuthService
         }
         //判断是否同一时间同一账号只能在一个地方登录
         if (Config::get('rocket.login_unique')) {
-            if ($my['token'] != $admin['token']) {
-                $this->logout();
+            if ($my['token'] !== $admin['token']) {
+                $this->logout(false);
                 return false;
             }
         }
@@ -384,8 +381,13 @@ class AdminAuth extends AuthService
     {
         $childrenAdminIds = [];
         if (!$this->isSuperAdmin()) {
-            $groupIds = $this->getChildrenGroupIds(false);
+            $groupIds = array_diff($this->getChildrenGroupIds(false), AuthGroup::whereFindInSet('rules', '*')->column('id'));
+            // 目标的全部角色都必须可管理，包括停用角色；超级角色始终排除。
             $childrenAdminIds = AuthGroupAccess::where('group_id', 'in', $groupIds)
+                ->whereNotIn('uid', function ($query) use ($groupIds) {
+                    $query->name('auth_group_access')->whereNotIn('group_id', $groupIds)->field('uid');
+                })
+                ->distinct(true)
                 ->column('uid');
         } else {
             //超级管理员拥有所有人的权限

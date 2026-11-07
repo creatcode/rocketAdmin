@@ -14,7 +14,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
             titleForm: '', //为空则不显示标题，不定义默认显示：普通搜索
             idTable: 'commonTable',
             showExport: true,
-            exportDataType: "auto", //支持auto,selected,all 当设定为auto时自动时有选中则导出选中，没有选中则导出全部
+            exportDataType: "auto", //支持auto,selected,basic 当设定为auto时有选中则导出选中，否则导出本页
             exportTypes: ['json', 'xml', 'csv', 'txt', 'doc', 'excel'],
             exportOptions: {
                 fileName: 'export_' + Moment().format("YYYY-MM-DD"),
@@ -26,8 +26,8 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 },
                 ignoreColumn: [0, 'operate'] //默认不导出第一列(checkbox)与操作(operate)列
             },
-            pageSize: Config.pagesize || localStorage.getItem("pagesize") || 10,
-            pageList: [10, 15, 20, 25, 50, 'All'],
+            pageSize: Math.min(100, Math.max(1, Number(Config.pagesize || localStorage.getItem("pagesize")) || 20)),
+            pageList: [10, 15, 20, 25, 50, 100],
             pagination: true,
             clickToSelect: true, //是否启用点击选中
             dblClickToEdit: true, //是否启用双击编辑
@@ -330,11 +330,11 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
 
                     //如果导出类型为auto时则自动判断
                     if (exportDataType === 'auto') {
-                        options.exportDataType = selectedIds.length > 0 ? 'selected' : 'all';
+                        options.exportDataType = selectedIds.length > 0 ? 'selected' : 'basic';
                         if ($(".export .exporttips").length === 0) {
                             $(".export .dropdown-menu").prepend("<li class='exporttips alert alert-warning-light mb-0 no-border p-2'></li>")
                         }
-                        $(".export .exporttips").html("导出记录：" + (selectedIds.length > 0 ? "选中" : "全部"));
+                        $(".export .exporttips").html("导出记录：" + (selectedIds.length > 0 ? "选中" : "本页"));
 
                     }
                     $(Table.config.disabledbtn, toolbar).toggleClass('disabled', !options.selectedIds.length);

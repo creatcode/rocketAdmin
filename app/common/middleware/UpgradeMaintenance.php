@@ -62,7 +62,13 @@ class UpgradeMaintenance
      */
     private function isUpgradeRequest(Request $request): bool
     {
-        $path = trim(strtolower($request->pathinfo()), '/');
+        $path = $request->pathinfo();
+        $suffix = config('route.url_html_suffix', 'html');
+        if ($suffix !== false) {
+            $suffix = $suffix ? ltrim($suffix, '.') : preg_quote($request->ext(), '/');
+            $path = preg_replace('/\.(' . $suffix . ')$/i', '', $path);
+        }
+        $path = trim(strtolower($path), '/');
         return preg_match('#^(?:[a-z0-9_.-]+/)?system(?:/|\.)upgrade(?:/(?:index|check|run|recover|status|logs|detail|backup))?$#D', $path) === 1;
     }
 
