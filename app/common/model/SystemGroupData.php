@@ -21,6 +21,16 @@ class SystemGroupData extends Model
     protected $jsonAssoc = true;
 
     /**
+     * 所属数据组
+     *
+     * @return \think\model\relation\BelongsTo
+     */
+    public function group()
+    {
+        return $this->belongsTo(SystemGroup::class, 'group_id', 'id');
+    }
+
+    /**
      * 按字段定义校验记录值并补全缺省值
      *
      * 各类型按固定规则校验,不再支持逐字段限制配置。

@@ -94,7 +94,8 @@
                         <!-- Menu Footer-->
                         <li class="user-footer">
                             <div class="pull-left">
-                                <a href="{:url('general.profile/index')}" class="btn btn-primary addtabsit"><i class="fa fa-user"></i>
+                                <!-- 须用相对路径：addtabs 第一级不命中、fixurl 后第二级命中，才会在页面已激活时整页刷新 -->
+                                <a href="general.profile/index" class="btn btn-primary addtabsit"><i class="fa fa-user"></i>
                                     {:__('Profile')}</a>
                             </div>
                             <div class="pull-right">

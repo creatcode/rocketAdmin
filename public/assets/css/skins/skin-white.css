@@ -774,6 +774,15 @@ body.inside-header .panel-intro>.panel-heading .nav-tabs>li.active>a {
     color: #666 !important;
 }
 
+/* 用户菜单：空白带处的双边框合并为一条分隔线 */
+.skin-white .navbar-nav > .user-menu > .dropdown-menu > .user-body {
+    border: 0;
+}
+
+.skin-white .navbar-nav > .user-menu > .dropdown-menu > .user-footer {
+    border-top: 1px solid #e8ebf0;
+}
+
 .skin-white .content-header {
     background: transparent;
     box-shadow: none;
@@ -1548,6 +1557,16 @@ body.inside-header a.thumbnail:is(:hover, :focus) {
 .skin-white .btn-primary .badge,
 body.inside-header .btn-primary .badge {
     color: #165dff;
+}
+
+/* 下拉菜单选中项，底色对齐 label-primary 的主色浅底 */
+.skin-white .dropdown-menu > .active > a,
+.skin-white .dropdown-menu > .active > a:is(:hover, :focus),
+body.inside-header .dropdown-menu > .active > a,
+body.inside-header .dropdown-menu > .active > a:is(:hover, :focus) {
+    background-color: rgba(22, 93, 255, 0.1);
+    color: #165dff;
+    font-weight: 600;
 }
 
 /* 14.2 info 色 #1688f1 → #165dff */

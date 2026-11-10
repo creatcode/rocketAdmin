@@ -61,7 +61,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     }
                 },
                 series: [{
-                    name: '新增会员',
+                    name: __('New members'),
                     type: 'line',
                     smooth: true,
                     symbol: 'circle',
@@ -97,7 +97,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
             if (!hasData) {
                 var tip = document.createElement('div');
                 tip.className = 'chart-box__empty';
-                tip.textContent = '暂无数据';
+                tip.textContent = __('No data');
                 chartEl.appendChild(tip);
             }
 

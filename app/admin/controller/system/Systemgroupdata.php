@@ -50,12 +50,16 @@ class SystemGroupData extends Backend
     /**
      * 读取当前请求的数据组
      *
+     * @param int|null $groupId 指定数据组ID，为空时读取请求参数
      * @return \app\common\model\SystemGroup
      * @throws \think\Exception
      */
-    protected function getGroup()
+    protected function getGroup($groupId = null)
     {
-        $group = SystemGroupModel::find((int)$this->request->request('group_id', 0));
+        if ($groupId === null) {
+            $groupId = (int)$this->request->request('group_id', 0);
+        }
+        $group = SystemGroupModel::find((int)$groupId);
         if (!$group) {
             $this->error(__('Data group not found'));
         }
@@ -113,13 +117,28 @@ class SystemGroupData extends Backend
     /**
      * 查看
      *
+     * 带 group_id 时管理指定数据组的记录，未带时展示全部记录的汇总列表
+     *
      * @return string|\think\response\Json
      * @throws \think\Exception
      */
     public function index()
     {
-        $group = $this->getGroup();
+        $groupId = (int)$this->request->request('group_id', 0);
         $this->request->filter(['strip_tags', 'trim']);
+        return $groupId ? $this->indexGroup($groupId) : $this->indexAll();
+    }
+
+    /**
+     * 指定数据组的记录列表
+     *
+     * @param int $groupId
+     * @return string|\think\response\Json
+     * @throws \think\Exception
+     */
+    protected function indexGroup($groupId)
+    {
+        $group = $this->getGroup($groupId);
         if (false === $this->request->isAjax()) {
             $this->view->assign('group', $group);
             $this->assignconfig('group', ['id' => $group['id'], 'title' => $group['title']]);
@@ -134,6 +153,40 @@ class SystemGroupData extends Backend
             ->order('id', 'desc')
             ->paginate(['list_rows' => $limit, 'page' => $page]);
         return json(['total' => $list->total(), 'rows' => $list->items()]);
+    }
+
+    /**
+     * 全部记录汇总列表
+     *
+     * @return string|\think\response\Json
+     * @throws \think\Exception
+     */
+    protected function indexAll()
+    {
+        $groups = SystemGroupModel::field('id,title')->order('id', 'asc')->select()->toArray();
+        if (false === $this->request->isAjax()) {
+            $this->view->assign('groups', $groups);
+            $this->assignconfig('groups', $groups);
+            return $this->view->fetch('index_all');
+        }
+        [$where, $sort, $order, $offset, $limit, $page] = $this->buildparams();
+        $list = $this->model
+            ->with(['group' => function ($query) {
+                $query->field('id,title');
+            }])
+            ->where($where)
+            ->order($sort, $order)
+            ->order('id', 'desc')
+            ->paginate(['list_rows' => $limit, 'page' => $page]);
+        $rows = [];
+        foreach ($list->items() as $item) {
+            $row = $item->toArray();
+            //数据组可能已被删除,保留记录本身以便处理
+            $row['group_title'] = isset($row['group']['title']) ? $row['group']['title'] : '';
+            unset($row['group']);
+            $rows[] = $row;
+        }
+        return json(['total' => $list->total(), 'rows' => $rows]);
     }
 
     /**
@@ -194,11 +247,16 @@ class SystemGroupData extends Backend
      */
     public function edit($ids = null)
     {
-        $group = $this->getGroup();
-        $row = $this->model->where('group_id', $group['id'])->find($ids);
+        $row = $this->model->find($ids);
         if (!$row) {
             $this->error(__('No Results were found'));
         }
+        //从指定数据组进入时校验记录归属
+        $requestGroupId = (int)$this->request->request('group_id', 0);
+        if ($requestGroupId && (int)$row['group_id'] !== $requestGroupId) {
+            $this->error(__('You have no permission'));
+        }
+        $group = $this->getGroup($row['group_id']);
         $fields = SystemGroupModel::normalizeFields($group['fields']);
         if (false === $this->request->isPost()) {
             $this->view->assign('row', $row);
@@ -250,21 +308,21 @@ class SystemGroupData extends Backend
      */
     public function del($ids = null)
     {
-        $group = $this->getGroup();
         if (false === $this->request->isPost()) {
             $this->error(__('Invalid parameters'));
         }
         $ids = $ids ?: $this->request->post('ids');
         $ids = $this->parseIds($ids);
+        //从指定数据组进入时只允许删除该组记录,汇总入口不限数据组
+        $requestGroupId = (int)$this->request->request('group_id', 0);
         Db::startTrans();
         try {
             $count = 0;
-            //只有当前数据组内的记录允许删除
-            $list = $this->model
-                ->where('group_id', $group['id'])
-                ->where('id', 'in', $ids)
-                ->lock(true)
-                ->select();
+            $query = $this->model->where('id', 'in', $ids)->lock(true);
+            if ($requestGroupId) {
+                $query->where('group_id', $requestGroupId);
+            }
+            $list = $query->select();
             if (count($list) !== count($ids)) {
                 throw new ValidateException(__('You have no permission'));
             }
@@ -291,7 +349,7 @@ class SystemGroupData extends Backend
      */
     public function multi($ids = null)
     {
-        $group = $this->getGroup();
+        $requestGroupId = (int)$this->request->request('group_id', 0);
         if ($this->request->isPost()) {
             $params = $this->request->post('params', '');
             if (!is_string($params)) {
@@ -307,7 +365,11 @@ class SystemGroupData extends Backend
                 $this->error($e->getMessage());
             }
             $ids = $this->parseIds($ids ?: $this->request->post('ids'));
-            if ($this->model->where('group_id', $group['id'])->where('id', 'in', $ids)->count() !== count($ids)) {
+            $query = $this->model->where('id', 'in', $ids);
+            if ($requestGroupId) {
+                $query->where('group_id', $requestGroupId);
+            }
+            if ($query->count() !== count($ids)) {
                 $this->error(__('You have no permission'));
             }
         }

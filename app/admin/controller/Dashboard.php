@@ -94,44 +94,44 @@ class Dashboard extends Backend
             // 指标卡：顺序即展示顺序
             'metricCards'       => [
                 [
-                    'title' => '累计用户',
+                    'title' => __('Total users'),
                     'value' => $totaluser,
-                    'desc'  => '平台注册会员总量',
+                    'desc'  => __('Total registered members'),
                     'icon'  => 'fa fa-users',
                     'theme' => 'blue',
                 ],
                 [
-                    'title' => '近 7 日新增',
+                    'title' => __('New in 7 days'),
                     'value' => $sevendnu,
-                    'desc'  => '近 7 日新增注册会员',
+                    'desc'  => __('New registered members in the last 7 days'),
                     'icon'  => 'fa fa-user-plus',
                     'theme' => 'cyan',
                 ],
                 [
-                    'title' => '今日登录',
+                    'title' => __('Today user login'),
                     'value' => $todayuserlogin,
-                    'desc'  => '今日产生登录行为的会员',
+                    'desc'  => __('Members who logged in today'),
                     'icon'  => 'fa fa-sign-in',
                     'theme' => 'violet',
                 ],
                 [
-                    'title' => '插件包',
+                    'title' => __('Addons'),
                     'value' => $totaladdon,
-                    'desc'  => '已安装插件，其中 ' . $totalworkingaddon . ' 个已启用',
+                    'desc'  => __('Installed addons, %s enabled', $totalworkingaddon),
                     'icon'  => 'fa fa-cubes',
                     'theme' => 'orange',
                 ],
                 [
-                    'title' => '云端附件',
+                    'title' => __('Cloud attachments'),
                     'value' => $attachmentnums,
-                    'desc'  => '累计上传附件，占用 ' . format_bytes($attachmentsize, '', 0),
+                    'desc'  => __('Uploaded attachments, %s used', format_bytes($attachmentsize, '', 0)),
                     'icon'  => 'fa fa-cloud-upload',
                     'theme' => 'rose',
                 ],
                 [
-                    'title' => '管理员',
+                    'title' => __('Administrators'),
                     'value' => $totaladmin,
-                    'desc'  => '后台管理账号总数',
+                    'desc'  => __('Total backend accounts'),
                     'icon'  => 'fa fa-user-circle-o',
                     'theme' => 'gold',
                 ],
@@ -139,20 +139,20 @@ class Dashboard extends Backend
 
             // 系统资源总览
             'resourceSummary'   => [
-                ['label' => '数据库占用', 'value' => format_bytes($dbsize, '', 0), 'desc' => $dbtablenums . ' 张数据表'],
-                ['label' => '云端文件', 'value' => format_bytes($attachmentsize, '', 0), 'desc' => $attachmentnums . ' 个附件'],
-                ['label' => '媒体资源', 'value' => $picturenums, 'desc' => format_bytes($picturesize, '', 0) . ' 图片占用'],
+                ['label' => __('Database usage'), 'value' => format_bytes($dbsize, '', 0), 'desc' => __('%s tables', $dbtablenums)],
+                ['label' => __('Cloud files'), 'value' => format_bytes($attachmentsize, '', 0), 'desc' => __('%s attachments', $attachmentnums)],
+                ['label' => __('Media assets'), 'value' => $picturenums, 'desc' => __('%s image storage', format_bytes($picturesize, '', 0))],
             ],
 
             // 活跃度概览：拆成两个顶层数组，避免模板 volist 走点号取值
             'activePills'       => [
-                ['label' => '七日活跃会员', 'value' => $sevendau],
-                ['label' => '三十日活跃会员', 'value' => $thirtydau],
+                ['label' => __('7-day active members'), 'value' => $sevendau],
+                ['label' => __('30-day active members'), 'value' => $thirtydau],
             ],
             'activeLines'       => [
-                ['label' => '今日新注册', 'value' => $todayusersignup],
-                ['label' => '三日留存指标', 'value' => $threednu],
-                ['label' => '七日趋势新增', 'value' => $sevendnu],
+                ['label' => __('New today'), 'value' => $todayusersignup],
+                ['label' => __('3-day retention'), 'value' => $threednu],
+                ['label' => __('New trend in 7 days'), 'value' => $sevendnu],
             ],
         ]);
 

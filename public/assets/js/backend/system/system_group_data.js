@@ -3,6 +3,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
     var Controller = {
         index: function () {
             var group = Config.group || {};
+            //未指定数据组时展示全部记录的汇总列表
+            if (!group.id) {
+                Controller.api.all();
+                return;
+            }
             var fields = Config.fields || [];
             //记录列表始终限定在当前数据组内
             var groupQuery = '?group_id=' + group.id;
@@ -62,6 +67,57 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Controller.api.bindevent();
         },
         api: {
+            all: function () {
+                var groups = Config.groups || [];
+                var groupList = {};
+                $.each(groups, function (i, item) {
+                    groupList[item.id] = item.title;
+                });
+                Table.api.init({
+                    extend: {
+                        index_url: 'system.system_group_data/index',
+                        add_url: '',
+                        edit_url: 'system.system_group_data/edit',
+                        del_url: 'system.system_group_data/del',
+                        multi_url: 'system.system_group_data/multi',
+                        table: 'system_group_data'
+                    }
+                });
+                var table = $("#table");
+                var columns = [
+                    {field: 'state', checkbox: true},
+                    {field: 'id', title: 'ID'},
+                    {
+                        field: 'group_id', title: __('Data group'), searchList: groupList,
+                        formatter: function (value, row) {
+                            return Fast.api.escape(row.group_title || value);
+                        }
+                    },
+                    {field: 'weigh', title: __('Weigh')},
+                    {
+                        field: 'status', title: __('Status'),
+                        searchList: {normal: __('Normal'), hidden: __('Hidden')},
+                        formatter: Table.api.formatter.status
+                    },
+                    {
+                        field: 'createtime', title: __('Createtime'),
+                        formatter: Table.api.formatter.datetime, operate: 'RANGE'
+                    },
+                    {
+                        field: 'operate', title: __('Operate'), table: table,
+                        events: Table.api.events.operate, formatter: Table.api.formatter.operate
+                    }
+                ];
+                // 初始化表格
+                table.bootstrapTable({
+                    url: $.fn.bootstrapTable.defaults.extend.index_url,
+                    sortName: 'weigh',
+                    sortOrder: 'desc',
+                    columns: [columns]
+                });
+                // 为表格绑定事件
+                Table.api.bindevent(table);
+            },
             bindevent: function () {
                 Form.api.bindevent($("form[role=form]"));
             },

@@ -145,15 +145,8 @@ class Ajax extends Backend
      */
     public function wipecache()
     {
-        if (!$this->request->isPost()) {
-            $this->error(__('Invalid parameters'));
-        }
-        if (!$this->auth->isSuperAdmin()) {
-            $this->error(__('You have no permission'));
-        }
-        $this->token();
         try {
-            $type = $this->request->post("type");
+            $type = $this->request->param("type");
             switch ($type) {
                 case 'all':
                 case 'content':

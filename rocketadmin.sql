@@ -3937,7 +3937,7 @@ CREATE TABLE `im_auth_rule`  (
   UNIQUE INDEX `name`(`name`) USING BTREE,
   INDEX `pid`(`pid`) USING BTREE,
   INDEX `weigh`(`weigh`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 751 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '节点表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 782 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '节点表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of im_auth_rule
@@ -3947,13 +3947,13 @@ INSERT INTO `im_auth_rule` VALUES (2, 'file', 0, 'general', 'General', 'fa fa-co
 INSERT INTO `im_auth_rule` VALUES (3, 'file', 0, 'category', 'Category', 'fa fa-leaf', '', '', 'Category tips', 1, NULL, '', 'flgl', 'fenleiguanli', 1491635035, 1667229318, 119, 'normal');
 INSERT INTO `im_auth_rule` VALUES (4, 'file', 0, 'addon', 'Addon', 'fa fa-rocket', '', '', 'Addon tips', 1, NULL, '', 'cjgl', 'chajianguanli', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (5, 'file', 0, 'auth', 'Auth', 'fa fa-group', '', '', '', 1, NULL, '', 'qxgl', 'quanxianguanli', 1491635035, 1491635035, 99, 'normal');
-INSERT INTO `im_auth_rule` VALUES (6, 'file', 2, 'general.config', 'Config', 'fa fa-cog', '', '', 'Config tips', 1, NULL, '', 'xtpz', 'xitongpeizhi', 1491635035, 1491635035, 60, 'normal');
-INSERT INTO `im_auth_rule` VALUES (7, 'file', 2, 'general.attachment', 'Attachment', 'fa fa-file-image-o', '', '', 'Attachment tips', 1, NULL, '', 'fjgl', 'fujianguanli', 1491635035, 1491635035, 53, 'normal');
-INSERT INTO `im_auth_rule` VALUES (8, 'file', 2, 'general.profile', 'Profile', 'fa fa-user', '', '', '', 1, NULL, '', 'grzl', 'gerenziliao', 1491635035, 1491635035, 34, 'normal');
-INSERT INTO `im_auth_rule` VALUES (9, 'file', 5, 'auth.admin', 'Admin', 'fa fa-user', '', '', 'Admin tips', 1, NULL, '', 'glygl', 'guanliyuanguanli', 1491635035, 1491635035, 118, 'normal');
-INSERT INTO `im_auth_rule` VALUES (10, 'file', 5, 'auth.adminlog', 'Admin log', 'fa fa-list-alt', '', '', 'Admin log tips', 1, NULL, '', 'glyrz', 'guanliyuanrizhi', 1491635035, 1491635035, 113, 'normal');
-INSERT INTO `im_auth_rule` VALUES (11, 'file', 5, 'auth.group', 'Group', 'fa fa-group', '', '', 'Group tips', 1, NULL, '', 'jsz', 'juesezu', 1491635035, 1491635035, 109, 'normal');
-INSERT INTO `im_auth_rule` VALUES (12, 'file', 5, 'auth.rule', 'Rule', 'fa fa-bars', '', '', 'Rule tips', 1, NULL, '', 'cdgz', 'caidanguize', 1491635035, 1491635035, 104, 'normal');
+INSERT INTO `im_auth_rule` VALUES (6, 'file', 2, 'general.config', 'Config', 'fa fa-circle-o', '', '', 'Config tips', 1, NULL, '', 'xtpz', 'xitongpeizhi', 1491635035, 1491635035, 60, 'normal');
+INSERT INTO `im_auth_rule` VALUES (7, 'file', 2, 'general.attachment', 'Attachment', 'fa fa-circle-o', '', '', 'Attachment tips', 1, NULL, '', 'fjgl', 'fujianguanli', 1491635035, 1491635035, 53, 'normal');
+INSERT INTO `im_auth_rule` VALUES (8, 'file', 2, 'general.profile', 'Profile', 'fa fa-circle-o', '', '', '', 1, NULL, '', 'grzl', 'gerenziliao', 1491635035, 1491635035, 34, 'normal');
+INSERT INTO `im_auth_rule` VALUES (9, 'file', 5, 'auth.admin', 'Admin', 'fa fa-circle-o', '', '', 'Admin tips', 1, NULL, '', 'glygl', 'guanliyuanguanli', 1491635035, 1491635035, 118, 'normal');
+INSERT INTO `im_auth_rule` VALUES (10, 'file', 5, 'auth.adminlog', 'Admin log', 'fa fa-circle-o', '', '', 'Admin log tips', 1, NULL, '', 'glyrz', 'guanliyuanrizhi', 1491635035, 1491635035, 113, 'normal');
+INSERT INTO `im_auth_rule` VALUES (11, 'file', 5, 'auth.group', 'Group', 'fa fa-circle-o', '', '', 'Group tips', 1, NULL, '', 'jsz', 'juesezu', 1491635035, 1491635035, 109, 'normal');
+INSERT INTO `im_auth_rule` VALUES (12, 'file', 5, 'auth.rule', 'Rule', 'fa fa-circle-o', '', '', 'Rule tips', 1, NULL, '', 'cdgz', 'caidanguize', 1491635035, 1491635035, 104, 'normal');
 INSERT INTO `im_auth_rule` VALUES (13, 'file', 1, 'dashboard/index', 'View', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 136, 'normal');
 INSERT INTO `im_auth_rule` VALUES (14, 'file', 1, 'dashboard/add', 'Add', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 135, 'normal');
 INSERT INTO `im_auth_rule` VALUES (15, 'file', 1, 'dashboard/del', 'Delete', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 133, 'normal');
@@ -4006,13 +4006,13 @@ INSERT INTO `im_auth_rule` VALUES (63, 'file', 4, 'addon/config', 'Setting', 'fa
 INSERT INTO `im_auth_rule` VALUES (64, 'file', 4, 'addon/refresh', 'Refresh', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (65, 'file', 4, 'addon/multi', 'Multi', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (66, 'file', 0, 'user', 'User', 'fa fa-user-circle', '', '', '', 1, NULL, '', 'hygl', 'huiyuanguanli', 1491635035, 1790129831, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (67, 'file', 66, 'user.user', 'User', 'fa fa-user', '', '', '', 1, NULL, '', 'hygl', 'huiyuanguanli', 1491635035, 1491635035, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (67, 'file', 66, 'user.user', 'User', 'fa fa-circle-o', '', '', '', 1, NULL, '', 'hygl', 'huiyuanguanli', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (68, 'file', 67, 'user.user/index', 'View', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (69, 'file', 67, 'user.user/edit', 'Edit', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (70, 'file', 67, 'user.user/add', 'Add', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (71, 'file', 67, 'user.user/del', 'Del', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (72, 'file', 67, 'user.user/multi', 'Multi', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (73, 'file', 66, 'user.group', 'User group', 'fa fa-users', '', '', '', 1, NULL, '', 'hyfz', 'huiyuanfenzu', 1491635035, 1491635035, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (73, 'file', 66, 'user.group', 'User group', 'fa fa-circle-o', '', '', '', 1, NULL, '', 'hyfz', 'huiyuanfenzu', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (74, 'file', 73, 'user.group/add', 'Add', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (75, 'file', 73, 'user.group/edit', 'Edit', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (76, 'file', 73, 'user.group/index', 'View', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
@@ -4024,15 +4024,15 @@ INSERT INTO `im_auth_rule` VALUES (81, 'file', 79, 'user.rule/del', 'Del', 'fa f
 INSERT INTO `im_auth_rule` VALUES (82, 'file', 79, 'user.rule/add', 'Add', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (83, 'file', 79, 'user.rule/edit', 'Edit', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (84, 'file', 79, 'user.rule/multi', 'Multi', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1491635035, 1491635035, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (726, 'file', 728, 'system.upgrade', '系统升级', 'fa fa-cloud-download', '', '', '后台系统升级', 1, 'addtabs', '', '', '', 1790148601, 1790578536, 100, 'normal');
-INSERT INTO `im_auth_rule` VALUES (728, 'file', 0, 'system', '系统管理', 'fa fa-wrench', '', '', '后台系统级功能入口', 1, NULL, '', 'xtgl', 'xitongguanli', 1790243083, 1790243083, 100, 'normal');
-INSERT INTO `im_auth_rule` VALUES (729, 'file', 728, 'system.about', '关于系统', 'fa fa-info-circle', '', '', '系统版本与运行环境信息', 1, 'addtabs', '', 'gyxt', 'guanyuxitong', 1790243083, 1790578536, 90, 'normal');
-INSERT INTO `im_auth_rule` VALUES (730, 'file', 728, 'system.system_group', '组合数据', 'fa fa-th-large', '', '', '维护多条记录共用一套字段的数据组,业务读取使用 SystemGroupData::getDataList', 1, NULL, '', 'zhsj', 'zuheshuju', 1790567523, 1790578536, 50, 'normal');
-INSERT INTO `im_auth_rule` VALUES (731, 'file', 730, 'system.system_group/index', '查看', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674795, 49, 'normal');
-INSERT INTO `im_auth_rule` VALUES (732, 'file', 730, 'system.system_group/add', '添加', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 48, 'normal');
-INSERT INTO `im_auth_rule` VALUES (733, 'file', 730, 'system.system_group/edit', '编辑', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 47, 'normal');
-INSERT INTO `im_auth_rule` VALUES (734, 'file', 730, 'system.system_group/del', '删除', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 46, 'normal');
-INSERT INTO `im_auth_rule` VALUES (735, 'file', 730, 'system.system_group/multi', '批量更新', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 45, 'normal');
+INSERT INTO `im_auth_rule` VALUES (726, 'file', 728, 'system.upgrade', 'System upgrade', 'fa fa-circle-o', '', '', 'System upgrade tips', 1, 'addtabs', '', '', '', 1790148601, 1790578536, 100, 'normal');
+INSERT INTO `im_auth_rule` VALUES (728, 'file', 0, 'system', 'System', 'fa fa-wrench', '', '', 'System tips', 1, NULL, '', 'xtgl', 'xitongguanli', 1790243083, 1790243083, 100, 'normal');
+INSERT INTO `im_auth_rule` VALUES (729, 'file', 728, 'system.about', 'About system', 'fa fa-circle-o', '', '', 'About system tips', 1, 'addtabs', '', 'gyxt', 'guanyuxitong', 1790243083, 1790578536, 90, 'normal');
+INSERT INTO `im_auth_rule` VALUES (730, 'file', 728, 'system.system_group', 'System group', 'fa fa-circle-o', '', '', 'System group tips', 1, NULL, '', 'zhsj', 'zuheshuju', 1790567523, 1790578536, 50, 'normal');
+INSERT INTO `im_auth_rule` VALUES (731, 'file', 730, 'system.system_group/index', 'View', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674795, 49, 'normal');
+INSERT INTO `im_auth_rule` VALUES (732, 'file', 730, 'system.system_group/add', 'Add', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 48, 'normal');
+INSERT INTO `im_auth_rule` VALUES (733, 'file', 730, 'system.system_group/edit', 'Edit', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 47, 'normal');
+INSERT INTO `im_auth_rule` VALUES (734, 'file', 730, 'system.system_group/del', 'Delete', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 46, 'normal');
+INSERT INTO `im_auth_rule` VALUES (735, 'file', 730, 'system.system_group/multi', 'Multi', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790567523, 1790674796, 45, 'normal');
 INSERT INTO `im_auth_rule` VALUES (737, 'file', 0, 'command', '在线命令管理', 'fa fa-terminal', '', '', '', 1, NULL, '', '', '', 1790574120, 1790574120, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (738, 'file', 737, 'command/index', '查看', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574120, 1790574120, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (739, 'file', 737, 'command/add', '添加', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574120, 1790574120, 0, 'normal');
@@ -4041,12 +4041,22 @@ INSERT INTO `im_auth_rule` VALUES (741, 'file', 737, 'command/command', '生成�
 INSERT INTO `im_auth_rule` VALUES (742, 'file', 737, 'command/execute', '再次执行命令', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574121, 1790574121, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (743, 'file', 737, 'command/del', '删除', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574121, 1790574121, 0, 'normal');
 INSERT INTO `im_auth_rule` VALUES (744, 'file', 737, 'command/multi', '批量更新', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790574121, 1790574121, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (745, 'file', 730, 'system.system_group_data', '组合数据记录', 'fa fa-list-alt', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (746, 'file', 745, 'system.system_group_data/index', '查看', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (747, 'file', 745, 'system.system_group_data/add', '添加', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (748, 'file', 745, 'system.system_group_data/edit', '编辑', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (749, 'file', 745, 'system.system_group_data/del', '删除', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
-INSERT INTO `im_auth_rule` VALUES (750, 'file', 745, 'system.system_group_data/multi', '批量更新', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (745, 'file', 728, 'system.system_group_data', 'System group data', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (746, 'file', 745, 'system.system_group_data/index', 'View', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (747, 'file', 745, 'system.system_group_data/add', 'Add', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (748, 'file', 745, 'system.system_group_data/edit', 'Edit', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (749, 'file', 745, 'system.system_group_data/del', 'Delete', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (750, 'file', 745, 'system.system_group_data/multi', 'Multi', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1790578536, 1790578536, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (761, 'file', 726, 'system.upgrade/index', 'View', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (762, 'file', 726, 'system.upgrade/logs', 'Upgrade log', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (763, 'file', 726, 'system.upgrade/status', 'Upgrade status', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (764, 'file', 726, 'system.upgrade/detail', 'Detail', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (765, 'file', 726, 'system.upgrade/backup', 'Backup', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (766, 'file', 726, 'system.upgrade/del', 'Delete', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (767, 'file', 726, 'system.upgrade/check', 'Check version', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (768, 'file', 726, 'system.upgrade/run', 'Run upgrade', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (769, 'file', 726, 'system.upgrade/recover', 'Recover upgrade', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
+INSERT INTO `im_auth_rule` VALUES (774, 'file', 729, 'system.about/index', 'View', 'fa fa-circle-o', '', '', '', 0, NULL, '', '', '', 1794297156, 1794297156, 0, 'normal');
 
 -- ----------------------------
 -- Table structure for im_category

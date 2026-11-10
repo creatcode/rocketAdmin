@@ -77,12 +77,8 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
             $(document).on('click', "ul.wipecache li a,a.wipecache", function () {
                 $.ajax({
                     url: 'ajax/wipecache',
-                    type: 'POST',
                     dataType: 'json',
-                    data: { type: $(this).data("type"), __token__: Config.csrfToken },
-                    complete: function (xhr) {
-                        Config.csrfToken = xhr.getResponseHeader('__token__') || Config.csrfToken;
-                    },
+                    data: { type: $(this).data("type") },
                     cache: false,
                     success: function (ret) {
                         if (ret.hasOwnProperty("code")) {

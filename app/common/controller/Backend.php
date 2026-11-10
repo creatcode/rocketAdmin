@@ -90,6 +90,10 @@ class Backend extends BackendBase
                 return $matches[2] == '&' ? $matches[1] : '';
             }, $this->request->url());
             $url = (string)url($url, [], false);
+            //语言参数仅用于本次切换,不参与选项卡地址匹配
+            $url = preg_replace_callback("/([\?|&]+)lang=[^&]*(&?)/i", function ($matches) {
+                return $matches[2] == '&' ? $matches[1] : '';
+            }, $url);
             $this->redirect((string)url('index/index', [], false), 302, ['referer' => $url]);
             exit;
         }

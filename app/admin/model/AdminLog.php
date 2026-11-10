@@ -83,6 +83,10 @@ class AdminLog extends Model
             }
             $title = implode(' / ', $title);
         }
+        // 无菜单规则的节点(如内部接口)取控制器方法注释作为标题
+        if (!$title) {
+            $title = self::getActionTitle($path);
+        }
         self::create([
             'title'     => $title,
             'content'   => !is_scalar($content) ? json_encode($content, JSON_UNESCAPED_UNICODE) : $content,
@@ -92,6 +96,28 @@ class AdminLog extends Model
             'useragent' => substr(request()->server('HTTP_USER_AGENT'), 0, 255),
             'ip'        => xss_clean(strip_tags(request()->ip()))
         ]);
+    }
+
+    /**
+     * 获取控制器方法的注释摘要,用于无菜单规则的节点
+     * @param string $path 节点名,如 ajax/wipecache
+     * @return string
+     */
+    protected static function getActionTitle($path)
+    {
+        [$controller, $action] = array_pad(explode('/', $path, 2), 2, '');
+        $class = app()->parseClass('controller', $controller);
+        if (!$action || !class_exists($class) || !method_exists($class, $action)) {
+            return '';
+        }
+        $doc = (new \ReflectionMethod($class, $action))->getDocComment();
+        foreach ($doc ? explode("\n", $doc) : [] as $line) {
+            $line = trim(ltrim(trim($line), '/*'));
+            if ($line !== '' && $line[0] !== '@') {
+                return $line;
+            }
+        }
+        return '';
     }
 
     /**

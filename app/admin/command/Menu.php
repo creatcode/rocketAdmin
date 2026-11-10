@@ -267,7 +267,8 @@ class Menu extends Command
             //节点名统一使用点号形态：system.system_group
             $name = implode('.', $controllerNameArr);
             $title = (!isset($controllerArr[$key]) ? $controllerTitle : '');
-            $icon = (!isset($controllerArr[$key]) ? $controllerIcon : 'fa fa-list');
+            // 仅一级菜单使用控制器图标，其余层级统一使用圆点图标
+            $icon = $k === 0 ? $controllerIcon : 'fa fa-circle-o';
             $remark = (!isset($controllerArr[$key]) ? $controllerRemark : '');
             $title = $title ?: $v;
             $rulemodel = $this->model->where(['name' => $name])->find();
