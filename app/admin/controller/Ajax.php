@@ -69,7 +69,7 @@ class Ajax extends Backend
      */
     public function upload()
     {
-        Config::set('default_return_type', 'json');
+        Config::set(['default_return_type' => 'json']);
 
         //必须还原upload配置,否则分片及cdnurl函数计算错误
         Config::load(config_path() . 'upload.php', 'upload');

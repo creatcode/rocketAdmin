@@ -11,6 +11,7 @@ public/assets/addons/
 /.settings
 /.buildpath
 /.project
+node_modules/
 # /.workbuddy-ai
 # /.workbuddy
 # /.codebuddy

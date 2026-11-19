@@ -39,10 +39,13 @@
 
     BootstrapTable.prototype.initBody = function () {
         var that = this;
-        $.extend(that.options, {
-            showHeader: !that.options.templateView ? $.fn.bootstrapTable.defaults.showHeader : false,
-            showFooter: !that.options.templateView ? $.fn.bootstrapTable.defaults.showFooter : false,
-        });
+        //保存表格自身的表头/汇总行配置，模板视图仅临时隐藏，切回后恢复原配置
+        if (typeof that.__explicitShowHeader === 'undefined') {
+            that.__explicitShowHeader = that.options.showHeader;
+            that.__explicitShowFooter = that.options.showFooter;
+        }
+        that.options.showHeader = that.options.templateView ? false : that.__explicitShowHeader;
+        that.options.showFooter = that.options.templateView ? false : that.__explicitShowFooter;
         $(that.$el).toggleClass(that.options.templateTableClass, that.options.templateView);
 
         _initBody.apply(this, Array.prototype.slice.apply(arguments));

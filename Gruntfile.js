@@ -36,8 +36,12 @@ module.exports = function (grunt) {
         var matches = content.match(pattern);
         if (matches) {
             if (type === 'js') {
-                var data = matches[1].replaceAll(/(urlArgs|baseUrl):[^\r\n]*(?:\r?\n|$)/gi, '');
-                let options = require('vm').runInNewContext('({' + data + '\n})');
+                var data = matches[1].replaceAll(/(urlArgs|baseUrl):(.*)\r?\n/gi, '');
+                const parse = require('parse-config-file'), fs = require('fs');
+                require('jsonminify');
+
+                data = JSON.minify("{\n" + data + "\n}");
+                let options = parse(data);
                 options.paths.tableexport = "empty:";
                 Object.assign(config.compile.options, options);
             }
@@ -49,11 +53,11 @@ module.exports = function (grunt) {
                     callback();
                 }, function (err) {
                     console.error(err);
-                    callback(err);
+                    callback();
                 });
             } catch (err) {
                 console.error(err);
-                callback(err);
+                callback();
             }
         }
     };

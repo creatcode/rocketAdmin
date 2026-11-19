@@ -27,8 +27,8 @@ class Common extends Api
         //跨域检测
         check_cors_request();
 
-        if (!$this->request->cookie('PHPSESSID')) {
-            Config::set('session.id', $this->request->server("HTTP_SID"));
+        if (!$this->request->cookie('PHPSESSID') && $this->request->server("HTTP_SID")) {
+            Config::set(['id' => $this->request->server("HTTP_SID")], 'session');
         }
         parent::initialize();
     }
@@ -46,20 +46,12 @@ class Common extends Api
             $lng = $this->request->request('lng');
             $lat = $this->request->request('lat');
 
-            //配置信息
-            $upload = Config::get('upload') ?: [];
-            //如果非服务端中转模式需要修改为中转
-            if (($upload['storage'] ?? 'local') !== 'local' && isset($upload['uploadmode']) && $upload['uploadmode'] !== 'server') {
-                //临时修改上传模式为服务端中转
-                set_addon_config($upload['storage'], ["uploadmode" => "server"], false);
+            //构造当前请求所需的上传配置，不修改插件配置（云上传模式由插件事件按自身配置注入）
+            $upload = \app\common\model\Config::upload();
+            // 上传信息配置后
+            $upload = Event::trigger("upload_config_init", $upload, true) ?: $upload;
 
-                $upload = \app\common\model\Config::upload();
-                // 上传信息配置后
-                $upload = Event::trigger("upload_config_init", $upload, true) ?: $upload;
-
-                $upload = array_merge(Config::get('upload') ?: [], $upload);
-                Config::set($upload, 'upload');
-            }
+            $upload = array_merge(Config::get('upload') ?: [], $upload);
 
             $upload['cdnurl'] = $upload['cdnurl'] ?: cdnurl('', true);
             $upload['uploadurl'] = $upload['uploadurl'] ?? '/api/common/upload';

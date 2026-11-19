@@ -134,6 +134,7 @@ class Group extends Backend
         if ($this->request->isPost()) {
             $this->token();
             $params = $this->request->post("row/a", [], 'strip_tags');
+            $params = $this->bindTrustedPrimaryKey($params, $row);
             //父节点不能是非权限内节点
             if (!in_array($params['pid'], $this->childrenGroupIds)) {
                 $this->error(__('The parent group exceeds permission limit'));

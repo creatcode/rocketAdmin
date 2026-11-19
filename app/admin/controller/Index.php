@@ -66,7 +66,6 @@ class Index extends Backend
             'cookie'     => ['prefix' => ''],
             //无操作自动登出秒数,0 表示不启用
             'autoLogout' => (int)config('rocket.auto_logout'),
-            'csrfToken' => $this->request->buildToken(),
         ]);
         $this->view->assign('menulist', $menulist);
         $this->view->assign('navlist', $navlist);
@@ -146,7 +145,7 @@ class Index extends Backend
         if ($this->request->isPost()) {
             //Referer同源校验，允许为空
             $referer = $this->request->server('HTTP_REFERER');
-            if ($referer && strtolower((string)parse_url($referer, PHP_URL_HOST)) != strtolower($this->request->host())) {
+            if ($referer && strtolower((string)parse_url($referer, PHP_URL_HOST)) != strtolower($this->request->host(true))) {
                 $this->error(__('Invalid request'));
             }
             $this->token();
@@ -159,8 +158,13 @@ class Index extends Backend
             Event::trigger("admin_logout_after", $this->request);
             $this->success(__('Logout successful'), 'index/login');
         }
-        $html = "<form id='logout_submit' name='logout_submit' action='' method='post'>" . token_field() . "<input type='submit' value='ok' style='display:none;'></form>";
-        $html .= "<script>document.forms['logout_submit'].submit();</script>";
+        //GET 阶段不自动提交注销：返回需用户确认的 POST 表单，Token 在 POST 中由 $this->token() 校验
+        $html = "<!DOCTYPE html><html><head><meta charset='utf-8'><title>" . __('Logout') . "</title></head><body>"
+            . "<form id='logout_submit' name='logout_submit' action='' method='post'>" . token_field()
+            . "<input type='submit' value='" . __('Logout') . "'>"
+            . "</form>"
+            . "<a href='javascript:history.back();'>" . __('Cancel') . "</a>"
+            . "</body></html>";
 
         return $html;
     }

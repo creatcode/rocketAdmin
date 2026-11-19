@@ -114,21 +114,42 @@ LUA;
         if ($expire < 0) {
             throw new \InvalidArgumentException('Token 有效期不能为负数');
         }
-        // 写入与索引维护必须原子执行，索引有效期覆盖所有仍有效的 Token。
+        // 写入与索引维护必须原子执行：键已存在（冲突）时拒绝写入，不得覆盖其他用户令牌。
         $script = <<<'LUA'
+if redis.call('EXISTS', KEYS[1]) == 1 then
+    return 0
+end
 if tonumber(ARGV[2]) > 0 then
     redis.call('SETEX', KEYS[1], ARGV[2], ARGV[1])
 else
     redis.call('SET', KEYS[1], ARGV[1])
 end
 redis.call('SADD', KEYS[2], KEYS[1])
+local longest = 0
+local permanent = false
+for _, key in ipairs(redis.call('SMEMBERS', KEYS[2])) do
+    local ttl = redis.call('PTTL', key)
+    if ttl == -2 then
+        redis.call('SREM', KEYS[2], key)
+    elseif ttl == -1 then
+        permanent = true
+    elseif ttl > longest then
+        longest = ttl
+    end
+end
+if permanent then
+    redis.call('PERSIST', KEYS[2])
+else
+    redis.call('PEXPIRE', KEYS[2], longest)
+end
+return 1
 
 LUA;
-        $result = $this->handler->eval($script . self::INDEX_EXPIRY, [$this->getEncryptedToken($token), $this->getUserKey($user_id), $user_id, $expire], 2);
+        $result = $this->handler->eval($script, [$this->getEncryptedToken($token), $this->getUserKey($user_id), $user_id, $expire], 2);
         if ($result === false) {
             throw new \RuntimeException('Token 写入失败');
         }
-        return true;
+        return $result === 1;
     }
 
     /**

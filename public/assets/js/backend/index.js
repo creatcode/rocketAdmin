@@ -395,8 +395,20 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
 
                 // 注销会话并跳转登录页，退出原因由登录页展示（同源跳转 sessionStorage 可保留）
                 var doLogout = function () {
-                    sessionStorage.setItem('idleLogoutNotice', '1');
-                    location.href = Backend.api.fixurl('index/logout');
+                    var logoutUrl = Backend.api.fixurl('index/logout');
+                    //获取当前 Token 后提交 POST，不能停留在需要手工确认的 GET 退出页
+                    $.get(logoutUrl, function (html) {
+                        var form = $('<div>').append($.parseHTML(html)).find('#logout_submit');
+                        if (form.length) {
+                            sessionStorage.setItem('idleLogoutNotice', '1');
+                            form.attr({action: logoutUrl, method: 'post'}).hide().appendTo(document.body);
+                            form.get(0).submit();
+                        } else {
+                            location.href = Backend.api.fixurl('index/login');
+                        }
+                    }).fail(function () {
+                        location.href = logoutUrl;
+                    });
                 };
 
                 // 按墙钟剩余量定时：定时器在标签页被冻结/挂起（Chrome Freeze、移动端切 App）期间不执行，

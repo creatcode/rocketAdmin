@@ -1,6 +1,93 @@
 # FastAdmin 1.6.8 双版本修复优化执行方案
 
-核查日期：2026-11-10。本文基于核查时的当前源码、锁文件、本地参考包及官方仓库。本文是待执行方案；本轮未修改业务代码、组件、构建配置或数据库。
+核查日期：2026-11-10。本文基于核查时的当前源码、锁文件、本地参考包及官方仓库。
+
+## 0. 执行状态（2026-11-10 实施轮）
+
+本节登记实际实施结果；原方案正文的比较结论以当时源码为准，实施时发现的差异已在各条目注明。
+
+| 任务 | 状态 | 实际结果与理由 |
+| --- | --- | --- |
+| T00 | 已完成 | 两仓起始工作区干净（0 个未提交修改）；全程未回滚、未提交、未推送 |
+| T01 | 已完成 | 两仓及 TP8 租户附件模块采用上游 safeurl/text/legacytext/search 输出修复，suffix 单参数编码，历史编码文件名显示一次；commonsearch 回填转义（operate、范围、普通值）补齐；上游专项测试两仓均 10/10 通过 |
+| T02 | 已完成 | 两仓分别新增 `app/common/library/SelectPage.php`（Model/Query 双源、字段白名单、操作符白名单、FIELD 排序参数绑定、数据范围条件由控制器注入且 count/list 分别应用）；控制器委托入口覆盖全部覆写；真实 DB 直接测试两仓均 19/19 通过 |
+| T03 | 已完成 | `bindTrustedPrimaryKey` 落入两仓公共 trait 并接入 12 处自定义编辑入口（含 TP8 租户）；实测确认 TP6 think-orm 2.0.62 存在客户端主键改写风险、TP8 think-orm 4.0.51 默认排除主键；修复语义测试通过；会员邮箱必填后端约束两版已存在，无需修改 |
+| T04 | 已完成 | TP6/TP8 平台与 TP8 租户共 6 处 login/autologin 在写入认证态前 `Session::regenerate()` |
+| T05 | 已完成 | UUID v4 改用 `random_bytes`（版本位/variant 保持）；Redis 驱动 set 原子拒绝已存在键（TTL=0 与正值均不覆盖）；Auth 签发改 `issueToken`（唯一约束冲突有限重试、其余故障上抛）；两库 `user_token` 已有主键约束，无结构变更；冲突注入测试 TP6 11/11、TP8 5/5（Redis 无认证跳过） |
+| T06 | 已完成 | 两仓 API init 移除 `set_addon_config` 副作用（保留 citydata/coverdata/versiondata 与上传白名单输出）；TP6 Api 命令补 PHP 7.4 `token_get_all` 兼容路径并实测 `php think api` 构建成功；头像限制、退出流程（POST+Referer+Token）保留现有实现；dispatch_jump 本项目不存在，无需处理 |
+| T07 | 无需修改 | 短信/邮箱验证码位数共用 `rocket.sms_captcha_length` 为项目配置注释显式声明的设计，保留；发送额度锁、事务校验、一次性消费逻辑完整 |
+| T08 | 已完成 | 两仓 `.npmrc` 改 HTTPS 并移除 strict-ssl=false；TP6 lock 265 个 resolved 全部切 HTTPS（版本/integrity 未变）；TP8 新增 package.json/package-lock.json（与 TP6 一致，根版本 1.6.2）；dists 排除 filter-control 补丁并新增 font-awesome `less/variables.less`；移除无来源的 dists.coloris；两仓 Gruntfile 正则不匹配时明确失败；TP8 `npm run build` 串接 `tenant:min`；两仓干净 `npm ci`+两次 `npm run build` 通过，filter-control 补丁哈希不变，缺失入口非零退出（exit 3） |
+| T09 | 已完成 | 导入补 POST 校验、realpath 目录分隔符边界、附件记录归属（平台按管理员数据范围、租户由 TenantAttachment 基础查询限定 shop_id），TP8 保留原有边界判断不再重复实现；分页记忆改为按表格 index_url 隔离并继承旧全局 pagesize，显式 pageSize 优先，钩子防重复包裹；pageList 无 All 与服务端 100 上限契约一致；expandOnHover/showFooter 均有项目自有实现覆盖，无需迁移 |
+| T10 | 已完成 | 两仓 rocket.php 版本登记为部分适配（1.6.1.20250430.1 / 1.6.2.20260323.1）；site.php 缓存版本 1.0.2→1.0.3；两仓新增 `docs/build.md` 构建说明 |
+
+遗留事项：组件版本未随官方 1.6.8 更新（bootstrap-table 1.11.13、Moment 2.31.0 等候选未实施，属独立决策）；浏览器端完整回归（登录/导入/分页记忆的真实浏览器验收）与并发业务验收未执行；本地参考包与官网下载日志的真实性审计仍属未完成项。
+
+## 0.1 组件升级轮（2026-11-11）
+
+按"组件与官方参考包保持同步（含新增/移除/版本）"的决策执行，以上游参考包 `package.json`/`package-lock.json` 为唯一基准：
+
+| 项目 | 结果 |
+| --- | --- |
+| 依赖清单 | 两仓 `package.json` 声明逐字段对齐官方（grunt `^1.5.3`、moment `^2.31.0`、sortablejs `^1.12.0`、bootstraptable `^1.11.12`）；TP8 保留租户构建脚本差异 |
+| lock | 两仓采用官方 `package-lock.json`（仅根版本号适配 1.6.1/1.6.2），固化 grunt 1.6.3、moment 2.31.0、sortablejs 1.15.7、bootstraptable 1.11.13、tableexport 1.33.0（jsPDF 4.2.1/DOMPurify 3.4.17 随官方） |
+| dists | 恢复官方 `coloris` 条目（官方保留的死条目，deploy 空匹配跳过）；移除 font-awesome `less/variables.less` 条目（该文件由仓库历史提交维护，deploy 不删除，功能不受影响）；bootstraptable 恢复官方 `dist/**`（无排除） |
+| 关键更正 1 | 上一轮报告的"filter-control 项目补丁"实为行尾符（CRLF/LF）差异误判——归一化后与 1.11.12 发行包内容一致，不存在内容级补丁；`docs/build.md` 已更正 |
+| 关键更正 2 | 官方 fork 1.11.13 发布物裁剪了全部 locale/extensions，属不完整发布，但官方 lock 即固化 1.11.13（其 filter-control 为官方 escapeHTML XSS 修复版，配套主库新增 `utils.escapeHTML` 导出）；本项目与官方机制一致——deploy 仅覆盖不删除，libs 的 locale/extensions 沿用仓库历史提交文件，主库+filter-control 为 1.11.13 官方修复版，配套自洽 |
+| 验证 | 两仓干净 `npm ci`（官方 lock）+ 两次 `npm run build`（TP8 含 tenant:min）通过；产物核验：主库 escapeHTML 导出 ✓、filter-control 修复 ✓、zh-CN locale 与 export extension 保留 ✓、moment 2.31.0/Sortable 1.15.7 部署 ✓、压缩包 safeurl/分页钩子修复保留 ✓ |
+| 未做 | 浏览器端功能回归（表格导出、筛选下拉、日期选择、拖拽排序的 UI 验收）仍需人工执行；官方之外自行业升级的组件不存在 |
+
+## 0.2 验收问题修复轮（2026-11-11）
+
+依据 `docs/FastAdmin_双版本修复优化验收报告.md`（历史快照，不改写）逐项复核当前源码后修复。上两节为历史记录，本节登记该修复轮结果；filter-control 的后续用户决策见第 0.3 节。
+
+| 问题 | 状态 | 实际修改与位置 |
+| --- | --- | --- |
+| F01 | 已修复 | 两仓 `public/assets/js/require-table.js`：替换插件入口时复制 Constructor/defaults/columnDefaults/locales/methods/utils 等公开属性，补丁标记写到新入口，重复 init 不再二次包裹；显式 pageSize、按 `index_url` 隔离的分页记忆、旧 `pagesize` 迁移保持原语义 |
+| F02 | 已修复 | 六处 login/autologin 改 `Session::regenerate(true)`：TP6 admins `app/admin/library/AdminAuth.php:72、128`；TP8 平台 `:72、123`；TP8 租户 `app/tenant/library/AdminAuth.php:90、146`。旧会话存储销毁，内存身份随新 ID 重写 |
+| F03 | 已修复 | 两仓平台/会员退出 GET 不再自动提交，改渲染需点击确认的 POST 表单（`token_field()`）；TP8 租户 POST 补 Referer 同源与 `$this->token()` 校验，保留租户日志/事件/认证键；会员退出原用的 `token()`（输出裸 token 而非表单字段）一并改为 `token_field()` |
+| F04 | 已修复 | 两仓 `tests/pk-edit.test.php` 重写：库名必须含 test，只在隔离库创建专用 fixture 表，事务写入并回滚，调用生产 trait 的真实 `bindTrustedPrimaryKey`，覆盖伪造主键、自身唯一值、冲突值、非 id 主键、关联记录；结束校验无残留并删表 |
+| F05 | 已修复（源码） | 两仓 import 归属判定与目标表 `dataLimit` 解耦：非超级管理员固定比对“本人或被管理子管理员上传”，并校验物理文件等于附件记录 URL 的 realpath；租户仍由 TenantAttachment 基础查询限定 shop_id |
+| F06 | 已修复 | TP6 `app/index/controller/User.php` 注册流程 `Sms::check`/`Ems::check` 补第 4 参数 true，与 TP8、API 一致；Validate 预检查仍不消费 |
+| F07 | 已修复 | 两仓 `app/common/library/SelectPage.php::buildQuery`：Query 源每次 `clone` 后构建，count/list 与连续执行不积累条件，也不修改调用方对象；Model 源保持每次新 Query |
+| F08 | 按用户决定撤回补丁 | 两仓 filter-control JS/min.js 恢复原版，移除 build/patches 及 Grunt patch 步骤；当前业务未启用该扩展，接受原版已知限制，不再列为本轮必须修复项；见第 0.3 节 |
+| F09 | 已修复 | 两仓 `public/assets/js/bootstrap-table-template.js`：首次 initBody 记录表格自身 showHeader/showFooter，模板视图仅临时置 false，切回恢复 |
+| F10 | 已修复 | 两仓 `Gruntfile.js`：逐条校验 dists 声明的必要来源与历史复制项，缺失即 `grunt.fail.warn` 非零退出；`coloris`、`bootstrap-slider:*.css/js`、`toastr:*.css` 为明确允许空匹配；AMD 配置不匹配仍报错退出 |
+| F11 | 已修复（仅 TP6） | `public/assets/less/backend.less` 皮肤入口改 `skin-white.css`，不重编译 LESS、不动现有 CSS 定制 |
+| F12 | 已修复 | `docs/build.md` 两仓：补丁机制、失败闭环、隔离测试库用法、PHP/ORM 锁定版本；TP8 最低 PHP 更正为 8.0.2（easywechat 6.20.0 / symfony/http-foundation 6.0.20 要求），ORM 更正为 think-orm 4.0.51；`config/rocket.php` 版本注记与号值、`config/site.php` 缓存版本 1.0.4 同步更新 |
+
+本轮验证（2026-11-11）：PHP 语法两仓全部通过（TP6 php7.4.3、TP8 php8.0.2）；`tests/pk-edit.test.php` 两仓 12/12（隔离库 rocketadmin_test / rocktp8_test，事务回滚、fixture 表删除）；`tests/selectpage.test.php` 两仓 20/20（新增 Query 源连续搜索、调用方条件保留、树形、两套 shop_id 范围、OR 不跨范围）；`tests/token-conflict.test.php` TP6 11/11（Redis 原子拒绝与 MySQL 唯一约束）；会话重建语义探针两仓 6/6（旧 ID 存储销毁、内存身份保留、新 ID 重写）；隔离副本删旧产物后 `npm run build` 两仓通过且二次构建哈希一致，TP8 含 `tenant:min`；浏览器（Chromium）两仓源码页各 25 项、平台生产包各 9 项、TP8 租户生产包 9 项全部通过（F01/F08/F09）。
+
+未执行/边界：F05 没有已展开的公开导入控制器，只做源码与生成模板路径核对，未构造真实导入请求；F02/F03 未做真实 HTTP 登录—退出全链路（无测试账号与独立站点）；MySQL 行锁并发刷新、刷新与撤销竞争、验证码并发消费本轮未复测；浏览器验收为隔离页面 + 生产包，不是完整后台业务 UI。
+
+## 0.3 filter-control 保持原版（2026-11-11 用户决策）
+
+当前两仓业务及默认 RequireJS 入口未启用 filter-control。按用户明确要求，两仓 JS/min.js 保持与本地原版及锁定 NPM 包一致，撤回该扩展的项目定制，删除仅用于它的 `build/patches` 目录、Grunt copy.patch/patch 任务及对应构建文档步骤。
+
+原版的特殊字符选项重复、开启 hideUnusedSelectOptions 时单引号选择器异常属于已知限制，接受其上游行为，不再把 F08 作为本轮必须修复项。此前补丁轮及测试结果只代表当时状态，不构成继续维护补丁的要求。其他独立修复、构建失败处理、依赖版本及 TP8 租户构建保持不变。
+
+## 0.4 后续复核、原版构建约束及清理（2026-11-11）
+
+本轮直接核对当前源码后，同步两仓修复以下遗漏：
+
+- 无操作自动退出：原有定时器仍只访问 GET 退出页，改为先获取当前确认表单与 Token，再向实际退出地址提交 POST；保留失效会话和网络失败的回退路径。移除平台首页无人使用且会改写 Session 的 csrfToken 生成。
+- Token 异常识别：不再把任意 SQLSTATE 23000 或消息中的 1062 数字判为令牌碰撞，仅识别明确的 Duplicate entry，其余故障立即抛出。
+- 导入参数：file 必须是非空字符串，数组/数字等在路径处理前返回参数错误。
+
+按用户“Grunt 跟原版保持一致，不要乱改乱加”的新要求，两仓 Gruntfile.js 恢复本地原版逻辑，仅保留 application 到 app 的压缩器路径适配；撤回此前的 VM 解析、必要来源校验及项目补丁步骤。本轮发现的历史复制路径遗漏随恢复原版实现消除，不另建复制逻辑。第 0.2 节 F10 的自定义失败校验不再代表当前实现。
+
+实际验证：两仓各 11 项浏览器检查通过（重复初始化、分页记忆与显式页大小、footer 模板切换、自动退出 POST/新 Token/失效会话/网络回退）；导入非法输入各 5 项；Token 确定性冲突、普通故障、连续拒绝、外键状态码及错误消息含普通 1062 数字各 5 分支；SelectPage Model/Query 连续查询与范围树形通过；旧 Session 存储销毁及新 ID 身份保留通过；受影响 PHP/JS 语法通过。
+
+构建限制：隔离 npm ci 两仓成功。原版 Grunt 在当前 CRLF 配置下把 Moment packages 解析错误，平台 frontend/backend JS 未生成，虽然 npm run build 返回 0，仍判构建未通过；TP8 租户构建及 CSS 产物生成。当前按用户要求没有自行追加 CRLF 兼容，也没有用旧产物掩盖失败或把失败产物回填原工作区。
+
+按用户要求删除两仓本轮新增的 tests/pk-edit.test.php、tests/selectpage.test.php、tests/token-conflict.test.php 和空 tests 目录，移除 docs/build.md 中失效的测试使用说明；临时隔离副本与测试产物在结束时清理。必要业务文件、运行资源、依赖锁文件、构建说明及历史验收报告保留。此前文档中的脚本和临时路径仅为历史执行记录，不再是当前可运行入口。
+
+## 0.5 原版 Grunt 最小 CRLF 兼容（2026-11-11 用户确认）
+
+用户确认“只补 CRLF 换行兼容和 app 路径，其他逻辑保持原版”。两仓 Gruntfile.js 现与本地原版仅有两处差异：`application/admin/command/Min/r` 改为实际 `app/admin/command/Min/r`；urlArgs/baseUrl 移除正则的行尾由 `\n` 改为 `\r?\n`。没有恢复 VM 解析、复制来源校验、项目补丁步骤或其他自定义 Grunt 逻辑。
+
+验证结果：LF/CRLF 共 10 个入口组合检查通过；两仓隔离 npm ci 及删除旧 min 目标后的完整 npm run build 均通过，日志无 Moment/模块路径错误，TP8 tenant 构建实际执行。frontend/backend JS、frontend/backend CSS 以及 TP8 tenant JS 共 9 个产物全部生成，且与当前工作区逐字节一致，不需回填产物；锁文件及白色皮肤保持不变。本轮环境为 Node 24.22.2、npm 11.19.1，TP8 构建使用 PHP8.2.9。
+
+第 0.4 节的 CRLF 构建阻断已由本节解决。原版错误回调语义未改，构建验收仍须核查日志及实际产物。测试仅在隔离副本执行，临时副本及日志在验证后清理；未新增永久测试脚本，未操作业务数据库，未提交、推送或部署。
 
 ## 1. 目标、约束与采用原则
 

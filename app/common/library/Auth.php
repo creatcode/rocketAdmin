@@ -186,8 +186,7 @@ class Auth
             $this->_user = User::find($user->id);
 
             //设置Token
-            $this->_token = Random::uuid();
-            Token::set($this->_token, $user->id, $this->getKeepTime());
+            $this->_token = $this->issueToken($user->id);
 
             //设置登录状态
             $this->_logined = true;
@@ -334,8 +333,7 @@ class Auth
 
                 $this->_user = $user;
 
-                $this->_token = Random::uuid();
-                Token::set($this->_token, $user->id, $this->getKeepTime());
+                $this->_token = $this->issueToken($user->id);
 
                 $this->_logined = true;
 
@@ -546,6 +544,44 @@ class Auth
         }
 
         return max(0, (int)Config::get('token.expire', 2592000));
+    }
+
+    /**
+     * 生成并写入新 Token
+     * 唯一约束/原子写入拒绝冲突时以新随机标识有限重试；
+     * 其余失败按原机制向上抛出，不把数据库故障伪装为随机碰撞
+     * @param int $user_id 会员ID
+     * @return string
+     * @throws Exception 签发失败（含重试耗尽）
+     */
+    protected function issueToken($user_id): string
+    {
+        $attempts = 0;
+        while (++$attempts <= 3) {
+            $token = Random::uuid();
+            try {
+                if (Token::set($token, $user_id, $this->getKeepTime())) {
+                    return $token;
+                }
+            } catch (Exception $e) {
+                //仅可识别的唯一约束冲突才重试
+                if (!$this->isTokenDuplicateError($e)) {
+                    throw $e;
+                }
+            }
+        }
+        throw new Exception('Token issuance failed');
+    }
+
+    /**
+     * 判断异常是否为 Token 唯一约束冲突
+     * @param Exception $e
+     * @return bool
+     */
+    protected function isTokenDuplicateError(Exception $e): bool
+    {
+        //SQLSTATE 23000 还包含外键等约束错误，不能仅凭状态码或消息中的数字判作令牌碰撞
+        return strpos($e->getMessage(), 'Duplicate entry') !== false;
     }
 
     /**

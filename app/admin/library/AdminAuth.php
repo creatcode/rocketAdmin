@@ -68,6 +68,8 @@ class AdminAuth extends AuthService
         if (!$admin) {
             return false;
         }
+        //认证成功后销毁旧会话存储并重建会话 ID，防止会话固定攻击；内存中的其他身份随新 ID 重新写入
+        Session::regenerate(true);
         Session::set("admin", $admin->toArray());
         Session::set("admin.safecode", $this->getEncryptSafecode($admin));
         $this->keeplogin($admin, $keeptime);
@@ -122,6 +124,8 @@ class AdminAuth extends AuthService
             if ($admin->loginip != $ip) {
                 return false;
             }
+            //自动登录成功后销毁旧会话存储并重建会话 ID，防止会话固定攻击
+            Session::regenerate(true);
             Session::set("admin", $admin->toArray());
             Session::set("admin.safecode", $this->getEncryptSafecode($admin));
             //刷新自动登录的时效

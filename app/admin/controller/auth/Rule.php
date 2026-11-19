@@ -103,6 +103,7 @@ class Rule extends Backend
             $this->token();
             $params = $this->request->post("row/a", [], 'strip_tags');
             if ($params) {
+                $params = $this->bindTrustedPrimaryKey($params, $row);
                 if (!$params['ismenu'] && !$params['pid']) {
                     $this->error(__('The non-menu rule must have parent'));
                 }

@@ -115,12 +115,50 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 $.fn.bootstrapTable.Constructor.prototype.getSelectItem = function () {
                     return this.$selectItem;
                 };
-                var _onPageListChange = $.fn.bootstrapTable.Constructor.prototype.onPageListChange;
-                $.fn.bootstrapTable.Constructor.prototype.onPageListChange = function () {
-                    _onPageListChange.apply(this, Array.prototype.slice.apply(arguments));
-                    localStorage.setItem('pagesize', this.options.pageSize);
-                    return false;
-                };
+                //分页大小记忆按表格身份隔离：钩子仅注册一次，防止 init 多次调用重复包裹原型
+                if (!$.fn.bootstrapTable.__pagesizePatched) {
+                    //记录插件入口：控制器显式传入 pageSize 的表格以配置为准
+                    var _bootstrapTable = $.fn.bootstrapTable;
+                    var _wrappedBootstrapTable = function () {
+                        var args = Array.prototype.slice.apply(arguments);
+                        if (args.length && args[0] && typeof args[0] === 'object' && typeof args[0].pageSize !== 'undefined') {
+                            args[0].__explicitPageSize = true;
+                        }
+                        return _bootstrapTable.apply(this, args);
+                    };
+                    //保留 Constructor/defaults/columnDefaults/locales/methods/utils 等公开属性及补丁标记，
+                    //否则替换入口后 Constructor 丢失、重复初始化还会二次包裹
+                    $.each(_bootstrapTable, function (key, value) {
+                        _wrappedBootstrapTable[key] = value;
+                    });
+                    _wrappedBootstrapTable.__pagesizePatched = true;
+                    $.fn.bootstrapTable = _wrappedBootstrapTable;
+                    var _constructorInit = $.fn.bootstrapTable.Constructor.prototype.init;
+                    $.fn.bootstrapTable.Constructor.prototype.init = function () {
+                        //恢复表格身份对应的分页大小；未记忆时继承旧全局 pagesize，再回退默认值
+                        var indexUrl = (this.options && this.options.extend && this.options.extend.index_url) || '';
+                        if (!this.options.__explicitPageSize && indexUrl) {
+                            var stored = localStorage.getItem('pagesize:' + indexUrl);
+                            if (stored === null) {
+                                stored = localStorage.getItem('pagesize');
+                            }
+                            if (stored !== null) {
+                                this.options.pageSize = Math.min(100, Math.max(1, parseInt(stored, 10) || 20));
+                            }
+                        }
+                        _constructorInit.apply(this, Array.prototype.slice.apply(arguments));
+                    };
+                    var _onPageListChange = $.fn.bootstrapTable.Constructor.prototype.onPageListChange;
+                    $.fn.bootstrapTable.Constructor.prototype.onPageListChange = function () {
+                        _onPageListChange.apply(this, Array.prototype.slice.apply(arguments));
+                        //按表格身份写入，避免跨页互相影响
+                        var indexUrl = (this.options && this.options.extend && this.options.extend.index_url) || '';
+                        if (indexUrl) {
+                            localStorage.setItem('pagesize:' + indexUrl, this.options.pageSize);
+                        }
+                        return false;
+                    };
+                }
                 // 写入bootstrap-table默认配置
                 $.extend(true, $.fn.bootstrapTable.defaults, Table.defaults, defaults);
                 // 写入bootstrap-table column配置

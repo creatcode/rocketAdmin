@@ -94,6 +94,23 @@ trait Backend
     }
 
     /**
+     * 以可信记录主键约束编辑参数
+     * 客户端提交的主键不能改变更新目标或改写主键；主键以已通过权限校验的记录为准，
+     * 同时保证唯一性验证（unique 规则）能正确排除当前记录
+     * @param array  $params 编辑参数
+     * @param \think\Model $row 已通过权限校验的记录
+     * @return array
+     */
+    protected function bindTrustedPrimaryKey(array $params, $row)
+    {
+        $pk = $this->model->getPk();
+        if (is_string($pk) && $pk !== '') {
+            $params[$pk] = $row[$pk];
+        }
+        return $params;
+    }
+
+    /**
      * 事务包装器：统一事务+异常处理
      * @param callable $callback 业务逻辑
      * @param string   $failMsg  失败时的提示信息
@@ -225,6 +242,7 @@ trait Backend
             $this->error(__('Parameter %s can not be empty', ''));
         }
         $params = $this->preExcludeFields($params);
+        $params = $this->bindTrustedPrimaryKey($params, $row);
 
         $this->runInTransaction(function () use ($row, $params) {
             //是否采用模型验证
@@ -421,13 +439,35 @@ trait Backend
      */
     protected function import()
     {
+        //导入仅接受 POST，避免 GET 触发文件读取与解析
+        if (!$this->request->isPost()) {
+            $this->error(__('Invalid parameters'));
+        }
         $file = $this->request->request('file');
-        if (!$file) {
+        if (!is_string($file) || $file === '') {
             $this->error(__('Parameter %s can not be empty', 'file'));
         }
-        $filePath = public_path() . $file;
-        if (!is_file($filePath)) {
+        //文件必须位于 public 目录内（realpath 边界含目录分隔符，拒绝穿越）
+        $publicPath = realpath(public_path());
+        $publicPath = $publicPath ? rtrim($publicPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : false;
+        $filePath = realpath(public_path() . ltrim((string)$file, '/\\'));
+        if (!$publicPath || !$filePath || strpos($filePath, $publicPath) !== 0 || !is_file($filePath)) {
             $this->error(__('No results were found'));
+        }
+        //附件归属校验：必须存在附件记录，且物理文件就是该记录指向的文件（等价于限定在实际上传目录内）
+        $attachment = \app\common\model\Attachment::where('url', '/' . ltrim((string)$file, '/\\'))->find();
+        if (!$attachment) {
+            $this->error(__('No results were found'));
+        }
+        if (realpath(public_path() . ltrim((string)$attachment['url'], '/\\')) !== $filePath) {
+            $this->error(__('No results were found'));
+        }
+        //归属判定独立于目标表的 dataLimit 开关：非超级管理员只能导入本人或被管理子管理员上传的附件
+        if (!$this->auth->isSuperAdmin()) {
+            $adminIds = $this->dataLimit == 'auth' ? $this->auth->getChildrenAdminIds(true) : [$this->auth->id];
+            if (!in_array((int)$attachment['admin_id'], array_map('intval', $adminIds))) {
+                $this->error(__('You have no permission'));
+            }
         }
         //实例化reader
         $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));

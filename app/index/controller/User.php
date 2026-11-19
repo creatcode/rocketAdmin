@@ -79,9 +79,10 @@ class User extends Frontend
             $captchaType = config('rocket.user_register_captcha');
             if ($captchaType) {
                 if ($captchaType == 'mobile') {
-                    $captchaResult = Sms::check($mobile, $captcha, 'register');
+                    //注册是最终业务入口，校验通过后立即消费，避免同一验证码被重复使用
+                    $captchaResult = Sms::check($mobile, $captcha, 'register', true);
                 } elseif ($captchaType == 'email') {
-                    $captchaResult = Ems::check($email, $captcha, 'register');
+                    $captchaResult = Ems::check($email, $captcha, 'register', true);
                 } elseif ($captchaType == 'wechat') {
                     $captchaResult = false;
                 } elseif ($captchaType == 'text') {
@@ -176,7 +177,7 @@ class User extends Frontend
         if ($this->request->isPost()) {
             //Referer同源校验
             $referer = $this->request->server('HTTP_REFERER');
-            if (!$referer || strtolower((string)parse_url($referer, PHP_URL_HOST)) != strtolower($this->request->host())) {
+            if (!$referer || strtolower((string)parse_url($referer, PHP_URL_HOST)) != strtolower($this->request->host(true))) {
                 $this->error(__('Invalid request'));
             }
             $this->token();
@@ -184,8 +185,13 @@ class User extends Frontend
             $this->auth->logout();
             $this->success(__('Logout successful'), (string)url('user/index'));
         }
-        $html = "<form id='logout_submit' name='logout_submit' action='' method='post'>" . token() . "<input type='submit' value='ok' style='display:none;'></form>";
-        $html .= "<script>document.forms['logout_submit'].submit();</script>";
+        //GET 阶段不自动提交注销：返回需用户确认的 POST 表单，Token 在 POST 中由 $this->token() 校验
+        $html = "<!DOCTYPE html><html><head><meta charset='utf-8'><title>" . __('Logout') . "</title></head><body>"
+            . "<form id='logout_submit' name='logout_submit' action='' method='post'>" . token_field()
+            . "<input type='submit' value='" . __('Logout') . "'>"
+            . "</form>"
+            . "<a href='javascript:history.back();'>" . __('Cancel') . "</a>"
+            . "</body></html>";
 
         return $html;
     }

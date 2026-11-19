@@ -273,7 +273,8 @@ class Config extends Backend
         $custom = array_filter($custom);
 
         $this->request->request(['showField' => $setting['field'], 'keyField' => $setting['primarykey'], 'custom' => $custom, 'searchField' => [$setting['field'], $setting['primarykey']]]);
-        $this->model = Db::connect()->setTable($setting['table']);
+        //think-orm 2.x 的 connect() 返回连接对象，须通过 table() 获取查询对象
+        $this->model = Db::connect()->table($setting['table']);
         return parent::selectpage();
     }
 

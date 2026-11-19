@@ -4,6 +4,7 @@ namespace app\api\library;
 
 use think\exception\Handle;
 use think\exception\HttpException;
+use think\exception\HttpResponseException;
 use think\exception\ValidateException;
 use think\Response;
 use Throwable;
@@ -24,6 +25,9 @@ class ApiExceptionHandle extends Handle
      */
     public function render($request, Throwable $e): Response
     {
+        if ($e instanceof HttpResponseException) {
+            return $e->getResponse();
+        }
         // 在生产环境下返回code信息
         if (!env('app_debug')) {
             $statuscode = $code = 500;

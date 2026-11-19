@@ -176,51 +176,66 @@ class Api extends Command
      */
     protected function getClassFromFile($filename)
     {
+        $content = file_get_contents($filename);
+        if (class_exists(\PhpToken::class)) {
+            //PHP 8.0+
+            $tokens = array_map(function ($token) {
+                return [$token->getTokenName(), $token->text];
+            }, \PhpToken::tokenize($content));
+        } else {
+            //PHP 7.4 无 PhpToken，使用 token_get_all 等价转换
+            $tokens = array_map(function ($token) {
+                return is_array($token) ? [token_name($token[0]), $token[1]] : [$token, $token];
+            }, token_get_all($content));
+        }
+
         $getNext = null;
         $isNamespace = false;
         $skipNext = false;
         $namespace = '';
         $class = '';
-        foreach (\PhpToken::tokenize(file_get_contents($filename)) as $token) {
-            if (!$token->isIgnorable()) {
-                $name = $token->getTokenName();
-                switch ($name) {
-                    case 'T_NAMESPACE':
-                        $isNamespace = true;
-                        break;
-                    case 'T_EXTENDS':
-                    case 'T_USE':
-                    case 'T_IMPLEMENTS':
-                        $skipNext = true;
-                        break;
-                    case 'T_CLASS':
-                        if ($skipNext) {
-                            $skipNext = false;
+        foreach ($tokens as $token) {
+            [$name, $text] = $token;
+            //等价于 PhpToken::isIgnorable()
+            if (in_array($name, ['T_WHITESPACE', 'T_COMMENT', 'T_DOC_COMMENT'], true)) {
+                continue;
+            }
+            switch ($name) {
+                case 'T_NAMESPACE':
+                    $isNamespace = true;
+                    break;
+                case 'T_EXTENDS':
+                case 'T_USE':
+                case 'T_IMPLEMENTS':
+                    $skipNext = true;
+                    break;
+                case 'T_CLASS':
+                    if ($skipNext) {
+                        $skipNext = false;
+                    } else {
+                        $getNext = strtolower(substr($name, 2));
+                    }
+                    break;
+                case 'T_NAME_QUALIFIED':
+                case 'T_NS_SEPARATOR':
+                case 'T_STRING':
+                case ';':
+                    if ($isNamespace) {
+                        if ($name == ';') {
+                            $isNamespace = false;
                         } else {
-                            $getNext = strtolower(substr($name, 2));
+                            $namespace .= $text;
                         }
-                        break;
-                    case 'T_NAME_QUALIFIED':
-                    case 'T_NS_SEPARATOR':
-                    case 'T_STRING':
-                    case ';':
-                        if ($isNamespace) {
-                            if ($name == ';') {
-                                $isNamespace = false;
-                            } else {
-                                $namespace .= $token->text;
-                            }
-                        } elseif ($skipNext) {
-                            $skipNext = false;
-                        } elseif ($getNext == 'class') {
-                            $class = $token->text;
-                            $getNext = null;
-                            break 2;
-                        }
-                        break;
-                    default:
+                    } elseif ($skipNext) {
+                        $skipNext = false;
+                    } elseif ($getNext == 'class') {
+                        $class = $text;
                         $getNext = null;
-                }
+                        break 2;
+                    }
+                    break;
+                default:
+                    $getNext = null;
             }
         }
         $className = $namespace . '\\' . $class;

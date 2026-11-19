@@ -165,7 +165,7 @@ class Admin extends Backend
                     foreach ($group as $value) {
                         $dataset[] = ['uid' => $this->model->id, 'group_id' => $value];
                     }
-                    $this->authGroupAccessModel->saveAll($dataset);
+                    $this->authGroupAccessModel->saveAll($dataset, false);
                     Db::commit();
                 } catch (\Exception $e) {
                     Db::rollback();
@@ -194,6 +194,7 @@ class Admin extends Backend
             $this->token();
             $params = $this->request->post("row/a");
             if ($params) {
+                $params = $this->bindTrustedPrimaryKey($params, $row);
                 Db::startTrans();
                 try {
                     if ($params['password']) {
@@ -236,7 +237,7 @@ class Admin extends Backend
                     foreach ($group as $value) {
                         $dataset[] = ['uid' => $row->id, 'group_id' => $value];
                     }
-                    $this->authGroupAccessModel->saveAll($dataset);
+                    $this->authGroupAccessModel->saveAll($dataset, false);
                     Db::commit();
                 } catch (\Exception $e) {
                     Db::rollback();

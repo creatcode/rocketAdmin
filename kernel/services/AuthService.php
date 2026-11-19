@@ -200,10 +200,10 @@ class AuthService
 
         // 筛选条件
         $where = [
-            'status' => 'normal',
+            ['status', '=', 'normal'],
         ];
         if (!in_array('*', $ids)) {
-            $where['id'] = ['in', $ids];
+            $where[] = ['id', 'in', $ids];
         }
 
         // 读取用户组拥有的所有权限规则

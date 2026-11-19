@@ -3,8 +3,8 @@
 namespace app\common\controller;
 
 use app\BaseController;
-use think\Model;
-use util\Tree;
+use app\common\library\SelectPage;
+use think\Exception;
 
 /**
  * 后台控制器公共基类
@@ -302,151 +302,42 @@ abstract class BackendBase extends BaseController
      */
     protected function selectpage()
     {
-        //设置过滤方法
-        $this->request->filter(['trim', 'strip_tags', 'htmlspecialchars']);
+        //查询值保留原文，字段与 SQL 由查询类校验/绑定，HTML 仅在结果输出时编码。
+        $this->request->filter(['trim']);
 
-        //搜索关键词,客户端输入以空格分开,这里接收为数组
-        $word = (array)$this->request->request("q_word/a");
-        //当前页
-        $page = $this->request->request("pageNumber", 1);
-        //分页大小
-        $pagesize = $this->request->request("pageSize", 10);
-        //搜索条件
-        $andor = $this->request->request("andOr", "and", "strtoupper");
-        //排序方式
-        $orderby = (array)$this->request->request("orderBy/a");
-        //显示的字段
-        $field = $this->request->request("showField");
-        //主键
-        $primarykey = $this->request->request("keyField");
-        //主键值
-        $primaryvalue = $this->request->request("keyValue");
-        //搜索字段
-        $searchfield = (array)$this->request->request("searchField/a");
-        //自定义搜索条件
-        $custom = (array)$this->request->request("custom/a");
-        //是否返回树形结构
-        $istree = $this->request->request("isTree", 0);
-        $ishtml = $this->request->request("isHtml", 0);
-        $primarykey = preg_match('/^[a-zA-Z0-9_]+$/', (string)$primarykey) ? $primarykey : $this->model->getPk();
-        $page = max(1, (int)$page);
-        $pagesize = max(1, min(999999, (int)$pagesize));
-        if ($istree) {
-            $word = [];
-            $pagesize = 999999;
-        }
-        $order = [];
-        foreach ($orderby as $k => $v) {
-            if (is_array($v) && isset($v[0]) && preg_match('/^[a-zA-Z0-9_\.]+$/', $v[0])) {
-                $order[$v[0]] = isset($v[1]) && in_array(strtoupper($v[1]), ['ASC', 'DESC']) ? $v[1] : 'DESC';
-            }
-        }
-        $field = $field && preg_match('/^[a-zA-Z0-9_]+$/', $field) ? $field : 'name';
+        $params = [
+            'q_word'      => $this->request->request('q_word/a', []),
+            'pageNumber'  => $this->request->request('pageNumber/d', 1),
+            'pageSize'    => $this->request->request('pageSize/d', 10),
+            'andOr'       => $this->request->request('andOr', 'AND'),
+            'orderBy'     => $this->request->request('orderBy/a', []),
+            'showField'   => $this->request->request('showField', ''),
+            'keyField'    => $this->request->request('keyField', ''),
+            'keyValue'    => $this->request->request('keyValue'),
+            'searchField' => $this->request->request('searchField/a', []),
+            'custom'      => $this->request->request('custom/a', []),
+            'isTree'      => $this->request->request('isTree', 0),
+            'isHtml'      => $this->request->request('isHtml', 0),
+        ];
 
-        //如果有primaryvalue,说明当前是初始化传值
-        if ($primaryvalue !== null) {
-            $where = [$primarykey => is_array($primaryvalue) ? $primaryvalue : explode(',', $primaryvalue)];
-            $pagesize = 999999;
-        } else {
-            $where = function ($query) use ($word, $andor, $field, $searchfield, $custom) {
-                $logic = $andor == 'AND' ? '&' : '|';
-                $searchfield = is_array($searchfield) ? implode($logic, $searchfield) : $searchfield;
-                $searchfield = preg_replace('/[^a-zA-Z0-9_\.\,\|]/', '', $searchfield);
-                $searchfield = str_replace(',', $logic, $searchfield);
-                $searchfield = $searchfield ?: $field;
-                $word = array_filter(array_unique($word));
-                if (count($word) == 1) {
-                    $query->where($searchfield, "like", "%" . reset($word) . "%");
-                } else {
-                    $query->where(function ($query) use ($word, $searchfield) {
-                        foreach ($word as $index => $item) {
-                            $query->whereOr(function ($query) use ($item, $searchfield) {
-                                $query->where($searchfield, "like", "%{$item}%");
-                            });
-                        }
-                    });
-                }
-                if ($custom && is_array($custom)) {
-                    foreach ($custom as $k => $v) {
-                        if (preg_match('/^[a-zA-Z0-9_]+$/', $k)) {
-                            if (is_array($v) && 2 == count($v)) {
-                                $query->where($k, trim($v[0]), $v[1]);
-                            } else {
-                                $query->where($k, '=', $v);
-                            }
-                        }
-                    }
-                }
-            };
-        }
-        $dataLimitWhere = [];
+        //数据范围条件由服务端授权体系计算，不来自客户端参数
+        $limitConditions = [];
         $adminIds = $this->getDataLimitAdminIds();
         if (is_array($adminIds)) {
-            $dataLimitWhere[] = [$this->dataLimitField, 'in', $adminIds];
+            $limitConditions[] = [$this->dataLimitField, 'in', $adminIds];
         }
 
-        //如果有primaryvalue,说明当前是初始化传值,按照选择顺序排序
-        $primaryOrder = null;
-        if ($primaryvalue !== null && preg_match("/^[a-zA-Z0-9_\-]+$/i", $primarykey)) {
-            $primaryOrder = array_unique(is_array($primaryvalue) ? $primaryvalue : explode(',', $primaryvalue));
-            //主键值需手工转义（think-orm 无 quote 方法），兼容字符串型 data-primary-key
-            $primaryOrder = array_map(function ($value) {
-                return '\'' . addslashes((string)$value) . '\'';
-            }, $primaryOrder);
-            $primaryOrder = implode(',', $primaryOrder);
+        $selectPage = new SelectPage($this->model, $this->selectpageFields);
+        $selectPage->setLimitConditions($limitConditions);
+
+        try {
+            $result = $selectPage->execute($params);
+        } catch (Exception $e) {
+            $this->error(__('Invalid parameters'));
         }
 
-        //查询条件不跨语句保留，数据限制与排序须与查询条件构建在同一条链上
-        $buildQuery = function () use ($where, $dataLimitWhere, $order, $primarykey, $primaryOrder) {
-            $query = $this->model->where($where);
-            foreach ($dataLimitWhere as $item) {
-                $query->where($item[0], $item[1], $item[2]);
-            }
-            if ($primaryOrder !== null) {
-                $query->orderRaw("FIELD(`{$primarykey}`, {$primaryOrder})");
-            } else {
-                $query->order($order);
-            }
-            return $query;
-        };
-
-        $list = [];
-        $total = $buildQuery()->count();
-        if ($total > 0) {
-            $fields = is_array($this->selectpageFields) ? $this->selectpageFields : ($this->selectpageFields && $this->selectpageFields != '*' ? explode(',', $this->selectpageFields) : []);
-
-            $datalist = $buildQuery()
-                ->page($page, $pagesize)
-                ->select();
-
-            foreach ($datalist as $index => $item) {
-                unset($item['password'], $item['salt']);
-                if ($this->selectpageFields == '*') {
-                    $result = [
-                        $primarykey => $item[$primarykey] ?? '',
-                        $field      => $item[$field] ?? '',
-                    ];
-                } else {
-                    $result = array_intersect_key(($item instanceof Model ? $item->toArray() : (array)$item), array_flip($fields));
-                }
-                $result['pid'] = isset($item['pid']) ? $item['pid'] : (isset($item['parent_id']) ? $item['parent_id'] : 0);
-                $result = array_map("htmlentities", $result);
-                $list[] = $result;
-            }
-            if ($istree && !$primaryvalue) {
-                $tree = Tree::instance();
-                $tree->init(collect($list)->toArray(), 'pid');
-                $list = $tree->getTreeList($tree->getTreeArray(0), $field);
-                if (!$ishtml) {
-                    foreach ($list as &$item) {
-                        $item = str_replace('&nbsp;', ' ', $item);
-                    }
-                    unset($item);
-                }
-            }
-        }
         //这里一定要返回有list这个字段,total是可选的,如果total<=list的数量,则会隐藏分页按钮
-        return json(['list' => $list, 'total' => $total]);
+        return json($result);
     }
 
     /**
