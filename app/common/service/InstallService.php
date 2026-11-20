@@ -113,6 +113,7 @@ class InstallService
         $this->initializeAccounts($connection, $data);
         $this->syncSiteConfig($connection, $data['siteName']);
         $this->writeLock($data);
+        $this->removeWebInstaller();
 
         return [
             'adminPath' => '/admin/index/login',
@@ -349,6 +350,17 @@ class InstallService
 
         if (file_put_contents($this->lockFile, $payload) === false) {
             throw new Exception(__('The current permissions are insufficient to write the file %s', self::LOCK_FILE));
+        }
+    }
+
+    /**
+     * 安装完成后删除 Web 安装入口，避免安装脚本长期暴露
+     */
+    protected function removeWebInstaller(): void
+    {
+        $installer = root_path() . 'public' . DIRECTORY_SEPARATOR . 'install.php';
+        if (is_file($installer)) {
+            @unlink($installer);
         }
     }
 

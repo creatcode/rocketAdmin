@@ -280,27 +280,8 @@ class User extends Api
      */
     public function third()
     {
-        // $url = (string)url('user/index');
-        // $platform = $this->request->post("platform");
-        // $code = $this->request->post("code");
-        // $config = get_addon_config('third');
-        // if (!$config || !isset($config[$platform])) {
-        //     $this->error(__('Invalid parameters'));
-        // }
-        // $app = new \addons\third\library\Application($config);
-        // //通过code换access_token和绑定会员
-        // $result = $app->{$platform}->getUserInfo(['code' => $code]);
-        // if ($result) {
-        //     $loginret = \addons\third\library\Service::connect($platform, $result);
-        //     if ($loginret) {
-        //         $data = [
-        //             'userinfo'  => $this->auth->getUserinfo(),
-        //             'thirdinfo' => $result
-        //         ];
-        //         $this->success(__('Logged in successful'), $data);
-        //     }
-        // }
-        // $this->error(__('Operation failed'), $url);
+        // 第三方登录依赖 third 插件，未安装时明确返回失败，避免空响应
+        $this->error(__('Operation failed'));
     }
 
     /**

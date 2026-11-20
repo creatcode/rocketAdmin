@@ -159,13 +159,7 @@ class Index extends Backend
             $this->success(__('Logout successful'), 'index/login');
         }
         //GET 阶段不自动提交注销：返回需用户确认的 POST 表单，Token 在 POST 中由 $this->token() 校验
-        $html = "<!DOCTYPE html><html><head><meta charset='utf-8'><title>" . __('Logout') . "</title></head><body>"
-            . "<form id='logout_submit' name='logout_submit' action='' method='post'>" . token_field()
-            . "<input type='submit' value='" . __('Logout') . "'>"
-            . "</form>"
-            . "<a href='javascript:history.back();'>" . __('Cancel') . "</a>"
-            . "</body></html>";
-
-        return $html;
+        $this->view->assign('title', __('Logout'));
+        return $this->view->fetch();
     }
 }

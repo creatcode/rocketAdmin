@@ -68,7 +68,7 @@ class Ems
                 || \app\common\model\Ems::where('ip', request()->ip())->where('createtime', '>=', time() - 3600)->count() >= 5) {
                 return false;
             }
-            $code = is_null($code) ? Random::numeric((int)config('rocket.sms_captcha_length') ?: 6) : $code;
+            $code = is_null($code) ? Random::numeric((int)config('rocket.ems_captcha_length') ?: 6) : $code;
             $time = time();
             $ip = request()->ip();
             $ems = \app\common\model\Ems::create(['event' => $event, 'email' => $email, 'code' => $code, 'ip' => $ip, 'createtime' => $time]);

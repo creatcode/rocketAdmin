@@ -62,6 +62,10 @@ class Config extends Backend
                 $value['value'] = json_encode($dictValue, JSON_UNESCAPED_UNICODE);
             }
             $value['tip'] = htmlspecialchars($value['tip']);
+            // cdnurl 影响全站资源域名，不支持在线修改
+            if ($value['name'] == 'cdnurl') {
+                continue;
+            }
             $siteList[$v['group']]['list'][] = $value;
         }
         $index = 0;
