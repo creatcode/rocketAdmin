@@ -13,6 +13,8 @@ class Admin extends Model
     protected $createTime = 'createtime';
     protected $updateTime = 'updatetime';
     protected $type = ['createtime' => 'integer', 'updatetime' => 'integer'];
+    // 密码相关字段不参与数组化输出
+    protected $hidden = ['password', 'salt'];
 
     public static function onBeforeWrite(Model $row)
     {

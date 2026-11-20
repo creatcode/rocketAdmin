@@ -500,6 +500,10 @@ class Upload
             'sha1'        => $sha1,
             'extparam'    => '',
         );
+        // 同一存储位置的附件已存在时直接复用，避免重复入库
+        if ($existing = Attachment::where('url', $params['url'])->where('storage', 'local')->find()) {
+            return $existing;
+        }
         $attachment = new Attachment();
         $attachment->data(array_filter($params));
         if (!$attachment->save()) {

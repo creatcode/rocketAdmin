@@ -102,7 +102,8 @@ abstract class BackendBase extends BaseController
         $order = $this->request->get("order", "DESC");
         $offset = max(0, $this->request->get("offset/d", 0));
         $limit = max(0, $this->request->get("limit/d", 0));
-        $limit = min(100, $limit ?: 20);
+        // 未指定 limit 时按全量返回，最大值限制在 999999 避免超大分页拖垮内存
+        $limit = min(999999, $limit ?: 999999);
         //新增自动计算页码
         $page = intval($offset / $limit) + 1;
         if ($this->request->has("page")) {

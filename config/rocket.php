@@ -6,6 +6,8 @@ return [
     'usercenter'            => true,
     //会员注册验证码类型email/mobile/wechat/text/false
     'user_register_captcha' => 'text',
+    //邮件验证码接口是否要求图形验证码
+    'user_api_captcha'      => false,
     //登录验证码
     'login_captcha'         => false,
     //短信/邮箱验证码位数

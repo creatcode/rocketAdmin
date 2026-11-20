@@ -211,6 +211,7 @@ class Admin extends Backend
                     $adminValidate->rule([
                         'username' => 'require|regex:\w{3,12}|unique:admin,username,' . $row->id,
                         'email'    => 'require|email|unique:admin,email,' . $row->id,
+                        'mobile'   => 'regex:1[3-9]\d{9}|unique:admin,mobile,' . $row->id,
                         'password' => 'regex:\S{32}',
                     ]);
                     $rs = $adminValidate->check($params);
